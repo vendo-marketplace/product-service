@@ -3,4 +3,10 @@ server:
 
 security:
   jwt:
-    secret-key: secretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkeysecretkey
+    secret-key: secretKeysecretKeysecretKeysecretKeysecretKey
+    bad-secret-key: wrongSecretKeywrongSecretKeywrongSecretKeywrongSecretKey
+    expiration-time: 60000
+
+eureka:
+  client:
+    enabled: false

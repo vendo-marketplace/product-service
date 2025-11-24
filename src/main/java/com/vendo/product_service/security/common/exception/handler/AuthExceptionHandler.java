@@ -12,13 +12,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-public class AuthenticationFilterExceptionHandler {
+public class AuthExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
-                .type(AccessDeniedException.class.getSimpleName())
                 .code(HttpStatus.FORBIDDEN.value())
                 .path(request.getRequestURI())
                 .build();
@@ -30,7 +29,6 @@ public class AuthenticationFilterExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleAuthenticationException(InvalidTokenException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
-                .type(InvalidTokenException.class.getSimpleName())
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .path(request.getRequestURI())
                 .build();
@@ -42,7 +40,6 @@ public class AuthenticationFilterExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleExpiredJwtException(ExpiredJwtException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Token has expired.")
-                .type(ExpiredJwtException.class.getSimpleName())
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .path(request.getRequestURI())
                 .build();
@@ -53,8 +50,7 @@ public class AuthenticationFilterExceptionHandler {
     @ExceptionHandler(JwtException.class)
     public ResponseEntity<ExceptionResponse> handleJwtException(JwtException e,  HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
-                .type(JwtException.class.getSimpleName())
+                .message("Invalid token.")
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .path(request.getRequestURI())
                 .build();
