@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static com.vendo.product_service.security.common.helper.SecurityContextHelper.getUserIdFromContext;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -16,6 +18,9 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public void save(Product product) {
+        product.setActive(true);
+        product.setSellerId(getUserIdFromContext());
+
         productRepository.save(product);
     }
 
