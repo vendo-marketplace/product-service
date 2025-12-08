@@ -1,8 +1,11 @@
 package com.vendo.product_service.service;
 
 import com.vendo.product_service.common.exception.ProductAlreadyExistsException;
+import com.vendo.product_service.common.mapper.ProductMapper;
 import com.vendo.product_service.model.Product;
 import com.vendo.product_service.repository.ProductRepository;
+import com.vendo.product_service.web.dto.CreateProductRequest;
+import com.vendo.product_service.web.dto.ProductResponse;
 import com.vendo.product_service.web.dto.UpdateProductRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,13 @@ import static com.vendo.product_service.security.common.helper.SecurityContextHe
 @RequiredArgsConstructor
 public class ProductService {
 
+    private final ProductMapper productMapper;
+
     private final ProductRepository productRepository;
 
-    public void save(Product product) {
+    public void save(CreateProductRequest createProductRequest) {
+        Product product = productMapper.toProductFromCreateProductRequest(createProductRequest);
+
         product.setActive(true);
         product.setSellerId(getUserIdFromContext());
 
@@ -25,20 +32,22 @@ public class ProductService {
     }
 
     public void update(String id, UpdateProductRequest updateProductRequest) {
-        Product product = findById(id);
+        ProductResponse productResponse = findById(id);
 
-        Optional.ofNullable(updateProductRequest.title()).ifPresent(product::setTitle);
-        Optional.ofNullable(updateProductRequest.description()).ifPresent(product::setDescription);
-        Optional.ofNullable(updateProductRequest.quantity()).ifPresent(product::setQuantity);
-        Optional.ofNullable(updateProductRequest.price()).ifPresent(product::setPrice);
-        Optional.ofNullable(updateProductRequest.active()).ifPresent(product::setActive);
+        Optional.ofNullable(updateProductRequest.title()).ifPresent(productResponse::setTitle);
+        Optional.ofNullable(updateProductRequest.description()).ifPresent(productResponse::setDescription);
+        Optional.ofNullable(updateProductRequest.quantity()).ifPresent(productResponse::setQuantity);
+        Optional.ofNullable(updateProductRequest.price()).ifPresent(productResponse::setPrice);
+        Optional.ofNullable(updateProductRequest.active()).ifPresent(productResponse::setActive);
 
-        productRepository.save(product);
+        productRepository.save(productMapper.toProductFromProductResponse(productResponse));
     }
 
-    public Product findById(String id) {
-        return productRepository.findById(id)
+    public ProductResponse findById(String id) {
+        Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductAlreadyExistsException("Product already exists."));
+
+        return productMapper.toProductResponse(product);
     }
 
 }

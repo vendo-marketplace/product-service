@@ -1,9 +1,11 @@
 package com.vendo.product_service.web;
 
-import com.vendo.product_service.common.mapper.ProductMapper;
 import com.vendo.product_service.service.ProductService;
 import com.vendo.product_service.web.dto.CreateProductRequest;
+import com.vendo.product_service.web.dto.ProductResponse;
+import com.vendo.product_service.web.dto.UpdateProductRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -12,21 +14,22 @@ public class ProductController {
 
     private final ProductService productService;
 
-    private final ProductMapper productMapper;
-
     @PostMapping
     public void save(@RequestBody CreateProductRequest createProductRequest) {
-        productService.save(productMapper.toProduct(createProductRequest));
+        productService.save(createProductRequest);
     }
 
-    @PutMapping
-    public void update() {
-
+    @PutMapping("/{id}")
+    public void update(
+            @PathVariable String id,
+            @RequestBody UpdateProductRequest updateProductRequest
+    ) {
+        productService.update(id, updateProductRequest);
     }
 
-    @GetMapping
-    public void find() {
-
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductResponse> find(@PathVariable String id) {
+        return ResponseEntity.ok(productService.findById(id));
     }
 
 }
