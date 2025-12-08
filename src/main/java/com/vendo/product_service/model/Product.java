@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -43,5 +44,8 @@ public class Product extends AuditingEntity {
     private Map<String, Object> attributes;
 
     private boolean active;
+
+    @Version
+    private long version;
 
 }

@@ -10,7 +10,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -44,17 +43,6 @@ public class JwtHelper {
                 .parseSignedClaims(token);
     }
 
-    public String extractSubject(Claims claims) {
-        String subject = claims.getSubject();
-
-        if (StringUtils.isEmpty(subject)) {
-            log.error("Subject is not present.");
-            throw new InvalidTokenException("Invalid token.");
-        }
-
-        return subject;
-    }
-
     public String extractUserId(Claims claims) {
         return extractClaim(() -> String.valueOf(claims.get(USER_ID_CLAIM.getClaim())));
     }
@@ -73,7 +61,7 @@ public class JwtHelper {
         return extractClaim(userStatusExtractor);
     }
 
-    public  List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
+    public List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
         Supplier<List<SimpleGrantedAuthority>> authoritiesExtractor = () -> {
             Object rolesClaim = claims.get(ROLES_CLAIM.getClaim());
 
