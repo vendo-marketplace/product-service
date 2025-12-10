@@ -14,9 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import static com.vendo.product_service.common.builder.JwtPayloadBuilder.JWT_USER_SUBJECT;
 import static com.vendo.product_service.service.JwtService.INVALID_STATUS;
 import static com.vendo.product_service.service.JwtService.INVALID_TOKEN_FORMAT;
 import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
@@ -49,14 +50,14 @@ class JwtHelperTest {
             Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThat(claims).isNotNull();
-            assertThat(claims.getSubject()).isEqualTo("JWT_USER_SUBJECT");
+            assertThat(claims.getSubject()).isEqualTo(JWT_USER_SUBJECT);
         }
 
         @Test
         void shouldThrowExpiredJwtException_whenTokenExpired() {
             String expiredToken = jwtService.generateAccessToken(
                     jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .expiration(-10000) // Просроченный
+                            .expiration(-1)
                             .build()
             );
 
@@ -68,7 +69,7 @@ class JwtHelperTest {
         void shouldThrowSignatureException_whenInvalidSignature() {
             String tokenWithWrongSignature = jwtService.generateAccessToken(
                     jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .key(jwtService.getBadSecretKey()) // Неправильный ключ
+                            .key(jwtService.getBadSecretKey())
                             .build()
             );
 
@@ -99,7 +100,7 @@ class JwtHelperTest {
     class SubjectExtractionTests {
 
         @Test
-        void shouldExtractSubject_whenSubjectPresent() {
+        void shouldExtractSubject_whenSubjectIsPresent() {
             String token = jwtService.generateAccessToken(
                     jwtPayloadBuilder.buildValidUserJwtPayload().build()
             );
@@ -107,20 +108,16 @@ class JwtHelperTest {
             Claims claims = jwtHelper.extractAllClaims(token);
             String subject = jwtHelper.extractSubject(claims);
 
-            assertThat(subject).isEqualTo("JWT_USER_SUBJECT");
+            assertThat(subject).isEqualTo(JWT_USER_SUBJECT);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenSubjectMissing() {
-            String tokenWithoutSubject = Jwts.builder()
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .claim(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"))
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+        void shouldThrowInvalidTokenException_whenSubjectIsMissing() {
+            String token = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload().subject(null).build()
+            );
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithoutSubject);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
                     .isInstanceOf(InvalidTokenException.class);
@@ -128,16 +125,11 @@ class JwtHelperTest {
 
         @Test
         void shouldThrowInvalidTokenException_whenSubjectEmpty() {
-            String tokenWithEmptySubject = Jwts.builder()
-                    .subject("")
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .claim(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"))
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String token = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload().subject("").build()
+            );
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithEmptySubject);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
                     .isInstanceOf(InvalidTokenException.class);
@@ -164,15 +156,14 @@ class JwtHelperTest {
 
         @Test
         void shouldThrowInvalidTokenException_whenRolesInvalidType() {
-            String invalidToken = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .claim(ROLES_CLAIM.getClaim(), "invalid_string_type")
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
 
+            String invalidToken = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                            STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
+                            ROLES_CLAIM.getClaim(), "invalid_string_type"
+                            )).build()
+            );
             Claims claims = jwtHelper.extractAllClaims(invalidToken);
 
             assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
@@ -181,13 +172,12 @@ class JwtHelperTest {
 
         @Test
         void shouldThrowInvalidTokenException_whenRolesMissing() {
-            String tokenWithoutRoles = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String tokenWithoutRoles = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE
+                            )).build()
+            );
 
             Claims claims = jwtHelper.extractAllClaims(tokenWithoutRoles);
 
@@ -197,14 +187,13 @@ class JwtHelperTest {
 
         @Test
         void shouldExtractEmptyAuthorities_whenRolesListEmpty() {
-            String tokenWithEmptyRoles = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .claim(ROLES_CLAIM.getClaim(), List.of())
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String tokenWithEmptyRoles = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
+                                    ROLES_CLAIM.getClaim(), List.of()
+                            )).build()
+            );
 
             Claims claims = jwtHelper.extractAllClaims(tokenWithEmptyRoles);
             var authorities = jwtHelper.extractAuthorities(claims);
@@ -230,14 +219,13 @@ class JwtHelperTest {
 
         @Test
         void shouldThrowInvalidTokenException_whenStatusInvalid() {
-            String tokenWithInvalidStatus = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(STATUS_CLAIM.getClaim(), INVALID_STATUS)
-                    .claim(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"))
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String tokenWithInvalidStatus = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                                    STATUS_CLAIM.getClaim(), INVALID_STATUS,
+                                    ROLES_CLAIM.getClaim(), List.of()
+                            )).build()
+            );
 
             Claims claims = jwtHelper.extractAllClaims(tokenWithInvalidStatus);
 
@@ -247,13 +235,12 @@ class JwtHelperTest {
 
         @Test
         void shouldThrowInvalidTokenException_whenStatusMissing() {
-            String tokenWithoutStatus = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"))
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String tokenWithoutStatus = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                                    ROLES_CLAIM.getClaim(), List.of()
+                            )).build()
+            );
 
             Claims claims = jwtHelper.extractAllClaims(tokenWithoutStatus);
 
@@ -267,14 +254,13 @@ class JwtHelperTest {
 
         @Test
         void shouldHandleTokenWithMultipleRoles() {
-            String tokenWithMultipleRoles = Jwts.builder()
-                    .subject("test-user-id")
-                    .claim(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE)
-                    .claim(ROLES_CLAIM.getClaim(), List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR"))
-                    .expiration(new Date(System.currentTimeMillis() + 60000))
-                    .issuedAt(new Date())
-                    .signWith(jwtService.getSecretKey())
-                    .compact();
+            String tokenWithMultipleRoles = jwtService.generateAccessToken(
+                    jwtPayloadBuilder.buildValidUserJwtPayload()
+                            .claims(Map.of(
+                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
+                                    ROLES_CLAIM.getClaim(), List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR")
+                            )).build()
+            );
 
             Claims claims = jwtHelper.extractAllClaims(tokenWithMultipleRoles);
             var authorities = jwtHelper.extractAuthorities(claims);

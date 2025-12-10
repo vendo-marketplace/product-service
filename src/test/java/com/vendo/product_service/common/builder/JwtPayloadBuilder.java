@@ -19,9 +19,9 @@ import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 public class JwtPayloadBuilder {
 
     @Value("${security.jwt.expiration-time}")
-    private int JWT_EXPIRATION_TIME;
+    public int JWT_EXPIRATION_TIME;
 
-    private static final String JWT_USER_SUBJECT = "JWT_USER_SUBJECT";
+    public static final String JWT_USER_SUBJECT = "JWT_USER_SUBJECT";
 
     private final JwtService jwtService;
 
