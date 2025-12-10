@@ -5,6 +5,3 @@ spring:
     active: ${APP_PROFILE}
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}/"
-  data:
-    mongodb:
-      uri: mongodb+srv://vendomarketplacereal_db_user:supersecretpassword@product-service.vbkhxg6.mongodb.net/?appName=product-service

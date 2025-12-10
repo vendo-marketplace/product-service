@@ -14,6 +14,7 @@ public class ProductAntPathResolver implements AntPathResolver {
     public static final String[] PERMITTED_PATHS = new String[] {
             "/swagger-ui/**",
             "/v3/api-docs/**",
+            "/categories/**"
     };
 
     @Override

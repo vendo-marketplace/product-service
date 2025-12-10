@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.category.model;
 
+import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.model.embedded.AttributeValue;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,8 @@ public class Category {
     private String title;
 
     private String parentId;
+
+    private CategoryType categoryType;
 
     private Map<String, AttributeValue> attributes;
 
