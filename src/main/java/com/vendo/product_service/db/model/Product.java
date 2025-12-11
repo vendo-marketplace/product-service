@@ -1,4 +1,4 @@
-package com.vendo.product_service.model;
+package com.vendo.product_service.db.model;
 
 import com.vendo.product_service.common.dto.AuditingEntity;
 import jakarta.validation.constraints.*;

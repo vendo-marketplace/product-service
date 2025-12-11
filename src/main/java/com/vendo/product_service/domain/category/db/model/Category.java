@@ -1,7 +1,7 @@
-package com.vendo.product_service.domain.category.model;
+package com.vendo.product_service.domain.category.db.model;
 
 import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.model.embedded.AttributeValue;
+import com.vendo.product_service.domain.category.db.model.embedded.AttributeValue;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;

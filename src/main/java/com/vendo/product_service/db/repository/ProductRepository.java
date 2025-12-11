@@ -1,6 +1,6 @@
-package com.vendo.product_service.repository;
+package com.vendo.product_service.db.repository;
 
-import com.vendo.product_service.model.Product;
+import com.vendo.product_service.db.model.Product;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface ProductRepository extends MongoRepository<Product, String> {

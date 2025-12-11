@@ -3,7 +3,7 @@ package com.vendo.product_service.domain.category.common.exception.handler;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.product_service.domain.category.common.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.common.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
+import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,8 +35,8 @@ public class CategoryExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
     }
 
-    @ExceptionHandler(CategoryTypeException.class)
-    public ResponseEntity<ExceptionResponse> handleCategoryTypeException(CategoryTypeException e, HttpServletRequest request) {
+    @ExceptionHandler(CategoryValidationException.class)
+    public ResponseEntity<ExceptionResponse> handleCategoryValidationException(CategoryValidationException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())

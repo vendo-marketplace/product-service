@@ -1,14 +1,16 @@
 package com.vendo.product_service.domain.category.service;
 
 import com.vendo.product_service.domain.category.common.exception.CategoryAlreadyExistsException;
-import com.vendo.product_service.domain.category.common.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.common.mapper.CategoryMapper;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.repository.CategoryRepository;
+import com.vendo.product_service.domain.category.db.command.CategoryCommandService;
+import com.vendo.product_service.domain.category.db.query.CategoryQueryService;
+import com.vendo.product_service.domain.category.db.model.Category;
+import com.vendo.product_service.domain.category.validation.factory.CategoryValidationFactory;
+import com.vendo.product_service.domain.category.validation.strategy.CategoryValidationStrategy;
 import com.vendo.product_service.domain.category.web.dto.CategoriesResponse;
-import com.vendo.product_service.domain.category.web.dto.CategoryRequest;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
+import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,36 +23,36 @@ public class CategoryService {
 
     private final CategoryMapper categoryMapper;
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryQueryService categoryQueryService;
 
-    public void save(CategoryRequest categoryRequest) {
-        Optional<Category> optionalCategory = findByTitle(categoryRequest.title());
+    private final CategoryCommandService categoryCommandService;
+
+    private final CategoryValidationFactory categoryValidationFactory;
+
+    public void save(CreateCategoryRequest createCategoryRequest) {
+        Optional<Category> optionalCategory = categoryQueryService.findByTitle(createCategoryRequest.title());
         if (optionalCategory.isPresent()) {
             throw new CategoryAlreadyExistsException("Category already exists.");
         }
 
-        Category category = categoryMapper.toCategoryFromCategoryRequest(categoryRequest);
-        categoryRepository.save(category);
-    }
+        CategoryValidationStrategy categoryValidationStrategy = categoryValidationFactory.getValidator(createCategoryRequest.categoryType());
+        categoryValidationStrategy.validate(createCategoryRequest);
 
-    public CategoryResponse findById(String id) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found."));
-
-        return categoryMapper.toCategoryResponseFromCategory(category);
+        categoryCommandService.save(categoryMapper.toCategoryFromCategoryRequest(createCategoryRequest));
     }
 
     public CategoriesResponse findAll() {
-        List<Category> categories = categoryRepository.findAll();
+        List<Category> categories = categoryQueryService.findAll();
         return categoryMapper.toCategoriesResponseFromCategories(categories);
     }
 
-    public Optional<Category> findByTitle(String title) {
-        return categoryRepository.findByTitleIgnoreCase(title);
+    public CategoryResponse findById(String id) {
+        Category category = categoryQueryService.findById(id);
+        return categoryMapper.toCategoryResponseFromCategory(category);
     }
 
     public CategoriesResponse findAllByType(CategoryType categoryType) {
-        List<Category> categories = categoryRepository.findAllByCategoryType(categoryType);
+        List<Category> categories = categoryQueryService.findAllByType(categoryType);
         return categoryMapper.toCategoriesResponseFromCategories(categories);
     }
 }

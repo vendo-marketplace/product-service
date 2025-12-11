@@ -1,9 +1,9 @@
 package com.vendo.product_service.domain.category.common.mapper;
 
 import com.vendo.product_service.common.config.MapStructConfig;
-import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.db.model.Category;
 import com.vendo.product_service.domain.category.web.dto.CategoriesResponse;
-import com.vendo.product_service.domain.category.web.dto.CategoryRequest;
+import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import org.mapstruct.Mapper;
 
@@ -25,6 +25,6 @@ public interface CategoryMapper {
         return CategoriesResponse.builder().items(items).build();
     }
 
-    Category toCategoryFromCategoryRequest(CategoryRequest categoryRequest);
+    Category toCategoryFromCategoryRequest(CreateCategoryRequest createCategoryRequest);
 
 }

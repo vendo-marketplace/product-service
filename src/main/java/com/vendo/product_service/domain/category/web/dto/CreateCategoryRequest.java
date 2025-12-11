@@ -1,12 +1,12 @@
 package com.vendo.product_service.domain.category.web.dto;
 
 import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.model.embedded.AttributeValue;
+import com.vendo.product_service.domain.category.db.model.embedded.AttributeValue;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.Map;
 
-public record CategoryRequest(
+public record CreateCategoryRequest(
         @NotNull(message = "Title is required.")
         String title,
 

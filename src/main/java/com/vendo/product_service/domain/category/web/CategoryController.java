@@ -3,7 +3,7 @@ package com.vendo.product_service.domain.category.web;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.service.CategoryService;
 import com.vendo.product_service.domain.category.web.dto.CategoriesResponse;
-import com.vendo.product_service.domain.category.web.dto.CategoryRequest;
+import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +19,8 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public void save(@RequestBody CategoryRequest categoryRequest) {
-
-        categoryService.save(categoryRequest);
+    public void save(@RequestBody CreateCategoryRequest createCategoryRequest) {
+        categoryService.save(createCategoryRequest);
     }
 
     @GetMapping("/all")

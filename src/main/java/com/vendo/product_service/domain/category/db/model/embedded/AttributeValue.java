@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.model.embedded;
+package com.vendo.product_service.domain.category.db.model.embedded;
 
 import lombok.Data;
 
