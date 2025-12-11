@@ -2,6 +2,7 @@ package com.vendo.product_service.security.common;
 
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.builder.JwtPayloadBuilder;
+import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.security.common.helper.JwtHelper;
 import com.vendo.product_service.service.JwtService;
 import com.vendo.security.common.exception.InvalidTokenException;
@@ -14,12 +15,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static com.vendo.product_service.common.builder.JwtPayloadBuilder.JWT_USER_SUBJECT;
 import static com.vendo.product_service.service.JwtService.INVALID_STATUS;
 import static com.vendo.product_service.service.JwtService.INVALID_TOKEN_FORMAT;
+import static com.vendo.product_service.service.JwtService.ROLE_USER;
 import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
 import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,13 +42,12 @@ class JwtHelperTest {
     private JwtPayloadBuilder jwtPayloadBuilder;
 
     @Nested
-    class TokenParsingTests {
+    class ExtractAllClaimsTests {
 
         @Test
-        void shouldParseValidToken() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().build()
-            );
+        void extractAllClaims_whenTokenValid_returnsClaims() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
+            String token = jwtService.generateAccessToken(payload);
 
             Claims claims = jwtHelper.extractAllClaims(token);
 
@@ -54,69 +56,66 @@ class JwtHelperTest {
         }
 
         @Test
-        void shouldThrowExpiredJwtException_whenTokenExpired() {
-            String expiredToken = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .expiration(-1)
-                            .build()
-            );
+        void extractAllClaims_whenTokenExpired_throwsExpiredJwtException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .expiration(-1)
+                    .build();
+            String expiredToken = jwtService.generateAccessToken(payload);
 
             assertThatThrownBy(() -> jwtHelper.extractAllClaims(expiredToken))
                     .isInstanceOf(ExpiredJwtException.class);
         }
 
         @Test
-        void shouldThrowSignatureException_whenInvalidSignature() {
-            String tokenWithWrongSignature = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .key(jwtService.getBadSecretKey())
-                            .build()
-            );
+        void extractAllClaims_whenSignatureInvalid_throwsSignatureException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .key(jwtService.getBadSecretKey())
+                    .build();
+            String invalidSignatureToken = jwtService.generateAccessToken(payload);
 
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(tokenWithWrongSignature))
+            assertThatThrownBy(() -> jwtHelper.extractAllClaims(invalidSignatureToken))
                     .isInstanceOf(SignatureException.class);
         }
 
         @Test
-        void shouldThrowMalformedJwtException_whenTokenIsMalformed() {
+        void extractAllClaims_whenTokenMalformed_throwsMalformedJwtException() {
             assertThatThrownBy(() -> jwtHelper.extractAllClaims(INVALID_TOKEN_FORMAT))
                     .isInstanceOf(MalformedJwtException.class);
         }
 
         @Test
-        void shouldThrowIllegalArgumentException_whenTokenIsNull() {
+        void extractAllClaims_whenTokenNull_throwsIllegalArgumentException() {
             assertThatThrownBy(() -> jwtHelper.extractAllClaims(null))
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test
-        void shouldThrowIllegalArgumentException_whenTokenIsEmpty() {
+        void extractAllClaims_whenTokenEmpty_throwsIllegalArgumentException() {
             assertThatThrownBy(() -> jwtHelper.extractAllClaims(""))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
 
     @Nested
-    class SubjectExtractionTests {
+    class ExtractSubjectTests {
 
         @Test
-        void shouldExtractSubject_whenSubjectIsPresent() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().build()
-            );
-
+        void extractSubject_whenSubjectPresent_returnsSubject() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
+            String token = jwtService.generateAccessToken(payload);
             Claims claims = jwtHelper.extractAllClaims(token);
+
             String subject = jwtHelper.extractSubject(claims);
 
             assertThat(subject).isEqualTo(JWT_USER_SUBJECT);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenSubjectIsMissing() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().subject(null).build()
-            );
-
+        void extractSubject_whenSubjectNull_throwsInvalidTokenException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .subject(null)
+                    .build();
+            String token = jwtService.generateAccessToken(payload);
             Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
@@ -124,11 +123,11 @@ class JwtHelperTest {
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenSubjectEmpty() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().subject("").build()
-            );
-
+        void extractSubject_whenSubjectEmpty_throwsInvalidTokenException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .subject("")
+                    .build();
+            String token = jwtService.generateAccessToken(payload);
             Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
@@ -137,138 +136,154 @@ class JwtHelperTest {
     }
 
     @Nested
-    class AuthoritiesExtractionTests {
+    class ExtractAuthoritiesTests {
 
         @Test
-        void shouldExtractAuthorities_whenRolesValid() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().build()
-            );
-
+        void extractAuthorities_whenRolesValid_returnsAuthorities() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
+            String token = jwtService.generateAccessToken(payload);
             Claims claims = jwtHelper.extractAllClaims(token);
-            var authorities = jwtHelper.extractAuthorities(claims);
+
+            List<SimpleGrantedAuthority> authorities = jwtHelper.extractAuthorities(claims);
 
             assertThat(authorities)
                     .hasSize(1)
                     .extracting(SimpleGrantedAuthority::getAuthority)
-                    .containsExactly("ROLE_USER");
+                    .containsExactly(ROLE_USER);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenRolesInvalidType() {
-
-            String invalidToken = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
+        void extractAuthorities_whenRolesInvalidType_throwsInvalidTokenException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(Map.of(
                             STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                            ROLES_CLAIM.getClaim(), "invalid_string_type"
-                            )).build()
-            );
-            Claims claims = jwtHelper.extractAllClaims(invalidToken);
+                            ROLES_CLAIM.getClaim(), "invalid_string"
+                    ))
+                    .build();
+
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenRolesMissing() {
-            String tokenWithoutRoles = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
-                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE
-                            )).build()
-            );
+        void extractAuthorities_whenRolesMissing_throwsInvalidTokenException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(Map.of(
+                            STATUS_CLAIM.getClaim(), UserStatus.ACTIVE
+                    ))
+                    .build();
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithoutRoles);
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
         @Test
-        void shouldExtractEmptyAuthorities_whenRolesListEmpty() {
-            String tokenWithEmptyRoles = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
-                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                                    ROLES_CLAIM.getClaim(), List.of()
-                            )).build()
-            );
+        void extractAuthorities_whenRolesEmpty_throwsInvalidTokenException() {
+            HashMap<String,Object> claimsMap = new HashMap<>();
+            claimsMap.put(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE);
+            claimsMap.put(ROLES_CLAIM.getClaim(), null);
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithEmptyRoles);
-            var authorities = jwtHelper.extractAuthorities(claims);
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(claimsMap)
+                    .build();
 
-            assertThat(authorities).isEmpty();
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
+
+            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+                    .isInstanceOf(InvalidTokenException.class);
+        }
+
+        @Test
+        void extractAuthorities_whenMultipleRoles_returnsAll() {
+            List<String> roles = List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR");
+
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(Map.of(
+                            STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
+                            ROLES_CLAIM.getClaim(), roles
+                    ))
+                    .build();
+
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
+
+            List<SimpleGrantedAuthority> authorities = jwtHelper.extractAuthorities(claims);
+
+            assertThat(authorities)
+                    .hasSize(3)
+                    .extracting(SimpleGrantedAuthority::getAuthority)
+                    .containsExactlyInAnyOrderElementsOf(roles);
         }
     }
 
     @Nested
-    class UserStatusExtractionTests {
+    class ExtractUserStatusTests {
 
         @Test
-        void shouldExtractUserStatus_whenStatusValid() {
-            String token = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload().build()
-            );
-
+        void extractUserStatus_whenStatusValid_returnsStatus() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
+            String token = jwtService.generateAccessToken(payload);
             Claims claims = jwtHelper.extractAllClaims(token);
+
             UserStatus status = jwtHelper.extractUserStatus(claims);
 
             assertThat(status).isEqualTo(UserStatus.ACTIVE);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenStatusInvalid() {
-            String tokenWithInvalidStatus = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
-                                    STATUS_CLAIM.getClaim(), INVALID_STATUS,
-                                    ROLES_CLAIM.getClaim(), List.of()
-                            )).build()
-            );
+        void extractUserStatus_whenStatusInvalid_throwsInvalidTokenException() {
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(Map.of(
+                            STATUS_CLAIM.getClaim(), INVALID_STATUS,
+                            ROLES_CLAIM.getClaim(), List.of("ROLE_USER")
+                    ))
+                    .build();
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithInvalidStatus);
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
         @Test
-        void shouldThrowInvalidTokenException_whenStatusMissing() {
-            String tokenWithoutStatus = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
-                                    ROLES_CLAIM.getClaim(), List.of()
-                            )).build()
-            );
+        void extractUserStatus_whenStatusNull_throwsInvalidTokenException() {
+            HashMap<String, Object> claimsMap = new HashMap<>();
+            claimsMap.put(STATUS_CLAIM.getClaim(), null);
+            claimsMap.put(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"));
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithoutStatus);
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(claimsMap)
+                    .build();
+
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
 
             assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
-    }
-
-    @Nested
-    class EdgeCasesTests {
 
         @Test
-        void shouldHandleTokenWithMultipleRoles() {
-            String tokenWithMultipleRoles = jwtService.generateAccessToken(
-                    jwtPayloadBuilder.buildValidUserJwtPayload()
-                            .claims(Map.of(
-                                    STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                                    ROLES_CLAIM.getClaim(), List.of("ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR")
-                            )).build()
-            );
+        void extractUserStatus_whenStatusMissing_throwsInvalidTokenException() {
+            HashMap<String, Object> claimsMap = new HashMap<>();
+            claimsMap.put(ROLES_CLAIM.getClaim(), List.of("ROLE_USER"));
 
-            Claims claims = jwtHelper.extractAllClaims(tokenWithMultipleRoles);
-            var authorities = jwtHelper.extractAuthorities(claims);
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(claimsMap)
+                    .build();
 
-            assertThat(authorities)
-                    .hasSize(3)
-                    .extracting(SimpleGrantedAuthority::getAuthority)
-                    .containsExactlyInAnyOrder("ROLE_USER", "ROLE_ADMIN", "ROLE_MODERATOR");
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
+
+            assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
+                    .isInstanceOf(InvalidTokenException.class);
         }
     }
 }
