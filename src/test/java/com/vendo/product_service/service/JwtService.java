@@ -42,7 +42,7 @@ public class JwtService {
                 .claims(jwtPayload.getClaims())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtPayload.getExpiration()))
-                .signWith(jwtPayload.getKey(), SignatureAlgorithm.HS256)
+                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 }
