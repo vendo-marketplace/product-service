@@ -62,6 +62,11 @@ public class JwtHelper {
         Object rolesClaim = claims.get(ROLES_CLAIM.getClaim());
 
         if (rolesClaim instanceof List<?> roles) {
+            if (roles.isEmpty()) {
+                log.error("Roles list is empty.");
+                throw new InvalidTokenException("Invalid token.");
+            }
+
             return roles.stream()
                     .map(Object::toString)
                     .map(SimpleGrantedAuthority::new)

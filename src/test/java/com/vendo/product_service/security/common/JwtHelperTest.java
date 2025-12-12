@@ -184,10 +184,27 @@ class JwtHelperTest {
         }
 
         @Test
-        void extractAuthorities_whenRolesEmpty_throwsInvalidTokenException() {
+        void extractAuthorities_whenRolesNull_throwsInvalidTokenException() {
             HashMap<String,Object> claimsMap = new HashMap<>();
             claimsMap.put(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE);
             claimsMap.put(ROLES_CLAIM.getClaim(), null);
+
+            JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
+                    .claims(claimsMap)
+                    .build();
+
+            String token = jwtService.generateAccessToken(payload);
+            Claims claims = jwtHelper.extractAllClaims(token);
+
+            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+                    .isInstanceOf(InvalidTokenException.class);
+        }
+
+        @Test
+        void extractAuthorities_whenRolesEmpty_throwsInvalidTokenException() {
+            HashMap<String,Object> claimsMap = new HashMap<>();
+            claimsMap.put(STATUS_CLAIM.getClaim(), UserStatus.ACTIVE);
+            claimsMap.put(ROLES_CLAIM.getClaim(), List.of());
 
             JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload()
                     .claims(claimsMap)
