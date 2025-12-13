@@ -2,6 +2,7 @@ package com.vendo.product_service.service;
 
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.security.common.config.JwtProperties;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -22,8 +23,6 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    public static final String ROLE_USER = "ROLE_USER";
-
     public static final String INVALID_STATUS = "INVALID_STATUS";
 
     public static final String INVALID_TOKEN_FORMAT = "INVALID_TOKEN_FORMAT";
@@ -42,7 +41,7 @@ public class JwtService {
                 .claims(jwtPayload.getClaims())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + jwtPayload.getExpiration()))
-                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+                .signWith(jwtPayload.getKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 }
