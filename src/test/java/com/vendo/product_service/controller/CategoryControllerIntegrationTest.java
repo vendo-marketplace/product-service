@@ -77,8 +77,7 @@ public class CategoryControllerIntegrationTest {
                     USER_ID_CLAIM.getClaim(), String.valueOf(UUID.randomUUID()),
                     EMAIL_VERIFIED_CLAIM.getClaim(), true,
                     STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                    // TODO check what exception is thrown in prod flow to handle it, because now message displayed on not ADMIN role
-                    ROLES_CLAIM.getClaim(), List.of(UserRole.ADMIN)
+                    ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
             );
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
 
