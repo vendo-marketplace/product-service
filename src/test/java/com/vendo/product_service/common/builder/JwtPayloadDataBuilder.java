@@ -26,11 +26,15 @@ public class JwtPayloadDataBuilder {
     private final JwtService jwtService;
 
     public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload() {
+        return buildValidUserJwtPayload(UserRole.USER);
+    }
+
+    public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload(UserRole userRole) {
         Map<String, Object> claims = Map.of(
                 USER_ID_CLAIM.getClaim(), String.valueOf(UUID.randomUUID()),
                 EMAIL_VERIFIED_CLAIM.getClaim(), true,
                 STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
+                ROLES_CLAIM.getClaim(), List.of(userRole)
         );
         return JwtPayload.builder()
                 .subject(JWT_USER_SUBJECT)

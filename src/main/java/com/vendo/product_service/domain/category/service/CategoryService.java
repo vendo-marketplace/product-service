@@ -47,7 +47,7 @@ public class CategoryService {
     }
 
     public CategoryResponse findById(String id) {
-        Category category = categoryQueryService.findById(id);
+        Category category = categoryQueryService.findByIdOrThrow(id);
         return categoryMapper.toCategoryResponseFromCategory(category);
     }
 

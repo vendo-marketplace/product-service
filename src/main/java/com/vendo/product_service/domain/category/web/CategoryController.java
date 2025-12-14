@@ -5,6 +5,7 @@ import com.vendo.product_service.domain.category.service.CategoryService;
 import com.vendo.product_service.domain.category.web.dto.CategoriesResponse;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +20,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public void save(@RequestBody CreateCategoryRequest createCategoryRequest) {
+    public void save(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
         categoryService.save(createCategoryRequest);
     }
 

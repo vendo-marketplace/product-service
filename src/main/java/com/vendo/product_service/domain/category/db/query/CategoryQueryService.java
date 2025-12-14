@@ -16,7 +16,7 @@ public class CategoryQueryService {
 
     private final CategoryRepository categoryRepository;
 
-    public Category findById(String id) {
+    public Category findByIdOrThrow(String id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found."));
     }

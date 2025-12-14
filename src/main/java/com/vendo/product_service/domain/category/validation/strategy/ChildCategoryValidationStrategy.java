@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChildCategoryValidationStrategy implements CategoryValidationStrategy{
+public class ChildCategoryValidationStrategy implements CategoryValidationStrategy {
 
     private final CategoryQueryService categoryQueryService;
 
@@ -25,7 +25,7 @@ public class ChildCategoryValidationStrategy implements CategoryValidationStrate
             throw new CategoryValidationException("Child category should have attributes.");
         }
 
-        Category parentRootCategory = categoryQueryService.findById(createCategoryRequest.parentId());
+        Category parentRootCategory = categoryQueryService.findByIdOrThrow(createCategoryRequest.parentId());
         if (parentRootCategory.getCategoryType() != CategoryType.SUB) {
             throw new CategoryValidationException("Child category should have sub category as parent.");
         }

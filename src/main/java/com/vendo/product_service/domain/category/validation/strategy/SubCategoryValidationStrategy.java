@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class SubCategoryValidationStrategy implements CategoryValidationStrategy {
@@ -25,7 +27,7 @@ public class SubCategoryValidationStrategy implements CategoryValidationStrategy
             throw new CategoryValidationException("Sub category cannot have attributes.");
         }
 
-        Category parentRootCategory = categoryQueryService.findById(createCategoryRequest.parentId());
+        Category parentRootCategory = categoryQueryService.findByIdOrThrow(createCategoryRequest.parentId());
         if (parentRootCategory.getCategoryType() != CategoryType.ROOT) {
             throw new CategoryValidationException("Sub category should have root category as parent.");
         }
