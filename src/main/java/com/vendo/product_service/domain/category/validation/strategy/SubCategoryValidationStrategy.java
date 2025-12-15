@@ -27,7 +27,10 @@ public class SubCategoryValidationStrategy implements CategoryValidationStrategy
             throw new CategoryValidationException("Sub category cannot have attributes.");
         }
 
-        Category parentRootCategory = categoryQueryService.findByIdOrThrow(createCategoryRequest.parentId());
+        Category parentRootCategory = categoryQueryService.findByIdOrThrow(
+                createCategoryRequest.parentId(),
+                "Parent category not found."
+        );
         if (parentRootCategory.getCategoryType() != CategoryType.ROOT) {
             throw new CategoryValidationException("Sub category should have root category as parent.");
         }

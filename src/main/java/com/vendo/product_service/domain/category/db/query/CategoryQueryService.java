@@ -17,8 +17,12 @@ public class CategoryQueryService {
     private final CategoryRepository categoryRepository;
 
     public Category findByIdOrThrow(String id) {
+        return findByIdOrThrow(id, "Category not found.");
+    }
+
+    public Category findByIdOrThrow(String id, String exceptionMessage) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found."));
+                .orElseThrow(() -> new CategoryNotFoundException(exceptionMessage));
     }
 
     public List<Category> findAll() {

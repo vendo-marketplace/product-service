@@ -124,6 +124,64 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().get("categoryType")).isEqualTo("Category type is required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
+
+        @Test
+        void save_shouldReturnConflict_whenCategoryIsAlreadyExistsByTitle() throws Exception {
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(String.valueOf(UUID.randomUUID()))
+                    .attributes(null)
+                    .build();
+            Category category = Category.builder()
+                    .title(categoryRequest.title())
+                    .categoryType(CategoryType.ROOT)
+                    .build();
+            categoryRepository.save(category);
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.ADMIN).build();
+
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/categories")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(categoryRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isConflict())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category already exists.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+        }
+
+        @Test
+        void save_shouldReturnForbidden_whenAuthenticatedUserIsNotAdmin() throws Exception {
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(null)
+                    .attributes(null)
+                    .build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.USER).build();
+
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/categories")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(categoryRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isForbidden())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("You do not have permission to access this resource.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+
+            Optional<Category> categoryOptional = categoryRepository.findByTitleIgnoreCase(categoryRequest.title());
+            assertThat(categoryOptional).isNotPresent();
+        }
     }
 
     @Nested
@@ -152,37 +210,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnConflict_whenRootCategoryAlreadyExists() throws Exception {
-            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
-                    .parentId(null)
-                    .attributes(null)
-                    .build();
-            Category category = Category.builder()
-                    .title(categoryRequest.title())
-                    .categoryType(CategoryType.ROOT)
-                    .build();
-            categoryRepository.save(category);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.ADMIN).build();
-
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(post("/categories")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(categoryRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isConflict())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Category already exists.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
-        }
-
-        @Test
-        void save_shouldReturnBadRequest_whenRootCategoryWithParentId() throws Exception {
+        void save_shouldReturnBadRequest_whenRootCategoryHasParentId() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(String.valueOf(UUID.randomUUID()))
                     .attributes(null)
@@ -207,7 +235,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenRootCategoryWithAttributes() throws Exception {
+        void save_shouldReturnBadRequest_whenRootCategoryHasAttributes() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(null)
                     .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
@@ -326,33 +354,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnNotFound_whenParentCategoryNotFound() throws Exception {
-            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
-                    .parentId(String.valueOf(UUID.randomUUID()))
-                    .attributes(null)
-                    .categoryType(CategoryType.SUB)
-                    .build();
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.ADMIN).build();
-
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(post("/categories")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(categoryRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
-        }
-
-        @Test
-        void save_shouldReturnBadRequest_whenParentCategoryIsNotRoot() throws Exception {
+        void save_shouldReturnBadRequest_whenParentCategoryIsNotRootInSubCategory() throws Exception {
             Category category = Category.builder()
                     .title("Sub category")
                     .categoryType(CategoryType.SUB)
@@ -379,6 +381,32 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Sub category should have root category as parent.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+        }
+
+        @Test
+        void save_shouldReturnNotFound_whenParentCategoryNotFoundInSubCategory() throws Exception {
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(String.valueOf(UUID.randomUUID()))
+                    .attributes(null)
+                    .categoryType(CategoryType.SUB)
+                    .build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.ADMIN).build();
+
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/categories")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(categoryRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
     }
@@ -416,7 +444,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenParentIdIsNotPresent() throws Exception {
+        void save_shouldReturnBadRequest_whenParentIdIsNotPresentInChildCategory() throws Exception {
             Category subCategory = Category.builder()
                     .title("Sub category")
                     .categoryType(CategoryType.SUB)
@@ -480,7 +508,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenParentCategoryIsNotSubCategory() throws Exception {
+        void save_shouldReturnBadRequest_whenParentCategoryIsNotSubInChildCategory() throws Exception {
             Category subCategory = Category.builder()
                     .title("Child category")
                     .categoryType(CategoryType.CHILD)
@@ -508,6 +536,32 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Child category should have sub category as parent.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+        }
+
+        @Test
+        void save_shouldReturnNotFound_whenParentCategoryNotFoundInChildCategory() throws Exception {
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(String.valueOf(UUID.randomUUID()))
+                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .categoryType(CategoryType.CHILD)
+                    .build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload(UserRole.ADMIN).build();
+
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/categories")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(categoryRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
     }
