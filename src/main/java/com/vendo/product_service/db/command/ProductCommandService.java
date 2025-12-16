@@ -25,7 +25,7 @@ public class ProductCommandService {
         Product productById = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
 
-        if (product.getSellerId() != null && !product.getSellerId().equals(getUserIdFromContext())) {
+        if (!productById.getOwnerId().equals(getUserIdFromContext())) {
             throw new AccessDeniedException("Only owners can edit their product.");
         }
 

@@ -1,8 +1,6 @@
 package com.vendo.product_service.domain.category.web;
 
-import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.service.CategoryService;
-import com.vendo.product_service.domain.category.web.dto.CategoriesResponse;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import jakarta.validation.Valid;
@@ -24,19 +22,9 @@ public class CategoryController {
         categoryService.save(createCategoryRequest);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<CategoriesResponse> findAll() {
-        return ResponseEntity.ok(categoryService.findAll());
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponse> findById(@PathVariable String id) {
         return ResponseEntity.ok(categoryService.findById(id));
-    }
-
-    @GetMapping
-    public ResponseEntity<CategoriesResponse> findByType(@RequestParam CategoryType type) {
-        return ResponseEntity.ok(categoryService.findAllByType(type));
     }
 
 }

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -23,22 +24,34 @@ public class JwtPayloadDataBuilder {
 
     private static final String JWT_USER_SUBJECT = "JWT_USER_SUBJECT";
 
+    public static final Map<String, Object> DEFAULT_USER_CLAIMS = buildUserClaims(
+            String.valueOf(UUID.randomUUID()),
+            true,
+            UserStatus.ACTIVE,
+            UserRole.USER
+        );
+
     private final JwtService jwtService;
 
-    public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload() {
-        return buildValidUserJwtPayload(UserRole.USER);
-    }
-
-    public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload(UserRole userRole) {
-        Map<String, Object> claims = Map.of(
-                USER_ID_CLAIM.getClaim(), String.valueOf(UUID.randomUUID()),
-                EMAIL_VERIFIED_CLAIM.getClaim(), true,
-                STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
+    public static Map<String, Object> buildUserClaims(String userId, boolean emailVerified, UserStatus userStatus, UserRole userRole) {
+        return Map.of(
+                USER_ID_CLAIM.getClaim(), userId,
+                EMAIL_VERIFIED_CLAIM.getClaim(), emailVerified,
+                STATUS_CLAIM.getClaim(), userStatus,
                 ROLES_CLAIM.getClaim(), List.of(userRole)
         );
+    }
+
+    public static Map<String, Object> buildClaimsWithRole(UserRole userRole) {
+        Map<String, Object> defaultClaimsCopy = new HashMap<>(Map.copyOf(DEFAULT_USER_CLAIMS));
+        defaultClaimsCopy.put(ROLES_CLAIM.getClaim(), List.of(userRole));
+        return defaultClaimsCopy;
+    }
+
+    public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload() {
         return JwtPayload.builder()
                 .subject(JWT_USER_SUBJECT)
-                .claims(claims)
+                .claims(DEFAULT_USER_CLAIMS)
                 .expiration(JWT_EXPIRATION_TIME)
                 .key(jwtService.getSecretKey());
     }

@@ -13,7 +13,7 @@ public class ProductResponse {
     private String description;
     private int quantity;
     private BigDecimal price;
-    private String sellerId;
+    private String ownerId;
     private String categoryId;
     private Map<String, Object> attributes;
     private boolean active;
