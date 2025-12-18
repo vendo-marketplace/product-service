@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.category.validation.strategy;
 
+import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.db.query.CategoryQueryService;
@@ -8,8 +9,6 @@ import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -32,7 +31,7 @@ public class SubCategoryValidationStrategy implements CategoryValidationStrategy
                 "Parent category not found."
         );
         if (parentRootCategory.getCategoryType() != CategoryType.ROOT) {
-            throw new CategoryValidationException("Sub category should have root category as parent.");
+            throw new CategoryTypeException("Sub category should have root category as parent.");
         }
     }
 

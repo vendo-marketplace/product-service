@@ -1,6 +1,7 @@
 package com.vendo.product_service.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.builder.CategoryDataBuilder;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.AfterTestClass;
@@ -29,11 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.vendo.product_service.common.builder.JwtPayloadDataBuilder.buildClaimsWithRole;
 import static com.vendo.security.common.constants.AuthConstants.AUTHORIZATION_HEADER;
 import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
-import static com.vendo.security.common.type.TokenClaim.*;
-import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -76,10 +75,10 @@ public class ProductControllerIntegrationTest {
 
         @Test
         void save_shouldSaveProduct() throws Exception {
-            Category category = CategoryDataBuilder.buildCategoryWithAllFields().categoryType(CategoryType.CHILD).build();
             String userId = String.valueOf(UUID.randomUUID());
-            Map<String, Object> claims = JwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            Category category = CategoryDataBuilder.buildCategoryWithAllFields().categoryType(CategoryType.CHILD).build();
             categoryRepository.save(category);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(category.getId())
@@ -110,13 +109,63 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenValidationFailed() {
+        void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
+            String userId = String.valueOf(UUID.randomUUID());
+            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                    .title(null)
+                    .description(null)
+                    .quantity(-1)
+                    .price(null)
+                    .categoryId(null)
+                    .attributes(null)
+                    .build();
 
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/products")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(createProductRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
+            assertThat(exceptionResponse.getErrors()).hasOnlyFields("title", "quantity", "price", "description", "attributes", "categoryId");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
         }
 
         @Test
-        void save_shouldReturnForbidden_userNotAuthorized() {
+        void save_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
+            String userId = String.valueOf(UUID.randomUUID());
+            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                    .categoryId(String.valueOf(UUID.randomUUID()))
+                    .build();
 
+            String accessToken = jwtService.generateAccessToken(jwtPayload);
+            String content = mockMvc.perform(post("/products")
+                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                            .content(objectMapper.writeValueAsString(createProductRequest))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Product category not found.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
         }
 
         @Test

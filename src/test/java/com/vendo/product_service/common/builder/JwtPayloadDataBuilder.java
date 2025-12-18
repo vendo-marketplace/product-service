@@ -22,18 +22,18 @@ public class JwtPayloadDataBuilder {
     @Value("${security.jwt.expiration-time}")
     private int JWT_EXPIRATION_TIME;
 
+    private final JwtService jwtService;
+
     private static final String JWT_USER_SUBJECT = "JWT_USER_SUBJECT";
 
-    public static final Map<String, Object> DEFAULT_USER_CLAIMS = buildUserClaims(
+    private final Map<String, Object> DEFAULT_USER_CLAIMS = buildUserClaims(
             String.valueOf(UUID.randomUUID()),
             true,
             UserStatus.ACTIVE,
             UserRole.USER
         );
 
-    private final JwtService jwtService;
-
-    public static Map<String, Object> buildUserClaims(String userId, boolean emailVerified, UserStatus userStatus, UserRole userRole) {
+    public Map<String, Object> buildUserClaims(String userId, boolean emailVerified, UserStatus userStatus, UserRole userRole) {
         return Map.of(
                 USER_ID_CLAIM.getClaim(), userId,
                 EMAIL_VERIFIED_CLAIM.getClaim(), emailVerified,
@@ -42,7 +42,7 @@ public class JwtPayloadDataBuilder {
         );
     }
 
-    public static Map<String, Object> buildClaimsWithRole(UserRole userRole) {
+    public Map<String, Object> buildClaimsWithRole(UserRole userRole) {
         Map<String, Object> defaultClaimsCopy = new HashMap<>(Map.copyOf(DEFAULT_USER_CLAIMS));
         defaultClaimsCopy.put(ROLES_CLAIM.getClaim(), List.of(userRole));
         return defaultClaimsCopy;

@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.category.validation.strategy;
 
+import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.db.query.CategoryQueryService;
@@ -27,7 +28,7 @@ public class ChildCategoryValidationStrategy implements CategoryValidationStrate
 
         Category parentRootCategory = categoryQueryService.findByIdOrThrow(createCategoryRequest.parentId(), "Parent category not found.");
         if (parentRootCategory.getCategoryType() != CategoryType.SUB) {
-            throw new CategoryValidationException("Child category should have sub category as parent.");
+            throw new CategoryTypeException("Child category should have sub category as parent.");
         }
     }
 
