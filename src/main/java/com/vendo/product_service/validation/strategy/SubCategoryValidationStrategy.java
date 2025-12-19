@@ -30,6 +30,7 @@ public class SubCategoryValidationStrategy implements CategoryValidationStrategy
                 createCategoryRequest.parentId(),
                 "Parent category not found."
         );
+
         if (parentRootCategory.getCategoryType() != CategoryType.ROOT) {
             throw new CategoryTypeException("Sub category should have root category as parent.");
         }

@@ -32,6 +32,7 @@ public class Product extends AuditingEntity {
 
     private String categoryId;
 
+    // TODO think about mapping
     private Map<String, Object> attributes;
 
     private boolean active;

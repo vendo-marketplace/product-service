@@ -7,7 +7,6 @@ import java.util.Map;
 
 @Data
 public class ProductResponse {
-
     private String id;
     private String title;
     private String description;
@@ -17,5 +16,4 @@ public class ProductResponse {
     private String categoryId;
     private Map<String, Object> attributes;
     private boolean active;
-
 }

@@ -1,5 +1,6 @@
 package com.vendo.product_service.db.query;
 
+import com.vendo.product_service.common.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.common.exception.CategoryNotFoundException;
 import com.vendo.product_service.db.model.Category;
 import com.vendo.product_service.db.repository.CategoryRepository;
@@ -23,12 +24,20 @@ public class CategoryQueryService {
                 .orElseThrow(() -> new CategoryNotFoundException(exceptionMessage));
     }
 
+    public boolean existsById(String categoryId) {
+        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
+        return optionalCategory.isPresent();
+    }
+
     public Optional<Category> findByTitle(String title) {
         return categoryRepository.findByTitleIgnoreCase(title);
     }
 
-    public boolean existsById(String categoryId) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
-        return optionalCategory.isPresent();
+    public void throwIfExistsByTitle(String title) {
+        Optional<Category> optionalCategory = findByTitle(title);
+
+        if (optionalCategory.isEmpty()) {
+            throw new CategoryAlreadyExistsException("Category already exists.");
+        }
     }
 }
