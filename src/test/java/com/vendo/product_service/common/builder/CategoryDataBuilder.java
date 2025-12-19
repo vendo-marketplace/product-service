@@ -1,8 +1,8 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeValue;
+import com.vendo.product_service.common.type.CategoryType;
+import com.vendo.product_service.db.model.Category;
+import com.vendo.product_service.db.model.embedded.AttributeValue;
 
 import java.util.List;
 import java.util.Map;

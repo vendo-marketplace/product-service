@@ -48,7 +48,7 @@ public class JwtPayloadDataBuilder {
         return defaultClaimsCopy;
     }
 
-    public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload() {
+    public JwtPayload.JwtPayloadBuilder buildValidJwtPayload() {
         return JwtPayload.builder()
                 .subject(JWT_USER_SUBJECT)
                 .claims(DEFAULT_USER_CLAIMS)

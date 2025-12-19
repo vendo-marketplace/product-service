@@ -7,12 +7,12 @@ import com.vendo.product_service.common.builder.CategoryDataBuilder;
 import com.vendo.product_service.common.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeValue;
-import com.vendo.product_service.domain.category.db.repository.CategoryRepository;
-import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
-import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
+import com.vendo.product_service.common.type.CategoryType;
+import com.vendo.product_service.db.model.Category;
+import com.vendo.product_service.db.model.embedded.AttributeValue;
+import com.vendo.product_service.db.repository.CategoryRepository;
+import com.vendo.product_service.web.dto.CategoryResponse;
+import com.vendo.product_service.web.dto.CreateCategoryRequest;
 import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -77,7 +77,7 @@ public class CategoryControllerIntegrationTest {
                     .title(null)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -107,7 +107,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(null)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -141,7 +141,7 @@ public class CategoryControllerIntegrationTest {
                     .build();
             categoryRepository.save(category);
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -167,7 +167,7 @@ public class CategoryControllerIntegrationTest {
                     .attributes(null)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.USER);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -200,7 +200,7 @@ public class CategoryControllerIntegrationTest {
                     .attributes(null)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             mockMvc.perform(post("/categories")
@@ -223,7 +223,7 @@ public class CategoryControllerIntegrationTest {
                     .attributes(null)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -249,7 +249,7 @@ public class CategoryControllerIntegrationTest {
                     .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -285,7 +285,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.SUB)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             mockMvc.perform(post("/categories")
@@ -313,8 +313,8 @@ public class CategoryControllerIntegrationTest {
                     .attributes(null)
                     .categoryType(CategoryType.SUB)
                     .build();
-            Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.USER);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -346,7 +346,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.SUB)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -378,7 +378,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.SUB)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -405,7 +405,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.SUB)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -441,7 +441,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             mockMvc.perform(post("/categories")
@@ -470,7 +470,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -502,7 +502,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -534,7 +534,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -561,7 +561,7 @@ public class CategoryControllerIntegrationTest {
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(post("/categories")
@@ -589,7 +589,7 @@ public class CategoryControllerIntegrationTest {
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);
             String content = mockMvc.perform(get("/categories/{id}", category.getId())
@@ -619,7 +619,7 @@ public class CategoryControllerIntegrationTest {
         @Test
         void findById_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
             String categoryId = String.valueOf(UUID.randomUUID());
 
             String accessToken = jwtService.generateAccessToken(jwtPayload);

@@ -96,7 +96,7 @@ public class JwtAuthFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenTokenWithoutBearerPrefix() throws Exception {
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().build();
         String token = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping")
@@ -122,7 +122,7 @@ public class JwtAuthFilterIntegrationTest {
                 STATUS_CLAIM.getClaim(), UserStatus.BLOCKED,
                 ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String token = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
@@ -141,7 +141,7 @@ public class JwtAuthFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenTokenExpired() throws Exception {
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().expiration(0).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().expiration(0).build();
         String expiredToken = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + expiredToken))
@@ -165,7 +165,7 @@ public class JwtAuthFilterIntegrationTest {
                 STATUS_CLAIM.getClaim(), UserStatus.INCOMPLETE,
                 ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String token = jwtService.generateAccessToken(jwtPayload);
 
 
@@ -190,7 +190,7 @@ public class JwtAuthFilterIntegrationTest {
                 EMAIL_VERIFIED_CLAIM.getClaim(), true,
                 STATUS_CLAIM.getClaim(), UserStatus.ACTIVE
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String tokenWithoutRoles = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + tokenWithoutRoles))
@@ -213,7 +213,7 @@ public class JwtAuthFilterIntegrationTest {
                 EMAIL_VERIFIED_CLAIM.getClaim(), true,
                 ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String tokenWithoutStatus = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + tokenWithoutStatus))
@@ -237,7 +237,7 @@ public class JwtAuthFilterIntegrationTest {
                 ROLES_CLAIM.getClaim(), List.of(UserRole.USER),
                 STATUS_CLAIM.getClaim(), INVALID_STATUS
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String tokenWithInvalidStatus = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + tokenWithInvalidStatus))
@@ -270,7 +270,7 @@ public class JwtAuthFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenTokenHasInvalidSignature() throws Exception {
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().key(jwtService.getBadSecretKey()).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().key(jwtService.getBadSecretKey()).build();
         String invalidSignedToken = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + invalidSignedToken))
@@ -293,7 +293,7 @@ public class JwtAuthFilterIntegrationTest {
                 ROLES_CLAIM.getClaim(), List.of(UserRole.USER),
                 STATUS_CLAIM.getClaim(), INVALID_STATUS
         );
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidUserJwtPayload().claims(claims).build();
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
         String tokenWithoutSubject = jwtService.generateAccessToken(jwtPayload);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + tokenWithoutSubject))

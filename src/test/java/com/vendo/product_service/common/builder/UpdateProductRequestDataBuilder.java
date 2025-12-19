@@ -1,17 +1,17 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.db.model.Product;
+import com.vendo.product_service.web.dto.UpdateProductRequest;
 
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
-public class ProductDataBuilder {
+public class UpdateProductRequestDataBuilder {
 
-    public static Product.ProductBuilder buildProductWithRequiredFields() {
-        return Product.builder()
-                .title("Product title")
-                .description("Product description")
+    public static UpdateProductRequest.UpdateProductRequestBuilder buildUpdateProductRequestWithAllFields() {
+        return UpdateProductRequest.builder()
+                .title("Title")
+                .description("Description")
                 .quantity(1)
                 .price(BigDecimal.ONE)
                 .categoryId(String.valueOf(UUID.randomUUID()))

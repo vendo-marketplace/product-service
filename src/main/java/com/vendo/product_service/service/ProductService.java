@@ -4,10 +4,10 @@ import com.vendo.product_service.common.mapper.ProductMapper;
 import com.vendo.product_service.db.command.ProductCommandService;
 import com.vendo.product_service.db.model.Product;
 import com.vendo.product_service.db.query.ProductQueryService;
-import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
-import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.db.query.CategoryQueryService;
+import com.vendo.product_service.common.exception.CategoryTypeException;
+import com.vendo.product_service.common.type.CategoryType;
+import com.vendo.product_service.db.model.Category;
+import com.vendo.product_service.db.query.CategoryQueryService;
 import com.vendo.product_service.web.dto.CreateProductRequest;
 import com.vendo.product_service.web.dto.ProductResponse;
 import com.vendo.product_service.web.dto.UpdateProductRequest;
@@ -51,7 +51,7 @@ public class ProductService {
     private void validateProductCategory(String categoryId) {
         Category category = categoryQueryService.findByIdOrThrow(categoryId, "Product category not found.");
         if (category.getCategoryType() != CategoryType.CHILD) {
-            throw new CategoryTypeException("Product should have only child categories.");
+            throw new CategoryTypeException("Product should have only child category.");
         }
     }
 }
