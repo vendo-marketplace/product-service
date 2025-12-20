@@ -3,11 +3,9 @@ package com.vendo.product_service.service;
 import com.vendo.product_service.common.mapper.ProductMapper;
 import com.vendo.product_service.db.command.ProductCommandService;
 import com.vendo.product_service.db.model.Product;
+import com.vendo.product_service.validation.CategoryTypeValidator;
 import com.vendo.product_service.db.query.ProductQueryService;
-import com.vendo.product_service.common.exception.CategoryTypeException;
 import com.vendo.product_service.common.type.CategoryType;
-import com.vendo.product_service.db.model.Category;
-import com.vendo.product_service.db.query.CategoryQueryService;
 import com.vendo.product_service.web.dto.CreateProductRequest;
 import com.vendo.product_service.web.dto.ProductResponse;
 import com.vendo.product_service.web.dto.UpdateProductRequest;
@@ -24,12 +22,12 @@ public class ProductService {
 
     private final ProductQueryService productQueryService;
 
-    private final CategoryQueryService categoryQueryService;
-
     private final ProductCommandService productCommandService;
 
+    private final CategoryTypeValidator categoryTypeValidator;
+
     public void save(CreateProductRequest createProductRequest) {
-        validateProductCategory(createProductRequest.categoryId());
+        categoryTypeValidator.validateCategoryType(createProductRequest.categoryId(), CategoryType.CHILD);
         Product product = productMapper.toProductFromCreateProductRequest(createProductRequest);
 
         product.setActive(true);
@@ -46,12 +44,5 @@ public class ProductService {
     public ProductResponse findById(String id) {
         Product product = productQueryService.findById(id);
         return productMapper.toProductResponse(product);
-    }
-
-    private void validateProductCategory(String categoryId) {
-        Category category = categoryQueryService.findByIdOrThrow(categoryId, "Product category not found.");
-        if (category.getCategoryType() != CategoryType.CHILD) {
-            throw new CategoryTypeException("Product should have only child category.");
-        }
     }
 }

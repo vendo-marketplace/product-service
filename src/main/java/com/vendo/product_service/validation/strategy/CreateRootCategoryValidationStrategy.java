@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RootCategoryValidationStrategy implements CategoryValidationStrategy {
+public class CreateRootCategoryValidationStrategy implements CreateCategoryValidationStrategy {
 
     @Override
     public void validate(CreateCategoryRequest createCategoryRequest) {

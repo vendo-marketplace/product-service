@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Builder
@@ -28,5 +29,5 @@ public record CreateProductRequest(
         String categoryId,
 
         @NotEmpty(message = "Minimum 1 attribute is required.")
-        Map<String, Object> attributes) {
+        Map<String, List<String>> attributes) {
 }

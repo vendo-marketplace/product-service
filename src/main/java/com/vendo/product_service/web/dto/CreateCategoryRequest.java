@@ -1,7 +1,7 @@
 package com.vendo.product_service.web.dto;
 
 import com.vendo.product_service.common.type.CategoryType;
-import com.vendo.product_service.db.model.embedded.AttributeValue;
+import com.vendo.product_service.db.model.embedded.AttributeDefinition;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
@@ -17,5 +17,5 @@ public record CreateCategoryRequest(
         @NotNull(message = "Category type is required.")
         CategoryType categoryType,
 
-        Map<String, AttributeValue> attributes) {
+        Map<String, AttributeDefinition> attributes) {
 }

@@ -2,8 +2,11 @@ package com.vendo.product_service.db.query;
 
 import com.vendo.product_service.common.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.common.exception.CategoryNotFoundException;
+import com.vendo.product_service.common.exception.CategoryTypeException;
+import com.vendo.product_service.common.type.CategoryType;
 import com.vendo.product_service.db.model.Category;
 import com.vendo.product_service.db.repository.CategoryRepository;
+import com.vendo.product_service.validation.CategoryTypeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +14,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class CategoryQueryService {
+public class CategoryQueryService implements CategoryTypeValidator {
 
     private final CategoryRepository categoryRepository;
 
@@ -36,8 +39,16 @@ public class CategoryQueryService {
     public void throwIfExistsByTitle(String title) {
         Optional<Category> optionalCategory = findByTitle(title);
 
-        if (optionalCategory.isEmpty()) {
+        if (optionalCategory.isPresent()) {
             throw new CategoryAlreadyExistsException("Category already exists.");
+        }
+    }
+
+    @Override
+    public void validateCategoryType(String categoryId, CategoryType expectedType) throws CategoryTypeException {
+        Category category = findByIdOrThrow(categoryId);
+        if (category.getCategoryType() != expectedType) {
+            throw new CategoryTypeException("Incorrect category type. Expected %s but was %s.".formatted(expectedType, category.getCategoryType()));
         }
     }
 }

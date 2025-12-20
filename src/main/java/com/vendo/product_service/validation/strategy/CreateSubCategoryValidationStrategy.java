@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SubCategoryValidationStrategy implements CategoryValidationStrategy {
+public class CreateSubCategoryValidationStrategy implements CreateCategoryValidationStrategy {
 
     private final CategoryQueryService categoryQueryService;
 

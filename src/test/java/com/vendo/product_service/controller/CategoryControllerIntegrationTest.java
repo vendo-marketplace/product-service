@@ -9,7 +9,8 @@ import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.common.type.CategoryType;
 import com.vendo.product_service.db.model.Category;
-import com.vendo.product_service.db.model.embedded.AttributeValue;
+import com.vendo.product_service.db.model.embedded.AttributeDefinition;
+import com.vendo.product_service.db.model.embedded.AttributeType;
 import com.vendo.product_service.db.repository.CategoryRepository;
 import com.vendo.product_service.web.dto.CategoryResponse;
 import com.vendo.product_service.web.dto.CreateCategoryRequest;
@@ -246,7 +247,7 @@ public class CategoryControllerIntegrationTest {
         void save_shouldReturnBadRequest_whenRootCategoryHasAttributes() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(null)
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
@@ -342,7 +343,7 @@ public class CategoryControllerIntegrationTest {
             categoryRepository.save(category);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(category.getId())
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .categoryType(CategoryType.SUB)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
@@ -437,7 +438,7 @@ public class CategoryControllerIntegrationTest {
             categoryRepository.save(subCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(subCategory.getId())
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
@@ -466,7 +467,7 @@ public class CategoryControllerIntegrationTest {
             categoryRepository.save(subCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(null)
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
@@ -530,7 +531,7 @@ public class CategoryControllerIntegrationTest {
             categoryRepository.save(subCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(subCategory.getId())
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
@@ -557,7 +558,7 @@ public class CategoryControllerIntegrationTest {
         void save_shouldReturnNotFound_whenParentCategoryNotFoundInChildCategory() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(String.valueOf(UUID.randomUUID()))
-                    .attributes(Map.of("attribute_name", AttributeValue.builder().type("string").build()))
+                    .attributes(Map.of("attribute_name", AttributeDefinition.builder().type(AttributeType.STRING).build()))
                     .categoryType(CategoryType.CHILD)
                     .build();
             Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
@@ -608,8 +609,8 @@ public class CategoryControllerIntegrationTest {
             assertThat(categoryResponse.attributes().size()).isEqualTo(category.getAttributes().size());
             assertThat(categoryResponse.attributes().get("attribute_name")).isNotNull();
 
-            AttributeValue responseAttributeName = categoryResponse.attributes().get("attribute_name");
-            AttributeValue categoryAttributeName = category.getAttributes().get("attribute_name");
+            AttributeDefinition responseAttributeName = categoryResponse.attributes().get("attribute_name");
+            AttributeDefinition categoryAttributeName = category.getAttributes().get("attribute_name");
             assertThat(responseAttributeName.type()).isEqualTo(categoryAttributeName.type());
             assertThat(responseAttributeName.required()).isEqualTo(categoryAttributeName.required());
             assertThat(responseAttributeName.allowedValues()).isNotNull();

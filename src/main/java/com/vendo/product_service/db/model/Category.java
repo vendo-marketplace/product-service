@@ -1,7 +1,7 @@
 package com.vendo.product_service.db.model;
 
 import com.vendo.product_service.common.type.CategoryType;
-import com.vendo.product_service.db.model.embedded.AttributeValue;
+import com.vendo.product_service.db.model.embedded.AttributeDefinition;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -25,6 +25,6 @@ public class Category {
 
     private CategoryType categoryType;
 
-    private Map<String, AttributeValue> attributes;
+    private Map<String, AttributeDefinition> attributes;
 
 }

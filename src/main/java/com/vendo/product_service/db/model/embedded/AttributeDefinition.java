@@ -5,8 +5,8 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record AttributeValue(
-     String type,
+public record AttributeDefinition(
+     AttributeType type,
      boolean required,
      List<String> allowedValues) {
 }
