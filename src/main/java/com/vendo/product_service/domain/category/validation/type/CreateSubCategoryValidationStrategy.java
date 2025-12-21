@@ -16,6 +16,7 @@ public class CreateSubCategoryValidationStrategy implements CreateCategoryValida
 
     private final CategoryQueryService categoryQueryService;
 
+    // TODO there can be at least 1 sub category
     @Override
     public void validate(CreateCategoryRequest createCategoryRequest) {
         if (StringUtils.isEmpty(createCategoryRequest.parentId())) {

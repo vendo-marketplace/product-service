@@ -30,6 +30,7 @@ public class CreateChildCategoryValidationStrategy implements CreateCategoryVali
         if (parentRootCategory.getCategoryType() != CategoryType.SUB) {
             throw new CategoryTypeException("Child category should have sub category as parent.");
         }
+
     }
 
     @Override

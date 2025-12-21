@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.product.cqrs.query;
+package com.vendo.product_service.domain.product.db.cqrs.query;
 
 import com.vendo.product_service.domain.product.common.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.db.model.Product;
