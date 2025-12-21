@@ -1,6 +1,6 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.db.model.Product;
+import com.vendo.product_service.domain.product.db.model.Product;
 
 import java.math.BigDecimal;
 import java.util.List;
