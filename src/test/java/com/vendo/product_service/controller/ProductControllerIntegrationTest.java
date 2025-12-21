@@ -105,7 +105,8 @@ public class ProductControllerIntegrationTest {
             assertThat(product.getOwnerId()).isEqualTo(userId);
             assertThat(product.getCategoryId()).isEqualTo(category.getId());
             assertThat(product.getAttributes()).isNotNull();
-            assertThat(product.getAttributes().size()).isEqualTo(category.getAttributes().size());
+            assertThat(product.getAttributes().size()).isEqualTo(createProductRequest.attributes().size());
+            assertThat(product.getAttributes()).isEqualTo(createProductRequest.attributes());
             assertThat(product.isActive()).isTrue();
             assertThat(product.getVersion()).isNotNull();
         }
@@ -215,7 +216,7 @@ public class ProductControllerIntegrationTest {
                     .quantity(0)
                     .price(BigDecimal.ZERO)
                     .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", "new_attribute_value"))
+                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
                     .active(false)
                     .build();
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
@@ -238,7 +239,7 @@ public class ProductControllerIntegrationTest {
             assertThat(responseProduct.getCategoryId()).isEqualTo(updateProductRequest.categoryId());
             assertThat(responseProduct.getAttributes()).isNotNull();
             assertThat(responseProduct.getAttributes().size()).isEqualTo(1);
-            assertThat(responseProduct.getAttributes().get("new_attribute_name")).isEqualTo("new_attribute_value");
+            assertThat(responseProduct.getAttributes()).isEqualTo(updateProductRequest.attributes());
             assertThat(optionalProduct.get().isActive()).isEqualTo(updateProductRequest.active());
         }
 
@@ -256,7 +257,7 @@ public class ProductControllerIntegrationTest {
                     .quantity(0)
                     .price(BigDecimal.ZERO)
                     .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", "new_attribute_value"))
+                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
                     .active(false)
                     .build();
 
@@ -290,7 +291,7 @@ public class ProductControllerIntegrationTest {
                     .quantity(0)
                     .price(BigDecimal.ZERO)
                     .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", "new_attribute_value"))
+                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
                     .active(false)
                     .build();
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();

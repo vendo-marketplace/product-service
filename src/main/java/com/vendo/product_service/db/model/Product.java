@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -32,8 +33,7 @@ public class Product extends AuditingEntity {
 
     private String categoryId;
 
-    // TODO think about mapping
-    private Map<String, Object> attributes;
+    private Map<String, List<String>> attributes;
 
     private boolean active;
 

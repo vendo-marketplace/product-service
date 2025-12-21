@@ -1,7 +1,6 @@
 package com.vendo.product_service.validation;
 
 import com.vendo.product_service.common.exception.CategoryValidationException;
-import com.vendo.product_service.db.model.Category;
 import com.vendo.product_service.db.model.embedded.AttributeDefinition;
 import com.vendo.product_service.db.query.CategoryQueryService;
 import com.vendo.product_service.validation.factory.CategoryAttributeValidationFactory;
@@ -22,16 +21,19 @@ public class CategoryValidator {
     private final CategoryAttributeValidationFactory categoryAttributeValidationFactory;
 
     public void validateCategoryAttributes(String categoryId, Map<String, List<String>> requestAttributes) {
-        Category category = categoryQueryService.findByIdOrThrow(categoryId);
-        Map<String, AttributeDefinition> attributes = category.getAttributes();
+        Map<String, AttributeDefinition> attributes = categoryQueryService.findByIdOrThrow(categoryId).getAttributes();
+        validateRequestedAttributesBySample(attributes, requestAttributes);
+    }
+
+    private void validateRequestedAttributesBySample(Map<String, AttributeDefinition> attributes, Map<String, List<String>> requestAttributes) {
         List<String> validationFailedAttributes = new ArrayList<>();
 
         for (Map.Entry<String, AttributeDefinition> attribute : attributes.entrySet()) {
             String attributeDefinitionKey = attribute.getKey();
+            AttributeDefinition attributeDefinition = attribute.getValue();
 
             if (requestAttributes.containsKey(attributeDefinitionKey)) {
                 List<String> requestAttributesValue = requestAttributes.get(attributeDefinitionKey);
-                AttributeDefinition attributeDefinition = attributes.get(attributeDefinitionKey);
 
                 CategoryAttributeValidationStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
                 boolean isValidAttributeValue = categoryAttributeValidationFactoryValidator.validate(requestAttributesValue);
