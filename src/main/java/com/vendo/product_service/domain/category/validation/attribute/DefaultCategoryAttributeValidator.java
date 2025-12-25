@@ -25,6 +25,10 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
     }
 
     private void validateAttributes(Map<String, AttributeDefinition> attributes, Map<String, List<String>> requestAttributes) {
+        if (attributes == null) {
+            throw new CategoryValidationException("Child category required.");
+        }
+
         List<String> invalidAttributes = new ArrayList<>();
 
         for (Map.Entry<String, AttributeDefinition> attribute : attributes.entrySet()) {
@@ -48,6 +52,6 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         }
 
         CategoryAttributeValidationStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
-        return categoryAttributeValidationFactoryValidator.validate(requestAttributesValue);
+        return categoryAttributeValidationFactoryValidator.validate(requestAttributesValue, attributeDefinition);
     }
 }

@@ -6,7 +6,6 @@ public enum AttributeType {
     NUMBER,
     BOOLEAN,
     ENUM,
-    MULTI_ENUM,
     RANGE
 
 }

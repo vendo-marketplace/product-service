@@ -109,6 +109,8 @@ public class ProductControllerIntegrationTest {
             assertThat(product.getAttributes()).isEqualTo(createProductRequest.attributes());
             assertThat(product.isActive()).isTrue();
             assertThat(product.getVersion()).isNotNull();
+            assertThat(product.getCreatedAt()).isNotNull();
+            assertThat(product.getUpdatedAt()).isNotNull();
         }
 
         @Test

@@ -1,6 +1,6 @@
 package com.vendo.product_service.domain.product.service;
 
-import com.vendo.product_service.domain.category.validation.CategoryValidationFacade;
+import com.vendo.product_service.domain.category.validation.attribute.CategoryAttributeValidator;
 import com.vendo.product_service.domain.product.common.mapper.ProductMapper;
 import com.vendo.product_service.domain.product.db.cqrs.command.ProductCommandService;
 import com.vendo.product_service.domain.product.db.model.Product;
@@ -23,10 +23,10 @@ public class ProductService {
 
     private final ProductCommandService productCommandService;
 
-    private final CategoryValidationFacade categoryValidationFacade;
+    private final CategoryAttributeValidator categoryAttributeValidator;
 
     public void save(CreateProductRequest createProductRequest) {
-        categoryValidationFacade.validateCategoryOnSave(createProductRequest.categoryId(), createProductRequest.attributes());
+        categoryAttributeValidator.validateCategoryAttributes(createProductRequest.categoryId(), createProductRequest.attributes());
 
         Product product = productMapper.toProductFromCreateProductRequest(createProductRequest);
         product.setActive(true);

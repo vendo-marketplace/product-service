@@ -7,24 +7,33 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CategoryNumberAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
+public class CategoryRangeAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
     public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        if (attributesValue == null || attributesValue.size() != 1) {
+        if (attributesValue == null || attributesValue.size() != 2) {
             return false;
         }
 
         try {
-            Integer.valueOf(attributesValue.get(0));
-            return true;
+            int from = Integer.parseInt(attributesValue.get(0));
+            if (from < 0) {
+                return false;
+            }
+
+            int to = Integer.parseInt(attributesValue.get(1));
+            if (from >= to) {
+                return false;
+            }
         } catch (NumberFormatException e) {
             return false;
         }
+
+        return true;
     }
 
     @Override
     public AttributeType getType() {
-        return AttributeType.NUMBER;
+        return AttributeType.RANGE;
     }
 }

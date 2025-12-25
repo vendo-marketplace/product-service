@@ -4,8 +4,7 @@ import com.vendo.product_service.domain.category.common.mapper.CategoryMapper;
 import com.vendo.product_service.domain.category.db.cqrs.command.CategoryCommandService;
 import com.vendo.product_service.domain.category.db.cqrs.query.CategoryQueryService;
 import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.validation.type.CreateCategoryValidationFactory;
-import com.vendo.product_service.domain.category.validation.type.CreateCategoryValidationStrategy;
+import com.vendo.product_service.domain.category.validation.CreateCategoryValidationService;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
@@ -21,14 +20,11 @@ public class CategoryService {
 
     private final CategoryCommandService categoryCommandService;
 
-    private final CreateCategoryValidationFactory createCategoryValidationFactory;
+    private final CreateCategoryValidationService createCategoryValidationService;
 
     public void save(CreateCategoryRequest createCategoryRequest) {
+        createCategoryValidationService.validateCategoryOnSave(createCategoryRequest);
         categoryQueryService.throwIfExistsByTitle(createCategoryRequest.title());
-
-        CreateCategoryValidationStrategy createCategoryValidationStrategy = createCategoryValidationFactory.getValidator(createCategoryRequest.categoryType());
-        createCategoryValidationStrategy.validate(createCategoryRequest);
-
         categoryCommandService.save(categoryMapper.toCategoryFromCategoryRequest(createCategoryRequest));
     }
 

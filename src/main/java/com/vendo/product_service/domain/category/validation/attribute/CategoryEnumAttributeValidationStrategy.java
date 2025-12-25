@@ -5,15 +5,9 @@ import com.vendo.product_service.domain.category.db.model.embedded.AttributeType
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
-public class CategoryBooleanAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
-
-    private final Set<String> BOOLEAN_VALUES = Set.of(
-            Boolean.FALSE.toString(),
-            Boolean.TRUE.toString()
-    );
+public class CategoryEnumAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
     public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
@@ -21,11 +15,16 @@ public class CategoryBooleanAttributeValidationStrategy implements CategoryAttri
             return false;
         }
 
-        return BOOLEAN_VALUES.contains(attributesValue.get(0));
+        List<String> allowedValues = attributeDefinition.allowedValues();
+        if (allowedValues == null || allowedValues.isEmpty()) {
+            return false;
+        }
+
+        return allowedValues.contains(attributesValue.get(0));
     }
 
     @Override
     public AttributeType getType() {
-        return AttributeType.BOOLEAN;
+        return AttributeType.ENUM;
     }
 }
