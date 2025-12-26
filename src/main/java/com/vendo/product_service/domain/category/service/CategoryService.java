@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.category.common.mapper.CategoryMapper;
 import com.vendo.product_service.domain.category.db.cqrs.command.CategoryCommandService;
 import com.vendo.product_service.domain.category.db.cqrs.query.CategoryQueryService;
 import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.validation.CreateCategoryValidationService;
+import com.vendo.product_service.domain.category.validation.creation.CreateCategoryValidationService;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,13 +23,13 @@ public class CategoryService {
     private final CreateCategoryValidationService createCategoryValidationService;
 
     public void save(CreateCategoryRequest createCategoryRequest) {
-        createCategoryValidationService.validateCategoryOnSave(createCategoryRequest);
+        createCategoryValidationService.validateCreation(createCategoryRequest);
         categoryQueryService.throwIfExistsByTitle(createCategoryRequest.title());
         categoryCommandService.save(categoryMapper.toCategoryFromCategoryRequest(createCategoryRequest));
     }
 
     public CategoryResponse findById(String id) {
-        Category category = categoryQueryService.findByIdOrThrow(id);
+        Category category = categoryQueryService.findById(id);
         return categoryMapper.toCategoryResponseFromCategory(category);
     }
 }

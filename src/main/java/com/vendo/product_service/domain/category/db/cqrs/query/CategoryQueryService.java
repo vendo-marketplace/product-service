@@ -7,37 +7,39 @@ import com.vendo.product_service.domain.category.db.repository.CategoryRepositor
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class CategoryQueryService {
 
     private final CategoryRepository categoryRepository;
 
-    public Category findByIdOrThrow(String id) {
-        return findByIdOrThrow(id, "Category not found.");
+    public Category findById(String id) {
+        return findById(id, "Category not found.");
     }
 
-    public Category findByIdOrThrow(String id, String exceptionMessage) {
+    public Category findById(String id, String exceptionMessage) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new CategoryNotFoundException(exceptionMessage));
     }
 
-    public boolean existsById(String categoryId) {
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
-        return optionalCategory.isPresent();
+    public Category findByParentId(String parentId) {
+         return categoryRepository.findByParentId((parentId))
+                 .orElseThrow(() -> new CategoryNotFoundException("Category not found by parent."));
     }
 
-    public Optional<Category> findByTitle(String title) {
-        return categoryRepository.findByTitleIgnoreCase(title);
+    public boolean existsById(String categoryId) {
+        return categoryRepository.existsById(categoryId);
+    }
+
+    public void throwExistsByCode(String code) {
+        if (categoryRepository.existsByCode(code)) {
+            throw new CategoryAlreadyExistsException("Category already exists by code.");
+        }
     }
 
     public void throwIfExistsByTitle(String title) {
-        Optional<Category> optionalCategory = findByTitle(title);
-
-        if (optionalCategory.isPresent()) {
-            throw new CategoryAlreadyExistsException("Category already exists.");
+        if (categoryRepository.existsByTitle(title)) {
+            throw new CategoryAlreadyExistsException("Category already exists by title.");
         }
     }
 }

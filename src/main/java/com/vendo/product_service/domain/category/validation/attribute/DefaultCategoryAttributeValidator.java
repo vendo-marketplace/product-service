@@ -20,7 +20,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
 
     @Override
     public void validateCategoryAttributes(String categoryId, Map<String, List<String>> requestAttributes) {
-        Map<String, AttributeDefinition> attributes = categoryQueryService.findByIdOrThrow(categoryId).getAttributes();
+        Map<String, AttributeDefinition> attributes = categoryQueryService.findById(categoryId).getAttributes();
         validateAttributes(attributes, requestAttributes);
     }
 
