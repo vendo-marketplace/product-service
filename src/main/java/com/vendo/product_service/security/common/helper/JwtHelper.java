@@ -3,6 +3,7 @@ package com.vendo.product_service.security.common.helper;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.security.common.config.JwtProperties;
 import com.vendo.security.common.exception.InvalidTokenException;
+import com.vendo.security.common.type.TokenClaim;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
@@ -19,8 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.List;
 
-import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
-import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
+import static com.vendo.security.common.type.TokenClaim.*;
 
 @Slf4j
 @Component
@@ -35,6 +35,27 @@ public class JwtHelper {
 
     public Key getSignInKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private Jws<Claims> parseSignedClaims(String token) throws JwtException {
+        return Jwts.parser()
+                .verifyWith((SecretKey) getSignInKey())
+                .build()
+                .parseSignedClaims(token);
+    }
+
+    public <T> T extractTokenClaim(TokenClaim tokenClaim, Claims claims, Class<T> claimType) {
+        try {
+            Object claim = claims.get(tokenClaim.getClaim());
+            if (!claimType.isInstance(claim)) {
+                throw new IllegalArgumentException("Claim type is not instance of %s.".formatted(tokenClaim));
+            }
+
+            return claimType.cast(claim);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid token claim type: ", e);
+            throw new InvalidTokenException("Invalid token.");
+        }
     }
 
     public String extractSubject(Claims claims) {
@@ -58,7 +79,7 @@ public class JwtHelper {
         }
     }
 
-    public  List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
+    public List<SimpleGrantedAuthority> extractAuthorities(Claims claims) {
         Object rolesClaim = claims.get(ROLES_CLAIM.getClaim());
 
         if (rolesClaim instanceof List<?> roles) {
@@ -75,12 +96,5 @@ public class JwtHelper {
 
         log.error("Invalid roles type.");
         throw new InvalidTokenException("Invalid token.");
-    }
-
-    private Jws<Claims> parseSignedClaims(String token) throws JwtException {
-        return Jwts.parser()
-                .verifyWith((SecretKey) getSignInKey())
-                .build()
-                .parseSignedClaims(token);
     }
 }

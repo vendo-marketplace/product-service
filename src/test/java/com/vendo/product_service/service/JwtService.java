@@ -2,6 +2,7 @@ package com.vendo.product_service.service;
 
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.security.common.config.JwtProperties;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -21,8 +22,6 @@ public class JwtService {
     private String BAD_SECRET_KEY;
 
     private final JwtProperties jwtProperties;
-
-    public static final String ROLE_USER = "ROLE_USER";
 
     public static final String INVALID_STATUS = "INVALID_STATUS";
 

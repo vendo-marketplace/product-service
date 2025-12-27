@@ -1,5 +1,6 @@
 package com.vendo.product_service.security.common;
 
+import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.builder.JwtPayloadBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
@@ -22,7 +23,6 @@ import java.util.Map;
 import static com.vendo.product_service.common.builder.JwtPayloadBuilder.JWT_USER_SUBJECT;
 import static com.vendo.product_service.service.JwtService.INVALID_STATUS;
 import static com.vendo.product_service.service.JwtService.INVALID_TOKEN_FORMAT;
-import static com.vendo.product_service.service.JwtService.ROLE_USER;
 import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
 import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -149,7 +149,7 @@ class JwtHelperTest {
             assertThat(authorities)
                     .hasSize(1)
                     .extracting(SimpleGrantedAuthority::getAuthority)
-                    .containsExactly(ROLE_USER);
+                    .containsExactly(UserRole.USER.name());
         }
 
         @Test

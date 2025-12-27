@@ -1,6 +1,12 @@
 server:
   url: server_test_url
 
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:secret@localhost:27017/mydatabase?authSource=admin&authMechanism=SCRAM-SHA-256
+      authentication-database: admin
+
 security:
   jwt:
     secret-key: secretKeysecretKeysecretKeysecretKeysecretKey
