@@ -11,6 +11,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -57,6 +58,17 @@ public class JwtHelper {
         }
     }
 
+    public String extractSubject(Claims claims) {
+        String subject = claims.getSubject();
+
+        if (StringUtils.isEmpty(subject)) {
+            log.error("Subject is not present.");
+            throw new InvalidTokenException("Invalid token.");
+        }
+
+        return subject;
+    }
+
     public UserStatus extractUserStatus(Claims claims) {
         try {
             Object status = claims.get(STATUS_CLAIM.getClaim());
@@ -71,6 +83,11 @@ public class JwtHelper {
         Object rolesClaim = claims.get(ROLES_CLAIM.getClaim());
 
         if (rolesClaim instanceof List<?> roles) {
+            if (roles.isEmpty()) {
+                log.error("Roles list is empty.");
+                throw new InvalidTokenException("Invalid token.");
+            }
+
             return roles.stream()
                     .map(Object::toString)
                     .map(SimpleGrantedAuthority::new)
