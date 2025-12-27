@@ -1,6 +1,6 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
-import com.vendo.product_service.domain.category.common.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.db.cqrs.query.CategoryQueryService;
 import com.vendo.product_service.domain.category.db.model.Category;
@@ -19,13 +19,11 @@ public class SubCategoryCreationHandler implements CategoryCreationHandler {
 
     @Override
     public void handle(CreateCategoryRequest createCategoryRequest) {
-        categoryQueryService.throwExistsByCode(createCategoryRequest.code());
-
-        Category parentCategory = categoryQueryService.findByParentId(createCategoryRequest.parentId());
+        Category parentCategory = categoryQueryService.findById(createCategoryRequest.parentId(), "Parent category not found by parent.");
         CategoryType parentCategoryType = categoryTypeResolver.resolve(parentCategory.getParentId(), parentCategory.getAttributes());
 
         if (parentCategoryType == CategoryType.CHILD) {
-            throw new CategoryNotFoundException("Sub category shouldn't have child category as parent.");
+            throw new CategoryTypeException("Sub category shouldn't have child category as parent.");
         }
     }
 

@@ -22,11 +22,6 @@ public class CategoryQueryService {
                 .orElseThrow(() -> new CategoryNotFoundException(exceptionMessage));
     }
 
-    public Category findByParentId(String parentId) {
-         return categoryRepository.findByParentId((parentId))
-                 .orElseThrow(() -> new CategoryNotFoundException("Category not found by parent."));
-    }
-
     public boolean existsById(String categoryId) {
         return categoryRepository.existsById(categoryId);
     }
@@ -34,12 +29,6 @@ public class CategoryQueryService {
     public void throwExistsByCode(String code) {
         if (categoryRepository.existsByCode(code)) {
             throw new CategoryAlreadyExistsException("Category already exists by code.");
-        }
-    }
-
-    public void throwIfExistsByTitle(String title) {
-        if (categoryRepository.existsByTitle(title)) {
-            throw new CategoryAlreadyExistsException("Category already exists by title.");
         }
     }
 }

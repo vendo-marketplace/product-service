@@ -24,7 +24,7 @@ public class CategoryService {
 
     public void save(CreateCategoryRequest createCategoryRequest) {
         createCategoryValidationService.validateCreation(createCategoryRequest);
-        categoryQueryService.throwIfExistsByTitle(createCategoryRequest.title());
+        categoryQueryService.throwExistsByCode(createCategoryRequest.code());
         categoryCommandService.save(categoryMapper.toCategoryFromCategoryRequest(createCategoryRequest));
     }
 

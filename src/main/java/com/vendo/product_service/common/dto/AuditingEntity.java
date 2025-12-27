@@ -9,8 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.Instant;
 
 @Data
+@SuperBuilder
 @NoArgsConstructor
-@SuperBuilder(toBuilder = true)
 public abstract class AuditingEntity {
 
     @CreatedDate

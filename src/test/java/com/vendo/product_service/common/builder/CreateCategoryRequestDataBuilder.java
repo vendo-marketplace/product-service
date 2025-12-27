@@ -1,12 +1,12 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
 import com.vendo.product_service.domain.category.db.model.embedded.AttributeType;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class CreateCategoryRequestDataBuilder {
 
@@ -20,7 +20,7 @@ public class CreateCategoryRequestDataBuilder {
         return CreateCategoryRequest.builder()
                 .title("Category title")
                 .parentId("parent_id")
-                .categoryType(CategoryType.ROOT)
+                .code(String.valueOf(UUID.randomUUID()))
                 .attributes(Map.of("attribute_name", attributeDefinition));
     }
 

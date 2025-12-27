@@ -8,7 +8,6 @@ import com.vendo.product_service.common.builder.*;
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.domain.product.db.model.Product;
 import com.vendo.product_service.domain.product.db.repository.ProductRepository;
-import com.vendo.product_service.domain.category.common.type.CategoryType;
 import com.vendo.product_service.domain.category.db.model.Category;
 import com.vendo.product_service.domain.category.db.repository.CategoryRepository;
 import com.vendo.product_service.service.JwtService;
@@ -80,7 +79,7 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-            Category category = CategoryDataBuilder.buildCategoryWithAllFields().categoryType(CategoryType.CHILD).build();
+            Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(category.getId())
@@ -173,11 +172,11 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenCategoryTypeIsNotChild() throws Exception {
+        void save_shouldReturnBadRequest_whenCategoryIsNotChild() throws Exception {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-            Category category = CategoryDataBuilder.buildCategoryWithAllFields().categoryType(CategoryType.SUB).build();
+            Category category = CategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(category);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(category.getId())
@@ -193,7 +192,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Incorrect category type. Expected CHILD but was SUB.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Child category required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             List<Product> products = productRepository.findAll();

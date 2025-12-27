@@ -7,9 +7,7 @@ import java.util.Optional;
 
 public interface CategoryRepository extends MongoRepository<Category, String> {
 
-    boolean existsByTitle(String title);
-
     boolean existsByCode(String code);
 
-    Optional<Category> findByParentId(String parentId);
+    Optional<Category> findByCodeIgnoreCase(String code);
 }

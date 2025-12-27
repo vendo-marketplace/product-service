@@ -8,6 +8,7 @@ import java.util.Map;
 
 @Builder
 public record CreateCategoryRequest(
+
         @NotBlank(message = "Title is required.")
         String title,
 
