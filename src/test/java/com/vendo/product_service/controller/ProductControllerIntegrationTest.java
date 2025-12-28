@@ -199,12 +199,12 @@ public class ProductControllerIntegrationTest {
                 JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
                 Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Price", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                        .attributes(Map.of("Name", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                         .build();
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("price", List.of("1")))
+                        .attributes(Map.of("name", List.of("1")))
                         .build();
 
                 String content = performProductPersist(createProductRequest, jwtPayload)
@@ -230,12 +230,12 @@ public class ProductControllerIntegrationTest {
                 JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
                 Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Price", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                        .attributes(Map.of("Number", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                         .build();
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("Price", List.of("1")))
+                        .attributes(Map.of("Number", List.of("1")))
                         .build();
 
                 performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
@@ -249,12 +249,12 @@ public class ProductControllerIntegrationTest {
                 JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
                 Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Available", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
+                        .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
                         .build();
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("Available", List.of("true")))
+                        .attributes(Map.of("Boolean", List.of("true")))
                         .build();
 
                 performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
@@ -265,9 +265,9 @@ public class ProductControllerIntegrationTest {
                 assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
                 assertThat(products.get(0).getAttributes()).isNotNull();
                 assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Available")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("Available").size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Available").get(0)).isEqualTo("true");
+                assertThat(products.get(0).getAttributes().get("Boolean")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("Boolean").size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Boolean").get(0)).isEqualTo("true");
             }
 
             @Test
@@ -280,12 +280,12 @@ public class ProductControllerIntegrationTest {
                 JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
                 Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Type", AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
+                        .attributes(Map.of("Enum", AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
                         .build();
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("Type", List.of("TYPE1")))
+                        .attributes(Map.of("Enum", List.of("TYPE1")))
                         .build();
 
                 performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
@@ -296,9 +296,68 @@ public class ProductControllerIntegrationTest {
                 assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
                 assertThat(products.get(0).getAttributes()).isNotNull();
                 assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Type")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("Type").size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Type").get(0)).isEqualTo("TYPE1");
+                assertThat(products.get(0).getAttributes().get("Enum")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("Enum").size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Enum").get(0)).isEqualTo("TYPE1");
+            }
+
+            @Test
+            void save_shouldSaveProductWithRangeAttribute() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Range", AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("Range", List.of("0", "100")))
+                        .build();
+
+                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                List<Product> products = productRepository.findAll();
+                assertThat(products).isNotNull();
+                assertThat(products.size()).isEqualTo(1);
+                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                assertThat(products.get(0).getAttributes()).isNotNull();
+                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Range")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("Range").size()).isEqualTo(2);
+                assertThat(products.get(0).getAttributes().get("Range").get(0)).isEqualTo("0");
+                assertThat(products.get(0).getAttributes().get("Range").get(1)).isEqualTo("100");
+            }
+
+            @Test
+            void save_shouldSaveProductWithStringAttribute() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("String", AttributeDefinition.builder().type(AttributeType.STRING).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("String", List.of("string")))
+                        .build();
+
+                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                List<Product> products = productRepository.findAll();
+                assertThat(products).isNotNull();
+                assertThat(products.size()).isEqualTo(1);
+                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                assertThat(products.get(0).getAttributes()).isNotNull();
+                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("String")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("String").size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("String").get(0)).isEqualTo("string");
             }
         }
     }
