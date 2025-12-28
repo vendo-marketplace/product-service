@@ -52,7 +52,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         }
 
         CategoryAttributeValidationStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
-        // TODO instead of returning boolean return dto or some data structure to show field name and validation message
+        // TODO instead of returning boolean return dto or some data structure to show field name and validation message or try to think of using validator from constraints lib
         return categoryAttributeValidationFactoryValidator.validate(requestAttributesValue, attributeDefinition);
     }
 }
