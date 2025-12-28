@@ -10,18 +10,18 @@ import java.util.List;
 public class CategoryRangeAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
-    public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        if (attributesValue == null || attributesValue.size() != 2) {
+    public boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition) {
+        if (requestAttributes == null || requestAttributes.size() != 2) {
             return false;
         }
 
         try {
-            int from = Integer.parseInt(attributesValue.get(0));
+            int from = Integer.parseInt(requestAttributes.get(0));
             if (from < 0) {
                 return false;
             }
 
-            int to = Integer.parseInt(attributesValue.get(1));
+            int to = Integer.parseInt(requestAttributes.get(1));
             if (from >= to) {
                 return false;
             }

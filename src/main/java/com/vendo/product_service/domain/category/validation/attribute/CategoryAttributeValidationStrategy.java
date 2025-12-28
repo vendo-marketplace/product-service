@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface CategoryAttributeValidationStrategy {
 
-    boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition);
+    boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition);
 
     AttributeType getType();
 

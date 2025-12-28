@@ -16,12 +16,12 @@ public class CategoryBooleanAttributeValidationStrategy implements CategoryAttri
     );
 
     @Override
-    public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        if (attributesValue == null || attributesValue.size() != 1) {
+    public boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition) {
+        if (requestAttributes == null || requestAttributes.size() != 1) {
             return false;
         }
 
-        return BOOLEAN_VALUES.contains(attributesValue.get(0));
+        return BOOLEAN_VALUES.contains(requestAttributes.get(0));
     }
 
     @Override

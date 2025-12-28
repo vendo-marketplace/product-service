@@ -11,25 +11,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChildCategoryCreationHandler implements CategoryCreationHandler {
+public class SubCategoryCreationValidator implements CategoryCreationValidator {
 
     private final CategoryQueryService categoryQueryService;
 
     private final CategoryTypeResolver categoryTypeResolver;
 
     @Override
-    public void handle(CreateCategoryRequest createCategoryRequest) {
-        Category parentCategory = categoryQueryService.findById(createCategoryRequest.parentId(), "Parent category not found.");
+    public void validate(CreateCategoryRequest createCategoryRequest) {
+        Category parentCategory = categoryQueryService.findById(createCategoryRequest.parentId(), "Parent category not found by parent.");
         CategoryType parentCategoryType = categoryTypeResolver.resolve(parentCategory.getParentId(), parentCategory.getAttributes());
 
         if (parentCategoryType == CategoryType.CHILD) {
-            throw new CategoryTypeException("Child category shouldn't have child category as parent.");
+            throw new CategoryTypeException("Sub category shouldn't have child category as parent.");
         }
     }
 
     @Override
     public CategoryType getCategoryType() {
-        return CategoryType.CHILD;
+        return CategoryType.SUB;
     }
-
 }

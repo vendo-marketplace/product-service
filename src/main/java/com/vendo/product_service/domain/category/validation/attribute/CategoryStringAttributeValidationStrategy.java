@@ -10,8 +10,8 @@ import java.util.List;
 public class CategoryStringAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
-    public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        return attributesValue != null && attributesValue.size() == 1;
+    public boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition) {
+        return requestAttributes != null && requestAttributes.size() == 1;
     }
 
     @Override

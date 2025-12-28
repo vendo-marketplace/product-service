@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ParentCategoryCreationHandler implements CategoryCreationHandler {
+public class ParentCategoryCreationValidator implements CategoryCreationValidator {
 
     @Override
-    public void handle(CreateCategoryRequest createCategoryRequest) {
+    public void validate(CreateCategoryRequest createCategoryRequest) {
     }
 
     @Override

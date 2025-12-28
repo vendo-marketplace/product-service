@@ -6,6 +6,8 @@ import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.builder.*;
 import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
+import com.vendo.product_service.domain.category.db.model.embedded.AttributeType;
 import com.vendo.product_service.domain.product.db.model.Product;
 import com.vendo.product_service.domain.product.db.repository.ProductRepository;
 import com.vendo.product_service.domain.category.db.model.Category;
@@ -25,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.annotation.AfterTestClass;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -79,18 +82,14 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(category.getId())
                     .build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            mockMvc.perform(post("/products")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(createProductRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
+            performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
             List<Product> products = productRepository.findAll();
             assertThat(products).isNotNull();
@@ -126,12 +125,7 @@ public class ProductControllerIntegrationTest {
                     .attributes(null)
                     .build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(post("/products")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(createProductRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest())
+            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -150,16 +144,12 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(String.valueOf(UUID.randomUUID()))
                     .build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(post("/products")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(createProductRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isNotFound())
+            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -182,12 +172,11 @@ public class ProductControllerIntegrationTest {
                     .categoryId(category.getId())
                     .build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(post("/products")
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .content(objectMapper.writeValueAsString(createProductRequest))
-                            .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
@@ -198,6 +187,119 @@ public class ProductControllerIntegrationTest {
             List<Product> products = productRepository.findAll();
             assertThat(products).isNotNull();
             assertThat(products.size()).isEqualTo(0);
+        }
+
+        @Nested
+        class SaveProductWithAttributes {
+
+            @Test
+            void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Price", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("price", List.of("1")))
+                        .build();
+
+                String content = performProductPersist(createProductRequest, jwtPayload)
+                        .andExpect(status().isBadRequest())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+
+                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                assertThat(exceptionResponse).isNotNull();
+                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                assertThat(exceptionResponse.getErrors()).isNotNull();
+                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                assertThat(exceptionResponse.getErrors().get("attributes[price]")).isEqualTo("Attribute name validation failed. Invalid capitalization or separators.");
+                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+            }
+
+            @Test
+            void save_shouldSaveProductWithNumberAttribute() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Price", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("Price", List.of("1")))
+                        .build();
+
+                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+            }
+
+            @Test
+            void save_shouldSaveProductWithBooleanAttribute() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Available", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("Available", List.of("true")))
+                        .build();
+
+                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                List<Product> products = productRepository.findAll();
+                assertThat(products).isNotNull();
+                assertThat(products.size()).isEqualTo(1);
+                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                assertThat(products.get(0).getAttributes()).isNotNull();
+                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Available")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("Available").size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Available").get(0)).isEqualTo("true");
+            }
+
+            @Test
+            void save_shouldSaveProductWithEnumAttribute() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+
+                // TODO think how to return exact error message about validation. f.e required is true but user forgot to pass this value and exception response is not informative
+
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Type", AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("Type", List.of("TYPE1")))
+                        .build();
+
+                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                List<Product> products = productRepository.findAll();
+                assertThat(products).isNotNull();
+                assertThat(products.size()).isEqualTo(1);
+                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                assertThat(products.get(0).getAttributes()).isNotNull();
+                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Type")).isNotNull();
+                assertThat(products.get(0).getAttributes().get("Type").size()).isEqualTo(1);
+                assertThat(products.get(0).getAttributes().get("Type").get(0)).isEqualTo("TYPE1");
+            }
         }
     }
 
@@ -223,12 +325,7 @@ public class ProductControllerIntegrationTest {
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
             productRepository.save(product);
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            mockMvc.perform(put("/products/{id}", product.getId())
-                    .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(updateProductRequest)))
-                    .andExpect(status().isOk());
+            performProductUpdate(product.getId(), updateProductRequest, jwtPayload).andExpect(status().isOk());
 
             Optional<Product> optionalProduct = productRepository.findById(product.getId());
             assertThat(optionalProduct).isPresent();
@@ -262,11 +359,7 @@ public class ProductControllerIntegrationTest {
                     .active(false)
                     .build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(put("/products/{id}", productId)
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(updateProductRequest)))
+            String content = performProductUpdate(productId, updateProductRequest, jwtPayload)
                     .andExpect(status().isNotFound())
                     .andReturn()
                     .getResponse()
@@ -298,11 +391,7 @@ public class ProductControllerIntegrationTest {
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
             productRepository.save(product);
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(put("/products/{id}", product.getId())
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(updateProductRequest)))
+            String content = performProductUpdate(product.getId(), updateProductRequest, jwtPayload)
                     .andExpect(status().isForbidden())
                     .andReturn()
                     .getResponse()
@@ -327,9 +416,7 @@ public class ProductControllerIntegrationTest {
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
             productRepository.save(product);
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(get("/products/{id}", product.getId())
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+            String content = performProductGet(product.getId(), jwtPayload)
                     .andExpect(status().isOk())
                     .andReturn()
                     .getResponse()
@@ -356,9 +443,7 @@ public class ProductControllerIntegrationTest {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-            String accessToken = jwtService.generateAccessToken(jwtPayload);
-            String content = mockMvc.perform(get("/products/{id}", productId)
-                            .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken))
+            String content = performProductGet(productId, jwtPayload)
                     .andExpect(status().isNotFound())
                     .andReturn()
                     .getResponse()
@@ -371,4 +456,28 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + productId);
         }
     }
+
+    private ResultActions performProductPersist(CreateProductRequest createProductRequest, JwtPayload jwtPayload) throws Exception {
+        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        return mockMvc.perform(post("/products")
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                .content(objectMapper.writeValueAsString(createProductRequest))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest, JwtPayload jwtPayload) throws Exception {
+        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        return mockMvc.perform(put("/products/{id}", productId)
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                .content(objectMapper.writeValueAsString(updateProductRequest))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performProductGet(String productId, JwtPayload jwtPayload) throws Exception {
+        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        return mockMvc.perform(get("/products/{id}", productId)
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
 }

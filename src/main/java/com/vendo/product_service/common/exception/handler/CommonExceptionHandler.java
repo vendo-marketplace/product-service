@@ -22,7 +22,7 @@ public class CommonExceptionHandler {
     protected ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
         Map<String, String> errors = e.getBindingResult()
                 .getFieldErrors()
-                .stream().collect(Collectors.toMap(FieldError::getField, fieldError -> StringUtils.defaultIfEmpty(fieldError.getDefaultMessage(), "")));
+                .stream().collect(Collectors.toMap(FieldError::getField, fieldError -> StringUtils.defaultIfEmpty(fieldError.getDefaultMessage(), "No error message.")));
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")

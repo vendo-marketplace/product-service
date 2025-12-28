@@ -12,12 +12,12 @@ public class CreateCategoryValidationService {
 
     private final CategoryTypeResolver categoryTypeResolver;
 
-    private final CategoryCreationHandlerFactory creationHandlerFactory;
+    private final CategoryCreationValidationFactory creationHandlerFactory;
 
     public void validateCreation(CreateCategoryRequest createCategoryRequest) {
         CategoryType categoryType = categoryTypeResolver.resolve(createCategoryRequest.parentId(), createCategoryRequest.attributes());
-        CategoryCreationHandler creationHandler = creationHandlerFactory.getHandler(categoryType);
-        creationHandler.handle(createCategoryRequest);
+        CategoryCreationValidator creationHandler = creationHandlerFactory.getHandler(categoryType);
+        creationHandler.validate(createCategoryRequest);
     }
 
 }

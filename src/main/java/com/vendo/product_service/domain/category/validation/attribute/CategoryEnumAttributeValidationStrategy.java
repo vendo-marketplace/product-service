@@ -10,8 +10,8 @@ import java.util.List;
 public class CategoryEnumAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
-    public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        if (attributesValue == null || attributesValue.size() != 1) {
+    public boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition) {
+        if (requestAttributes == null || requestAttributes.size() != 1) {
             return false;
         }
 
@@ -20,7 +20,7 @@ public class CategoryEnumAttributeValidationStrategy implements CategoryAttribut
             return false;
         }
 
-        return allowedValues.contains(attributesValue.get(0));
+        return allowedValues.contains(requestAttributes.get(0));
     }
 
     @Override

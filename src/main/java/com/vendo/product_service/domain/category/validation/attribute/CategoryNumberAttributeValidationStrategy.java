@@ -10,13 +10,13 @@ import java.util.List;
 public class CategoryNumberAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
 
     @Override
-    public boolean validate(List<String> attributesValue, AttributeDefinition attributeDefinition) {
-        if (attributesValue == null || attributesValue.size() != 1) {
+    public boolean validate(List<String> requestAttributes, AttributeDefinition attributeDefinition) {
+        if (requestAttributes == null || requestAttributes.size() != 1) {
             return false;
         }
 
         try {
-            Integer.valueOf(attributesValue.get(0));
+            Integer.valueOf(requestAttributes.get(0));
             return true;
         } catch (NumberFormatException e) {
             return false;
