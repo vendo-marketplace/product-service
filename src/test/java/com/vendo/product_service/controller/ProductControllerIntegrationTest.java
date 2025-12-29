@@ -204,7 +204,7 @@ public class ProductControllerIntegrationTest {
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("name", List.of("1")))
+                        .attributes(Map.of("Name", List.of("s")))
                         .build();
 
                 String content = performProductPersist(createProductRequest, jwtPayload)

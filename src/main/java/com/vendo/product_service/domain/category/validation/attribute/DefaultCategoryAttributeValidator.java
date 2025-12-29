@@ -1,6 +1,7 @@
 package com.vendo.product_service.domain.category.validation.attribute;
 
 import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
+import com.vendo.product_service.common.exception.ValidationBody;
 import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
 import com.vendo.product_service.domain.category.db.cqrs.query.CategoryQueryService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -29,30 +31,33 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
             throw new CategoryValidationException("Child category required.");
         }
 
-        List<String> invalidAttributes = new ArrayList<>();
+        List<ValidationBody> invalidAttributes = new ArrayList<>();
 
         for (Map.Entry<String, AttributeDefinition> attribute : attributes.entrySet()) {
-            if (!isAttributeValid(attribute, requestAttributes)) {
-                invalidAttributes.add(attribute.getKey());
+            ValidationBody validationBody = isAttributeValid(attribute, requestAttributes);
+            if (!validationBody.isValid()) {
+                invalidAttributes.add(validationBody);
             }
         }
 
         if (!invalidAttributes.isEmpty()) {
-            throw new CategoryValidationException("Validation failed for category attributes: %s".formatted(invalidAttributes));
+            throw new CategoryValidationException("Validation failed.", invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::getFieldName, ValidationBody::getErrorMessage)));
         }
     }
 
-    private boolean isAttributeValid(Map.Entry<String, AttributeDefinition> attribute, Map<String, List<String>> requestAttributes) {
+    private ValidationBody isAttributeValid(Map.Entry<String, AttributeDefinition> attribute, Map<String, List<String>> requestAttributes) {
         AttributeDefinition attributeDefinition = attribute.getValue();
         String attributeKey = attribute.getKey();
 
         List<String> requestAttributesValue = requestAttributes.get(attributeKey);
-        if (requestAttributesValue == null) {
-            return !attributeDefinition.required();
+        if (requestAttributesValue == null && attributeDefinition.required()) {
+            return ValidationBody.builder()
+                    .fieldName(attributeKey)
+                    .fieldName("%s is required.".formatted(attribute))
+                    .build();
         }
 
         CategoryAttributeValidationStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
-        // TODO instead of returning boolean return dto or some data structure to show field name and validation message or try to think of using validator from constraints lib
-        return categoryAttributeValidationFactoryValidator.validate(requestAttributesValue, attributeDefinition);
+        return categoryAttributeValidationFactoryValidator.validate(attributeKey, attributeDefinition, requestAttributesValue);
     }
 }

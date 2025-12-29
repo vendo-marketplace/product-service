@@ -44,6 +44,10 @@ public class CategoryExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
+        if (e.getErrors() != null && !e.getErrors().isEmpty()) {
+            exceptionResponse.setErrors(e.getErrors());
+        }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
