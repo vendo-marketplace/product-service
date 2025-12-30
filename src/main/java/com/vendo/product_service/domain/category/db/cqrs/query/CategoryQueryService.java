@@ -26,7 +26,7 @@ public class CategoryQueryService {
         return categoryRepository.existsById(categoryId);
     }
 
-    public void throwExistsByCode(String code) {
+    public void throwIfExistsByCode(String code) {
         if (categoryRepository.existsByCode(code)) {
             throw new CategoryAlreadyExistsException("Category already exists by code.");
         }

@@ -6,7 +6,6 @@ import com.vendo.product_service.domain.category.db.model.embedded.AttributeType
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class CategoryNumberAttributeValidationStrategy implements CategoryAttributeValidationStrategy {

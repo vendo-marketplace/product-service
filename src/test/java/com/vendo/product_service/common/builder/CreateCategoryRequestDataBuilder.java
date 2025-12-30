@@ -21,7 +21,7 @@ public class CreateCategoryRequestDataBuilder {
                 .title("Category title")
                 .parentId("parent_id")
                 .code(String.valueOf(UUID.randomUUID()))
-                .attributes(Map.of("attribute_name", attributeDefinition));
+                .attributes(Map.of("Attribute name", attributeDefinition));
     }
 
 }

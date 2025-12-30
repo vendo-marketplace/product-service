@@ -12,13 +12,15 @@ import static com.vendo.product_service.domain.category.common.constants.Categor
 @Builder
 public record CreateCategoryRequest(
 
+        // TODO regexp
         @NotBlank(message = "Title is required.")
         String title,
 
-        String parentId,
-
+        // TODO regexp
         @NotBlank(message = "Code is required.")
         String code,
 
-        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed: invalid capitalization or separators.") String, AttributeDefinition> attributes) {
+        String parentId,
+
+        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.") String, AttributeDefinition> attributes) {
 }

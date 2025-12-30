@@ -9,6 +9,7 @@ import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.domain.category.db.model.Category;
 import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
+import com.vendo.product_service.domain.category.db.model.embedded.AttributeType;
 import com.vendo.product_service.domain.category.db.repository.CategoryRepository;
 import com.vendo.product_service.domain.category.web.dto.CategoryResponse;
 import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
@@ -244,7 +245,7 @@ public class CategoryControllerIntegrationTest {
     class SaveSubCategoryTests {
 
         @Test
-        void save_shouldSaveSubCategory_whenParentIdAndNoAttributes() throws Exception {
+        void save_shouldSaveCategory_whenParentIdAndNoAttributes() throws Exception {
             Category parentCategory = CategoryDataBuilder.buildCategoryWithAllFields().parentId(null).attributes(null).build();
             categoryRepository.save(parentCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
@@ -261,7 +262,24 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnNotFound_whenParentNotFoundInSubCategory() throws Exception {
+        void save_shouldSaveCategory_whenParentIsSub() throws Exception {
+            Category parentCategory = CategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            categoryRepository.save(parentCategory);
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(parentCategory.getId())
+                    .attributes(null)
+                    .build();
+
+            performCategoryPersist(categoryRequest).andExpect(status().isOk());
+
+            Optional<Category> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            assertThat(categoryOptional).isPresent();
+            assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
+            assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategory.getId());
+        }
+
+        @Test
+        void save_shouldReturnNotFound_whenParentNotFoundInSub() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .attributes(null)
                     .build();
@@ -307,7 +325,7 @@ public class CategoryControllerIntegrationTest {
     class SaveChildCategoryTests {
 
         @Test
-        void save_shouldSaveChildCategory_whenParentAndAttributes() throws Exception {
+        void save_shouldSaveCategory_whenParentAndAttributes() throws Exception {
             Category parentCategory = CategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(parentCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
@@ -323,7 +341,53 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenParentCategoryIsNotSubInChildCategory() throws Exception {
+        void save_shouldSaveCategory_whenParentIsSub() throws Exception {
+            Category parentCategory = CategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            categoryRepository.save(parentCategory);
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(parentCategory.getId())
+                    .build();
+
+            performCategoryPersist(categoryRequest).andExpect(status().isOk());
+
+            Optional<Category> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            assertThat(categoryOptional).isPresent();
+            assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
+            assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategory.getId());
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenAttributeNameIsInvalid() throws Exception {
+            String invalidAttributeName = "invalid_attribute_name";
+            AttributeDefinition attributeDefinition = AttributeDefinition.builder().type(AttributeType.STRING).build();
+
+            Category parentCategory = CategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            categoryRepository.save(parentCategory);
+
+            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
+                    .parentId(parentCategory.getId())
+                    .attributes(Map.of(invalidAttributeName, attributeDefinition))
+                    .build();
+
+            String content = performCategoryPersist(categoryRequest)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().containsKey(invalidAttributeName)).isTrue();
+            assertThat(exceptionResponse.getErrors().get(invalidAttributeName)).isEqualTo("Attribute name validation failed.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenParentCategoryIsChild() throws Exception {
             Category subCategory = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(subCategory);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
@@ -344,7 +408,7 @@ public class CategoryControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnNotFound_whenParentCategoryNotFoundInChildCategory() throws Exception {
+        void save_shouldReturnNotFound_whenParentCategoryNotFound() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields().build();
 
             String content = performCategoryPersist(categoryRequest)

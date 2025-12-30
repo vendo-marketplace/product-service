@@ -31,5 +31,5 @@ public record CreateProductRequest(
         String categoryId,
 
         @NotEmpty(message = "Minimum 1 attribute is required.")
-        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed. Invalid capitalization or separators.") String, List<String>> attributes) {
+        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.") String, List<String>> attributes) {
 }
