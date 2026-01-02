@@ -4,7 +4,7 @@ server:
 spring:
   data:
     mongodb:
-      uri: mongodb://root:secret@localhost:27017/mydatabase?authSource=admin
+      uri: mongodb://root:secret@localhost:27017/mydatabase?authSource=admin&authMechanism=SCRAM-SHA-1
       authentication-database: admin
 
 security:
