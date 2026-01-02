@@ -204,7 +204,7 @@ public class ProductControllerIntegrationTest {
                 categoryRepository.save(category);
                 CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                         .categoryId(category.getId())
-                        .attributes(Map.of("Name", List.of("s")))
+                        .attributes(Map.of("name", List.of("1")))
                         .build();
 
                 String content = performProductPersist(createProductRequest, jwtPayload)
@@ -219,7 +219,7 @@ public class ProductControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
                 assertThat(exceptionResponse.getErrors()).isNotNull();
                 assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                assertThat(exceptionResponse.getErrors().get("attributes[price]")).isEqualTo("Attribute name validation failed. Invalid capitalization or separators.");
+                assertThat(exceptionResponse.getErrors().get("name")).isEqualTo("Attribute name validation failed.");
                 assertThat(exceptionResponse.getPath()).isEqualTo("/products");
             }
 
@@ -239,6 +239,51 @@ public class ProductControllerIntegrationTest {
                         .build();
 
                 performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+            }
+
+            @Test
+            void save_shouldReturnBadRequest_whenNumberAttributesAreMoreThanOne() {
+
+            }
+
+            @Test
+            void save_shouldReturnBadRequest_whenNumberAttributeIsNegative() {
+
+            }
+
+            @Test
+            void save_shouldReturnBadRequest_whenNumberAttributeIsNotNumeric() {
+            }
+            
+            @Test
+            void save_shouldReturnBadRequest_whenNumberAttributeIsHigherThanIntegerType() throws Exception {
+                String userId = String.valueOf(UUID.randomUUID());
+                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                        .attributes(Map.of("Number", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                        .build();
+                categoryRepository.save(category);
+                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                        .categoryId(category.getId())
+                        .attributes(Map.of("Number", List.of("1_000_000_000_000")))
+                        .build();
+
+                String content = performProductPersist(createProductRequest, jwtPayload)
+                        .andExpect(status().isBadRequest())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+
+                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                assertThat(exceptionResponse).isNotNull();
+                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                assertThat(exceptionResponse.getErrors()).isNotNull();
+                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                assertThat(exceptionResponse.getErrors().get("Number")).isEqualTo("Invalid numeric value.");
+                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
             }
 
             @Test

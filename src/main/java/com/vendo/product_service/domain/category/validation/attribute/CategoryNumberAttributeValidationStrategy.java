@@ -21,7 +21,7 @@ public class CategoryNumberAttributeValidationStrategy implements CategoryAttrib
         }
 
         try {
-            Integer.valueOf(requestAttributes.get(0));
+            Integer.parseInt(requestAttributes.get(0));
         } catch (NumberFormatException e) {
             return validationBody.toBuilder()
                     .errorMessage("Invalid numeric value.")

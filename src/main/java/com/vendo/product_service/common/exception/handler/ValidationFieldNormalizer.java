@@ -3,7 +3,7 @@ package com.vendo.product_service.common.exception.handler;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ExceptionFieldNormalizer implements FieldNormalizer<String, String> {
+public class ValidationFieldNormalizer implements FieldNormalizer<String, String> {
 
     private static final String ARRAY_BRACKET_IN = "[";
 
