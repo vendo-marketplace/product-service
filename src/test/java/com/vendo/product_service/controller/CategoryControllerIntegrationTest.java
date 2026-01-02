@@ -431,6 +431,7 @@ public class CategoryControllerIntegrationTest {
         @Test
         void findById_shouldReturnCategory() throws Exception {
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
+            String attributeName = "Attribute";
             categoryRepository.save(category);
 
             String content = performCategoryGet(category.getId()).andExpect(status().isOk())
@@ -444,10 +445,10 @@ public class CategoryControllerIntegrationTest {
             assertThat(categoryResponse.parentId()).isEqualTo(category.getParentId());
             assertThat(categoryResponse.attributes()).isNotNull();
             assertThat(categoryResponse.attributes().size()).isEqualTo(category.getAttributes().size());
-            assertThat(categoryResponse.attributes().get("attribute_name")).isNotNull();
+            assertThat(categoryResponse.attributes().get(attributeName)).isNotNull();
 
-            AttributeDefinition responseAttributeName = categoryResponse.attributes().get("attribute_name");
-            AttributeDefinition categoryAttributeName = category.getAttributes().get("attribute_name");
+            AttributeDefinition responseAttributeName = categoryResponse.attributes().get(attributeName);
+            AttributeDefinition categoryAttributeName = category.getAttributes().get(attributeName);
             assertThat(responseAttributeName.type()).isEqualTo(categoryAttributeName.type());
             assertThat(responseAttributeName.required()).isEqualTo(categoryAttributeName.required());
             assertThat(responseAttributeName.allowedValues()).isNotNull();
