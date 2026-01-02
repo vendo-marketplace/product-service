@@ -8,23 +8,35 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CategoryNumberAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
+public class CategoryRangeAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
         ValidationBody validationBody = ValidationBody.builder().fieldName(name).build();
 
-        if (requestAttributes == null || requestAttributes.size() != 1) {
+        if (requestAttributes == null || requestAttributes.size() != 2) {
             return validationBody.toBuilder()
-                    .errorMessage("Must contain exactly one value.")
+                    .errorMessage("Must contain exactly two values.")
                     .build();
         }
 
         try {
-            Integer.parseInt(requestAttributes.get(0));
+            int from = Integer.parseInt(requestAttributes.get(0));
+            if (from < 0) {
+                return validationBody.toBuilder()
+                        .errorMessage("The first value must be greater than or equal to zero.")
+                        .build();
+            }
+
+            int to = Integer.parseInt(requestAttributes.get(1));
+            if (from >= to) {
+                return validationBody.toBuilder()
+                        .errorMessage("The first value must be less than the second value.")
+                        .build();
+            }
         } catch (NumberFormatException e) {
             return validationBody.toBuilder()
-                    .errorMessage("Invalid numeric value.")
+                    .errorMessage("Invalid range value format.")
                     .build();
         }
 
@@ -33,6 +45,6 @@ public class CategoryNumberAttributeValidationStrategy implements CategoryAttrib
 
     @Override
     public AttributeType getType() {
-        return AttributeType.NUMBER;
+        return AttributeType.RANGE;
     }
 }

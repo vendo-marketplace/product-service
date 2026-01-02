@@ -16,7 +16,7 @@ public class CreateProductRequestDataBuilder {
                 .quantity(1)
                 .price(BigDecimal.ONE)
                 .categoryId(String.valueOf(UUID.randomUUID()))
-                .attributes(Map.of("attribute_name", List.of("attribute_value")));
+                .attributes(Map.of("Attribute", List.of("attribute_value")));
     }
 
 }

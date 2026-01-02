@@ -37,7 +37,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         List<ValidationBody> invalidAttributes = new ArrayList<>();
 
         for (Map.Entry<String, AttributeDefinition> attribute : attributes.entrySet()) {
-            ValidationBody validationBody = isAttributeValid(attribute, requestAttributes);
+            ValidationBody validationBody = isAttributeValid(attribute.getKey(), attribute.getValue(), requestAttributes);
             if (!validationBody.isValid()) {
                 invalidAttributes.add(validationBody);
             }
@@ -48,20 +48,14 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         }
     }
 
-    private ValidationBody isAttributeValid(Map.Entry<String, AttributeDefinition> attribute, Map<String, List<String>> requestAttributes) {
-        AttributeDefinition attributeDefinition = attribute.getValue();
-        String attributeKey = attribute.getKey();
-
-        List<String> requestAttributesValue = requestAttributes.get(attributeKey);
-        if (requestAttributesValue == null && attributeDefinition.required()) {
-            return ValidationBody.builder()
-                    .fieldName(attributeKey)
-                    .errorMessage("%s is required.".formatted(attribute))
-                    .build();
+    private ValidationBody isAttributeValid(String attributeName, AttributeDefinition attributeDefinition, Map<String, List<String>> requestAttributes) {
+        ValidationBody validationBody = validateAttributeRequirement(attributeName, attributeDefinition, requestAttributes.get(attributeName));
+        if (!validationBody.isValid()) {
+            return validationBody;
         }
 
-        CategoryAttributeValidationStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
-        return categoryAttributeValidationFactoryValidator.validate(attributeKey, attributeDefinition, requestAttributesValue);
+        CategoryAttributeValidatorStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
+        return categoryAttributeValidationFactoryValidator.validate(attributeName, attributeDefinition,  requestAttributes.get(attributeName));
     }
 
     private void throwIfCategoryNotChild(Category category) {
@@ -69,5 +63,16 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         if (categoryType != CategoryType.CHILD) {
             throw new CategoryTypeException("Category type should be child.");
         }
+    }
+
+    private ValidationBody validateAttributeRequirement(String attributeName, AttributeDefinition attributeDefinition, List<String> attributesValue) {
+        if (attributesValue == null && attributeDefinition.required()) {
+            return ValidationBody.builder()
+                    .fieldName(attributeName)
+                    .errorMessage("%s is required.".formatted(attributeName))
+                    .build();
+        }
+
+        return ValidationBody.builder().valid(true).build();
     }
 }

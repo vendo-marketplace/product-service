@@ -6,11 +6,10 @@ import com.vendo.product_service.domain.category.db.model.embedded.AttributeType
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @Component
-public class CategoryBooleanAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
+public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     private final Set<String> BOOLEAN_VALUES = Set.of(
             Boolean.FALSE.toString(),

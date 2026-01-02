@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CategoryStringAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
+public class CategoryNumberAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
@@ -20,11 +20,25 @@ public class CategoryStringAttributeValidationStrategy implements CategoryAttrib
                     .build();
         }
 
+        try {
+            int attributeValue = Integer.parseInt(requestAttributes.get(0));
+            if (attributeValue < 0) {
+                return validationBody.toBuilder()
+                        .errorMessage("Must be equal or greater than zero.")
+                        .build();
+            }
+
+        } catch (NumberFormatException e) {
+            return validationBody.toBuilder()
+                    .errorMessage("Invalid numeric value.")
+                    .build();
+        }
+
         return validationBody.toBuilder().valid(true).build();
     }
 
     @Override
     public AttributeType getType() {
-        return AttributeType.STRING;
+        return AttributeType.NUMBER;
     }
 }

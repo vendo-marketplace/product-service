@@ -11,9 +11,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryAttributeValidationFactory {
 
-    private final List<CategoryAttributeValidationStrategy> categoryAttributeValidationStrategies;
+    private final List<CategoryAttributeValidatorStrategy> categoryAttributeValidationStrategies;
 
-    public CategoryAttributeValidationStrategy getValidator(AttributeType attributeType) {
+    public CategoryAttributeValidatorStrategy getValidator(AttributeType attributeType) {
         return categoryAttributeValidationStrategies.stream()
                 .filter(categoryAttributeValidationStrategy -> categoryAttributeValidationStrategy.getType() == attributeType)
                 .findFirst()

@@ -6,10 +6,11 @@ import com.vendo.product_service.domain.category.db.model.embedded.AttributeType
 
 import java.util.List;
 
-public interface CategoryAttributeValidationStrategy {
+public interface CategoryAttributeValidatorStrategy {
 
     ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes);
 
     AttributeType getType();
+
 
 }

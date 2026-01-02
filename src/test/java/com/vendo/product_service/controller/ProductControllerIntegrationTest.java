@@ -125,7 +125,7 @@ public class ProductControllerIntegrationTest {
                     .attributes(null)
                     .build();
 
-            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
+            String content = performProductPersist(createProductRequest, jwtPayload)
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -149,7 +149,7 @@ public class ProductControllerIntegrationTest {
                     .categoryId(String.valueOf(UUID.randomUUID()))
                     .build();
 
-            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
+            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isNotFound())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
@@ -172,7 +172,7 @@ public class ProductControllerIntegrationTest {
                     .categoryId(category.getId())
                     .build();
 
-            String content = performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk())
+            String content = performProductPersist(createProductRequest, jwtPayload)
                     .andExpect(status().isBadRequest())
                     .andReturn()
                     .getResponse()
@@ -181,7 +181,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Child category required.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category type should be child.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             List<Product> products = productRepository.findAll();
@@ -192,217 +192,622 @@ public class ProductControllerIntegrationTest {
         @Nested
         class SaveProductWithAttributes {
 
-            @Test
-            void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+            @Nested
+            class SaveProductWithNumberAttribute {
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number", invalidAttributeName = "number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Name", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("name", List.of("1")))
-                        .build();
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(invalidAttributeName, List.of("1")))
+                            .build();
 
-                String content = performProductPersist(createProductRequest, jwtPayload)
-                        .andExpect(status().isBadRequest())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
 
-                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-                assertThat(exceptionResponse).isNotNull();
-                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-                assertThat(exceptionResponse.getErrors()).isNotNull();
-                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                assertThat(exceptionResponse.getErrors().get("name")).isEqualTo("Attribute name validation failed.");
-                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(invalidAttributeName)).isEqualTo("Attribute name validation failed.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldSaveProductWithNumberAttribute() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("1")))
+                            .build();
+
+                    performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenNumberAttributeIsMoreThanOne() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("1", "2")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly one value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenNumberAttributeIsNegative() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("-1")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must be equal or greater than zero.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenNumberAttributeIsNotNumeric() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("not_numeric")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid numeric value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenNumberAttributeIsHigherThanIntegerMaxValue() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Number";
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("1_000_000_000_000")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid numeric value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
             }
 
-            @Test
-            void save_shouldSaveProductWithNumberAttribute() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+            @Nested
+            class SaveProductWithBooleanAttribute {
 
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Number", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("Number", List.of("1")))
-                        .build();
+                @Test
+                void save_shouldSaveProductWithBooleanAttribute() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
 
-                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of("Boolean", List.of("true")))
+                            .build();
+
+                    performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                    List<Product> products = productRepository.findAll();
+                    assertThat(products).isNotNull();
+                    assertThat(products.size()).isEqualTo(1);
+                    assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                    assertThat(products.get(0).getAttributes()).isNotNull();
+                    assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                    assertThat(products.get(0).getAttributes().get("Boolean")).isNotNull();
+                    assertThat(products.get(0).getAttributes().get("Boolean").size()).isEqualTo(1);
+                    assertThat(products.get(0).getAttributes().get("Boolean").get(0)).isEqualTo("true");
+                }
+
+                @Test
+                void save_shouldSaveProduct_whenBooleanAttributeIsMoreThanOne() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of("Boolean", List.of("true", "false")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get("Boolean")).isEqualTo("Must contain exactly one value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldSaveProduct_whenInvalidBooleanAttributeValue() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of("Boolean", List.of("not_boolean_value")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get("Boolean")).isEqualTo("Invalid boolean value. Allowed values: true, false.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
             }
 
-            @Test
-            void save_shouldReturnBadRequest_whenNumberAttributesAreMoreThanOne() {
+            @Nested
+            class SaveProductWithEnumAttribute {
 
+                @Test
+                void save_shouldSaveProductWithEnumAttribute() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Enum";
+                    List<String> allowedValues = List.of("TYPE1", "TYPE2");
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(allowedValues).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, allowedValues))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly one value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsMoreThanOne() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Enum";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("TYPE1", "TYPE2")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly one value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeValueIsNotAllowed() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Enum";
+                    List<String> allowedValues = List.of("TYPE1", "TYPE2");
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(allowedValues).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("TYPE3")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid value. Allowed values: " + String.join(", ", allowedValues));
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
             }
 
-            @Test
-            void save_shouldReturnBadRequest_whenNumberAttributeIsNegative() {
+            @Nested
+            class SaveProductWithRangeAttribute {
 
+                @Test
+                void save_shouldSaveProductWithRangeAttribute() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Range";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("0", "100")))
+                            .build();
+
+                    performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+
+                    List<Product> products = productRepository.findAll();
+                    assertThat(products).isNotNull();
+                    assertThat(products.size()).isEqualTo(1);
+                    assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                    assertThat(products.get(0).getAttributes()).isNotNull();
+                    assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                    assertThat(products.get(0).getAttributes().get(validAttributeName)).isNotNull();
+                    assertThat(products.get(0).getAttributes().get(validAttributeName).size()).isEqualTo(2);
+                    assertThat(products.get(0).getAttributes().get(validAttributeName).get(0)).isEqualTo("0");
+                    assertThat(products.get(0).getAttributes().get(validAttributeName).get(1)).isEqualTo("100");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributesAreMoreThanTwo() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Range";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("0", "100", "200")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly two values.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenFirstAttributeValueIsLowerThanZero() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Range";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("-1", "100")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("The first value must be greater than or equal to zero.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenFirstAttributeValueIsGreaterThanSecond() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Range";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("100", "100")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("The first value must be less than the second value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributesAreNotNumericType() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "Range";
+
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("not_numeric", "not_numeric")))
+                            .build();
+
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid range value format.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
             }
 
-            @Test
-            void save_shouldReturnBadRequest_whenNumberAttributeIsNotNumeric() {
-            }
-            
-            @Test
-            void save_shouldReturnBadRequest_whenNumberAttributeIsHigherThanIntegerType() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+            @Nested
+            class SaveProductWithStringAttribute {
 
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Number", AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("Number", List.of("1_000_000_000_000")))
-                        .build();
+                @Test
+                void save_shouldSaveProductWithStringAttribute() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "String";
 
-                String content = performProductPersist(createProductRequest, jwtPayload)
-                        .andExpect(status().isBadRequest())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-                assertThat(exceptionResponse).isNotNull();
-                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-                assertThat(exceptionResponse.getErrors()).isNotNull();
-                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                assertThat(exceptionResponse.getErrors().get("Number")).isEqualTo("Invalid numeric value.");
-                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-            }
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.STRING).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("string")))
+                            .build();
 
-            @Test
-            void save_shouldSaveProductWithBooleanAttribute() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
+                    performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+                    List<Product> products = productRepository.findAll();
+                    assertThat(products).isNotNull();
+                    assertThat(products.size()).isEqualTo(1);
+                    assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
+                    assertThat(products.get(0).getAttributes()).isNotNull();
+                    assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
+                    assertThat(products.get(0).getAttributes().get(validAttributeName)).isNotNull();
+                    assertThat(products.get(0).getAttributes().get(validAttributeName).size()).isEqualTo(1);
+                    assertThat(products.get(0).getAttributes().get(validAttributeName).get(0)).isEqualTo("string");
+                }
 
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("Boolean", List.of("true")))
-                        .build();
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsBlank() throws Exception {
+                    String userId = String.valueOf(UUID.randomUUID());
+                    String validAttributeName = "String";
 
-                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
+                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                List<Product> products = productRepository.findAll();
-                assertThat(products).isNotNull();
-                assertThat(products.size()).isEqualTo(1);
-                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
-                assertThat(products.get(0).getAttributes()).isNotNull();
-                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Boolean")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("Boolean").size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Boolean").get(0)).isEqualTo("true");
-            }
+                    Category category = CategoryDataBuilder.buildCategoryWithAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.STRING).build()))
+                            .build();
+                    categoryRepository.save(category);
+                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
+                            .categoryId(category.getId())
+                            .attributes(Map.of(validAttributeName, List.of("")))
+                            .build();
 
-            @Test
-            void save_shouldSaveProductWithEnumAttribute() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
+                    String content = performProductPersist(createProductRequest, jwtPayload)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
 
-                // TODO think how to return exact error message about validation. f.e required is true but user forgot to pass this value and exception response is not informative
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must not be empty.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+                }
 
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Enum", AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("Enum", List.of("TYPE1")))
-                        .build();
-
-                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
-
-                List<Product> products = productRepository.findAll();
-                assertThat(products).isNotNull();
-                assertThat(products.size()).isEqualTo(1);
-                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
-                assertThat(products.get(0).getAttributes()).isNotNull();
-                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Enum")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("Enum").size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Enum").get(0)).isEqualTo("TYPE1");
-            }
-
-            @Test
-            void save_shouldSaveProductWithRangeAttribute() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
-
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("Range", AttributeDefinition.builder().type(AttributeType.RANGE).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("Range", List.of("0", "100")))
-                        .build();
-
-                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
-
-                List<Product> products = productRepository.findAll();
-                assertThat(products).isNotNull();
-                assertThat(products.size()).isEqualTo(1);
-                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
-                assertThat(products.get(0).getAttributes()).isNotNull();
-                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("Range")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("Range").size()).isEqualTo(2);
-                assertThat(products.get(0).getAttributes().get("Range").get(0)).isEqualTo("0");
-                assertThat(products.get(0).getAttributes().get("Range").get(1)).isEqualTo("100");
-            }
-
-            @Test
-            void save_shouldSaveProductWithStringAttribute() throws Exception {
-                String userId = String.valueOf(UUID.randomUUID());
-
-                Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-                JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-
-                Category category = CategoryDataBuilder.buildCategoryWithAllFields()
-                        .attributes(Map.of("String", AttributeDefinition.builder().type(AttributeType.STRING).build()))
-                        .build();
-                categoryRepository.save(category);
-                CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of("String", List.of("string")))
-                        .build();
-
-                performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
-
-                List<Product> products = productRepository.findAll();
-                assertThat(products).isNotNull();
-                assertThat(products.size()).isEqualTo(1);
-                assertThat(products.get(0).getCategoryId()).isEqualTo(category.getId());
-                assertThat(products.get(0).getAttributes()).isNotNull();
-                assertThat(products.get(0).getAttributes().size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("String")).isNotNull();
-                assertThat(products.get(0).getAttributes().get("String").size()).isEqualTo(1);
-                assertThat(products.get(0).getAttributes().get("String").get(0)).isEqualTo("string");
             }
         }
     }

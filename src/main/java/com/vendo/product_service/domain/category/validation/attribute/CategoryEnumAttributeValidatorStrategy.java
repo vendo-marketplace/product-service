@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CategoryEnumAttributeValidationStrategy implements CategoryAttributeValidationStrategy {
+public class CategoryEnumAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {

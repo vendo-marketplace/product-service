@@ -21,7 +21,7 @@ public class CategoryDataBuilder {
                 .title("Category title")
                 .parentId(String.valueOf(UUID.randomUUID()))
                 .code(String.valueOf(UUID.randomUUID()))
-                .attributes(Map.of("attribute_name", attributeDefinition));
+                .attributes(Map.of("Attribute", attributeDefinition));
     }
 
 }
