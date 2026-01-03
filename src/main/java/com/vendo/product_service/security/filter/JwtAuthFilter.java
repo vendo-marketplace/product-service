@@ -2,8 +2,8 @@ package com.vendo.product_service.security.filter;
 
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.security.common.helper.JwtHelper;
-import com.vendo.security.common.exception.AccessDeniedException;
-import com.vendo.security.common.exception.InvalidTokenException;
+import com.vendo.security.common.exception.*;
+import com.vendo.security.common.type.TokenClaim;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -78,17 +78,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void validateUserAccessibility(Claims claims) {
         UserStatus status = jwtHelper.extractUserStatus(claims);
+        Boolean emailVerified = jwtHelper.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
+        validateActivity(emailVerified, status);
+    }
 
-        if (status != UserStatus.ACTIVE) {
-            throw new AccessDeniedException("User is unactive.");
+    // TODO move to common
+    private void validateActivity(Boolean emailVerified, UserStatus userStatus) {
+        if (userStatus == UserStatus.BLOCKED) {
+            throw new UserBlockedException("User is blocked.");
+        }
+
+        if (!emailVerified) {
+            throw new UserEmailNotVerifiedException("User email is not verified.");
+        }
+
+        if (userStatus != UserStatus.ACTIVE) {
+            throw new UserIsUnactiveException("User is unactive.");
         }
     }
 
     private void addAuthenticationToContext(Claims claims) {
-        List<SimpleGrantedAuthority> authorities = jwtHelper.extractAuthorities(claims);
+        List<SimpleGrantedAuthority> authorities =  jwtHelper.extractAuthorities(claims);
+        String userId = jwtHelper.extractTokenClaim(TokenClaim.USER_ID_CLAIM, claims, String.class);
 
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(jwtHelper.extractSubject(claims), null, authorities);
+                new UsernamePasswordAuthenticationToken(userId, null, authorities);
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }

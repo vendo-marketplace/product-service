@@ -1,5 +1,6 @@
 package com.vendo.product_service.common.builder;
 
+import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.service.JwtService;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-import static com.vendo.product_service.service.JwtService.ROLE_USER;
 import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
 import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 
@@ -19,7 +19,7 @@ import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 public class JwtPayloadBuilder {
 
     @Value("${security.jwt.expiration-time}")
-    public int JWT_EXPIRATION_TIME;
+    private int JWT_EXPIRATION_TIME;
 
     public static final String JWT_USER_SUBJECT = "JWT_USER_SUBJECT";
 
@@ -28,7 +28,7 @@ public class JwtPayloadBuilder {
     public JwtPayload.JwtPayloadBuilder buildValidUserJwtPayload() {
         Map<String, Object> claims = Map.of(
                 STATUS_CLAIM.getClaim(), UserStatus.ACTIVE,
-                ROLES_CLAIM.getClaim(), List.of(ROLE_USER)
+                ROLES_CLAIM.getClaim(), List.of(UserRole.USER)
         );
         return JwtPayload.builder()
                 .subject(JWT_USER_SUBJECT)

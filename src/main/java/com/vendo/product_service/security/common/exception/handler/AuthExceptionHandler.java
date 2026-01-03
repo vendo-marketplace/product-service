@@ -1,8 +1,7 @@
 package com.vendo.product_service.security.common.exception.handler;
 
 import com.vendo.common.exception.ExceptionResponse;
-import com.vendo.security.common.exception.AccessDeniedException;
-import com.vendo.security.common.exception.InvalidTokenException;
+import com.vendo.security.common.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,5 +55,38 @@ public class AuthExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UserBlockedException.class)
+    public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e,  HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.FORBIDDEN.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UserIsUnactiveException.class)
+    public ResponseEntity<ExceptionResponse> handleUserIsUnactiveException(UserIsUnactiveException e,  HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.FORBIDDEN.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(UserEmailNotVerifiedException.class)
+    public ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e,  HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.FORBIDDEN.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
     }
 }
