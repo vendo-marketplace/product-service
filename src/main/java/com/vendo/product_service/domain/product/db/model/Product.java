@@ -25,7 +25,7 @@ public class Product extends AuditingEntity {
 
     private String description;
 
-    private int quantity;
+    private Integer quantity;
 
     private BigDecimal price;
 
@@ -35,7 +35,7 @@ public class Product extends AuditingEntity {
 
     private Map<String, List<String>> attributes;
 
-    private boolean active;
+    private Boolean active;
 
     @Version
     private long version;

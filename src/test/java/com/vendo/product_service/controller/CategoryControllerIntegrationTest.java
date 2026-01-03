@@ -316,7 +316,7 @@ public class CategoryControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Sub category shouldn't have child category as parent.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("A subcategory cannot have a child category as its parent.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
     }
@@ -403,7 +403,7 @@ public class CategoryControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Child category shouldn't have child category as parent.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("A child category cannot have another child category as its parent.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
 

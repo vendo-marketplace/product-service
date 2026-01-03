@@ -11,13 +11,13 @@ public class UpdateProductRequestDataBuilder {
 
     public static UpdateProductRequest.UpdateProductRequestBuilder buildUpdateProductRequestWithAllFields() {
         return UpdateProductRequest.builder()
-                .title("Title")
-                .description("Description")
+                .title("New Title")
+                .description("New Description")
                 .quantity(1)
-                .price(BigDecimal.ONE)
+                .price(BigDecimal.TEN)
                 .categoryId(String.valueOf(UUID.randomUUID()))
-                .attributes(Map.of("attribute_name", List.of("attribute_value")))
-                .active(true);
+                .attributes(Map.of("New Attribute", List.of("new_attribute_value")))
+                .active(false);
     }
 
 }

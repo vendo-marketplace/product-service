@@ -30,15 +30,14 @@ public class ProductCommandService {
 
         Optional.ofNullable(product.getTitle()).ifPresent(productById::setTitle);
         Optional.ofNullable(product.getDescription()).ifPresent(productById::setDescription);
-        Optional.of(product.getQuantity()).ifPresent(productById::setQuantity);
+        Optional.ofNullable(product.getQuantity()).ifPresent(productById::setQuantity);
         Optional.ofNullable(product.getPrice()).ifPresent(productById::setPrice);
         Optional.ofNullable(product.getAttributes()).ifPresent(productById::setAttributes);
-        Optional.of(product.isActive()).ifPresent(productById::setActive);
-        Optional.of(product.getCategoryId()).ifPresent(categoryId -> {
-            if (categoryQueryService.existsById(categoryId)) {
-                productById.setCategoryId(categoryId);
-            }
-        });
+        Optional.ofNullable(product.getActive()).ifPresent(productById::setActive);
+
+        if (product.getCategoryId() != null && categoryQueryService.existsById(product.getCategoryId())) {
+            productById.setCategoryId(product.getCategoryId());
+        }
 
         productRepository.save(productById);
     }
@@ -53,5 +52,4 @@ public class ProductCommandService {
             throw new AccessDeniedException("Only owner can edit its product.");
         }
     }
-
 }

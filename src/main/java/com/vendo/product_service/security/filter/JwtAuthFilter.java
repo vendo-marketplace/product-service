@@ -78,16 +78,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private void validateUserAccessibility(Claims claims) {
         UserStatus status = jwtHelper.extractUserStatus(claims);
+        Boolean emailVerified = jwtHelper.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
+        validateActivity(emailVerified, status);
+    }
 
-        if (status == UserStatus.BLOCKED) {
+    // TODO move to common
+    private void validateActivity(Boolean emailVerified, UserStatus userStatus) {
+        if (userStatus == UserStatus.BLOCKED) {
             throw new UserBlockedException("User is blocked.");
-        } else if (status != UserStatus.ACTIVE) {
-            throw new UserIsUnactiveException("User is unactive.");
         }
 
-        Boolean emailVerified = jwtHelper.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
         if (!emailVerified) {
             throw new UserEmailNotVerifiedException("User email is not verified.");
+        }
+
+        if (userStatus != UserStatus.ACTIVE) {
+            throw new UserIsUnactiveException("User is unactive.");
         }
     }
 

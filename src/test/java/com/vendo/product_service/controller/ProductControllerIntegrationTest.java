@@ -105,7 +105,7 @@ public class ProductControllerIntegrationTest {
             assertThat(product.getAttributes()).isNotNull();
             assertThat(product.getAttributes().size()).isEqualTo(createProductRequest.attributes().size());
             assertThat(product.getAttributes()).isEqualTo(createProductRequest.attributes());
-            assertThat(product.isActive()).isTrue();
+            assertThat(product.getActive()).isTrue();
             assertThat(product.getVersion()).isNotNull();
             assertThat(product.getCreatedAt()).isNotNull();
             assertThat(product.getUpdatedAt()).isNotNull();
@@ -337,7 +337,7 @@ public class ProductControllerIntegrationTest {
                     assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
                     assertThat(exceptionResponse.getErrors()).isNotNull();
                     assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid numeric value.");
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid number value.");
                     assertThat(exceptionResponse.getPath()).isEqualTo("/products");
                 }
 
@@ -369,7 +369,7 @@ public class ProductControllerIntegrationTest {
                     assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
                     assertThat(exceptionResponse.getErrors()).isNotNull();
                     assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid numeric value.");
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid number value.");
                     assertThat(exceptionResponse.getPath()).isEqualTo("/products");
                 }
             }
@@ -671,7 +671,7 @@ public class ProductControllerIntegrationTest {
                     assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
                     assertThat(exceptionResponse.getErrors()).isNotNull();
                     assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("The first value must be greater than or equal to zero.");
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("The first value must be equal or greater than to zero.");
                     assertThat(exceptionResponse.getPath()).isEqualTo("/products");
                 }
 
@@ -804,7 +804,7 @@ public class ProductControllerIntegrationTest {
                     assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
                     assertThat(exceptionResponse.getErrors()).isNotNull();
                     assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must not be empty.");
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must not be blank.");
                     assertThat(exceptionResponse.getPath()).isEqualTo("/products");
                 }
 
@@ -820,17 +820,14 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
+
             UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
-                    .title("New title")
-                    .description("New description")
-                    .quantity(0)
-                    .price(BigDecimal.ZERO)
                     .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
-                    .active(false)
                     .build();
+
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
             productRepository.save(product);
 
@@ -847,26 +844,21 @@ public class ProductControllerIntegrationTest {
             assertThat(responseProduct.getAttributes()).isNotNull();
             assertThat(responseProduct.getAttributes().size()).isEqualTo(1);
             assertThat(responseProduct.getAttributes()).isEqualTo(updateProductRequest.attributes());
-            assertThat(optionalProduct.get().isActive()).isEqualTo(updateProductRequest.active());
+            assertThat(responseProduct.getActive()).isEqualTo(updateProductRequest.active());
         }
 
         @Test
         void update_returnNotFound_whenProductNotFound() throws Exception {
-            String userId = String.valueOf(UUID.randomUUID());
             String productId = String.valueOf(UUID.randomUUID());
+
+            String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
-            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
-                    .title("New title")
-                    .description("New description")
-                    .quantity(0)
-                    .price(BigDecimal.ZERO)
-                    .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
-                    .active(false)
-                    .build();
+
+            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
 
             String content = performProductUpdate(productId, updateProductRequest, jwtPayload)
                     .andExpect(status().isNotFound())
@@ -886,17 +878,11 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
             Category category = CategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(category);
-            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
-                    .title("New title")
-                    .description("New description")
-                    .quantity(0)
-                    .price(BigDecimal.ZERO)
-                    .categoryId(category.getId())
-                    .attributes(Map.of("new_attribute_name", List.of("new_attribute_value")))
-                    .active(false)
-                    .build();
+
+            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
             Product product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
             productRepository.save(product);
 
@@ -933,16 +919,16 @@ public class ProductControllerIntegrationTest {
 
             ProductResponse productResponse = objectMapper.readValue(content, ProductResponse.class);
             assertThat(productResponse).isNotNull();
-            assertThat(productResponse.getTitle()).isEqualTo(product.getTitle());
-            assertThat(productResponse.getDescription()).isEqualTo(product.getDescription());
-            assertThat(productResponse.getQuantity()).isEqualTo(product.getQuantity());
-            assertThat(productResponse.getPrice()).isEqualTo(product.getPrice());
-            assertThat(productResponse.getOwnerId()).isEqualTo(product.getOwnerId());
-            assertThat(productResponse.getCategoryId()).isEqualTo(product.getCategoryId());
-            assertThat(productResponse.getAttributes()).isNotNull();
-            assertThat(productResponse.getAttributes().size()).isEqualTo(1);
-            assertThat(productResponse.getAttributes()).isEqualTo(product.getAttributes());
-            assertThat(productResponse.isActive()).isTrue();
+            assertThat(productResponse.title()).isEqualTo(product.getTitle());
+            assertThat(productResponse.description()).isEqualTo(product.getDescription());
+            assertThat(productResponse.quantity()).isEqualTo(product.getQuantity());
+            assertThat(productResponse.price()).isEqualTo(product.getPrice());
+            assertThat(productResponse.ownerId()).isEqualTo(product.getOwnerId());
+            assertThat(productResponse.categoryId()).isEqualTo(product.getCategoryId());
+            assertThat(productResponse.attributes()).isNotNull();
+            assertThat(productResponse.attributes().size()).isEqualTo(1);
+            assertThat(productResponse.attributes()).isEqualTo(product.getAttributes());
+            assertThat(productResponse.active()).isTrue();
         }
 
         @Test

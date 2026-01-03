@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         log.warn("Handling access denied exception: ", exception);
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("application/json");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .code(HttpServletResponse.SC_FORBIDDEN)
                 .path(request.getRequestURI())
