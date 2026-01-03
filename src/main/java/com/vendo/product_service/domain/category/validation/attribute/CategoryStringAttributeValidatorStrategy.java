@@ -22,7 +22,7 @@ public class CategoryStringAttributeValidatorStrategy implements CategoryAttribu
 
         if (requestAttributes.get(0).isBlank()) {
             return validationBody.toBuilder()
-                    .errorMessage("Must not be empty.")
+                    .errorMessage("Must not be blank.")
                     .build();
         }
 

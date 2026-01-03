@@ -11,7 +11,6 @@ import com.vendo.product_service.domain.category.validation.CategoryTypeResolver
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,32 +26,25 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
     private final CategoryTypeResolver categoryTypeResolver;
     
     @Override
-    public void validateCategoryAttributes(String categoryId, Map<String, List<String>> requestAttributes) {
-        Category category = categoryQueryService.findById(categoryId);
+    public void validateCategoryAttributes(String requestCategoryId, Map<String, List<String>> requestAttributes) {
+        Category category = categoryQueryService.findById(requestCategoryId);
         throwIfCategoryNotChild(category);
         validateAttributes(category.getAttributes(), requestAttributes);
     }
 
     private void validateAttributes(Map<String, AttributeDefinition> attributes, Map<String, List<String>> requestAttributes) {
-        List<ValidationBody> invalidAttributes = new ArrayList<>();
-
-        for (Map.Entry<String, AttributeDefinition> attribute : attributes.entrySet()) {
-            ValidationBody validationBody = isAttributeValid(attribute.getKey(), attribute.getValue(), requestAttributes);
-            if (!validationBody.isValid()) {
-                invalidAttributes.add(validationBody);
-            }
-        }
+        List<ValidationBody> invalidAttributes = attributes.entrySet().stream()
+                .map(attribute -> isAttributeValid(attribute.getKey(), attribute.getValue(), requestAttributes))
+                .filter(attribute -> !attribute.valid()).toList();
 
         if (!invalidAttributes.isEmpty()) {
-            throw new CategoryValidationException("Validation failed.", invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::getFieldName, ValidationBody::getErrorMessage)));
+            throw new CategoryValidationException("Validation failed.", invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage)));
         }
     }
 
     private ValidationBody isAttributeValid(String attributeName, AttributeDefinition attributeDefinition, Map<String, List<String>> requestAttributes) {
         ValidationBody validationBody = validateAttributeRequirement(attributeName, attributeDefinition, requestAttributes.get(attributeName));
-        if (!validationBody.isValid()) {
-            return validationBody;
-        }
+        if (!validationBody.valid()) return validationBody;
 
         CategoryAttributeValidatorStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
         return categoryAttributeValidationFactoryValidator.validate(attributeName, attributeDefinition,  requestAttributes.get(attributeName));
@@ -60,6 +52,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
 
     private void throwIfCategoryNotChild(Category category) {
         CategoryType categoryType = categoryTypeResolver.resolve(category.getParentId(), category.getAttributes());
+
         if (categoryType != CategoryType.CHILD) {
             throw new CategoryTypeException("Category type should be child.");
         }

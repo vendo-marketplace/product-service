@@ -1,7 +1,7 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
+import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,12 @@ import org.springframework.stereotype.Component;
 public class ParentCategoryCreationValidator implements CategoryCreationValidator {
 
     @Override
-    public void validate(CreateCategoryRequest createCategoryRequest) {
+    public void validate(String parentId) {
+
+        if (parentId != null) {
+            throw new CategoryValidationException("A parent category cannot have a parent.");
+        }
+
     }
 
     @Override

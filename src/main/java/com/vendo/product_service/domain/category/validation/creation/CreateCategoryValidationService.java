@@ -17,7 +17,7 @@ public class CreateCategoryValidationService {
     public void validateCreation(CreateCategoryRequest createCategoryRequest) {
         CategoryType categoryType = categoryTypeResolver.resolve(createCategoryRequest.parentId(), createCategoryRequest.attributes());
         CategoryCreationValidator creationHandler = creationHandlerFactory.getHandler(categoryType);
-        creationHandler.validate(createCategoryRequest);
+        creationHandler.validate(createCategoryRequest.parentId());
     }
 
 }

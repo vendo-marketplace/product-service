@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface CategoryAttributeValidator {
 
-    void validateCategoryAttributes(String categoryId, Map<String, List<String>> requestAttributes);
+    void validateCategoryAttributes(String requestCategoryId, Map<String, List<String>> requestAttributes);
 
 }

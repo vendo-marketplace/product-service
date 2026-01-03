@@ -14,6 +14,6 @@ public interface ProductMapper {
 
     Product toProductFromUpdateProductRequest(UpdateProductRequest updateProductRequest);
 
-    ProductResponse toProductResponse(Product product);
+    ProductResponse toProductResponseFromProduct(Product product);
 
 }

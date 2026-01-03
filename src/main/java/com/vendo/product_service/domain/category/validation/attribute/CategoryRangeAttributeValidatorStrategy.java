@@ -24,7 +24,7 @@ public class CategoryRangeAttributeValidatorStrategy implements CategoryAttribut
             int from = Integer.parseInt(requestAttributes.get(0));
             if (from < 0) {
                 return validationBody.toBuilder()
-                        .errorMessage("The first value must be greater than or equal to zero.")
+                        .errorMessage("The first value must be equal or greater than to zero.")
                         .build();
             }
 

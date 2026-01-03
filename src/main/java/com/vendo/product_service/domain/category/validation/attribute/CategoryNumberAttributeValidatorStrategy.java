@@ -30,7 +30,7 @@ public class CategoryNumberAttributeValidatorStrategy implements CategoryAttribu
 
         } catch (NumberFormatException e) {
             return validationBody.toBuilder()
-                    .errorMessage("Invalid numeric value.")
+                    .errorMessage("Invalid number value.")
                     .build();
         }
 

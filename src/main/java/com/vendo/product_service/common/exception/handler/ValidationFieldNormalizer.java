@@ -1,13 +1,13 @@
 package com.vendo.product_service.common.exception.handler;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class ValidationFieldNormalizer implements FieldNormalizer<String, String> {
 
-    private static final String ARRAY_BRACKET_IN = "[";
+    private static final String ARRAY_BRACKET_OPEN = "[";
 
-    private static final String ARRAY_BRACKET_OUT = "]";
+    private static final String ARRAY_BRACKET_CLOSE = "]";
 
     @Override
     public String normalize(String field) {
@@ -18,12 +18,12 @@ public class ValidationFieldNormalizer implements FieldNormalizer<String, String
     }
 
     private static boolean isNestedValidation(String validationField) {
-        return validationField.contains(ARRAY_BRACKET_IN) && validationField.contains(ARRAY_BRACKET_OUT);
+        return validationField.contains(ARRAY_BRACKET_OPEN) && validationField.contains(ARRAY_BRACKET_CLOSE);
     }
 
     private static String retrieveNestedField(String field) throws StringIndexOutOfBoundsException {
-        int start = field.lastIndexOf(ARRAY_BRACKET_IN);
-        int end = field.indexOf(ARRAY_BRACKET_OUT);
+        int start = field.lastIndexOf(ARRAY_BRACKET_OPEN);
+        int end = field.indexOf(ARRAY_BRACKET_CLOSE);
 
         if (start < 0 || end < 0 || start >= end) {
             return field;

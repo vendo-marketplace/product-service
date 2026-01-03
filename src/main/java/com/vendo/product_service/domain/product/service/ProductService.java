@@ -42,6 +42,6 @@ public class ProductService {
 
     public ProductResponse findById(String id) {
         Product product = productQueryService.findById(id);
-        return productMapper.toProductResponse(product);
+        return productMapper.toProductResponseFromProduct(product);
     }
 }

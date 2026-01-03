@@ -1,36 +1,28 @@
 package com.vendo.product_service.common.exception.handler;
 
 import com.vendo.common.exception.ExceptionResponse;
+import com.vendo.product_service.common.exception.service.CommonExceptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 @RequiredArgsConstructor
 public class CommonExceptionHandler {
 
-    private final FieldNormalizer<String, String> fieldNormalizer;
+    private final CommonExceptionService commonExceptionService;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        Map<String, String> errors = e.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        fieldError -> fieldNormalizer.normalize(fieldError.getField()),
-                        fieldError -> StringUtils.defaultIfEmpty(fieldError.getDefaultMessage(),
-                                "No error message."))
-                );
+        Map<String, String> errors = commonExceptionService.convertFieldErrorsToMap(e.getBindingResult().getFieldErrors());
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
