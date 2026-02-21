@@ -1,8 +1,8 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeType;
-import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
+import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,7 @@ public class CreateCategoryRequestDataBuilder {
                 .build();
 
         return CreateCategoryRequest.builder()
-                .title("Category title")
+                .title("CategoryEntity title")
                 .parentId("parent_id")
                 .code(String.valueOf(UUID.randomUUID()))
                 .attributes(Map.of("Attribute name", attributeDefinition));

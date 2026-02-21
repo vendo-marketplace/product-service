@@ -1,6 +1,6 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
-import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
+import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

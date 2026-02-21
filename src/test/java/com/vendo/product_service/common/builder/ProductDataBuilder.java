@@ -1,6 +1,7 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.domain.product.db.model.Product;
+import com.vendo.product_service.adapter.model.product.ProductEntity;
+import com.vendo.product_service.domain.product.model.Product;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -9,8 +10,8 @@ import java.util.UUID;
 
 public class ProductDataBuilder {
 
-    public static Product.ProductBuilder buildProductWithRequiredFields() {
-        return Product.builder()
+    public static ProductEntity.ProductEntityBuilder buildProductWithRequiredFields() {
+        return ProductEntity.builder()
                 .title("Product title")
                 .description("Product description")
                 .quantity(1)

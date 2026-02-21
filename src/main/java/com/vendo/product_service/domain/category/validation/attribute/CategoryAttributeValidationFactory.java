@@ -1,7 +1,7 @@
 package com.vendo.product_service.domain.category.validation.attribute;
 
-import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeType;
+import com.vendo.product_service.domain.category.exception.CategoryValidationException;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class CategoryAttributeValidationFactory {
         return categoryAttributeValidationStrategies.stream()
                 .filter(categoryAttributeValidationStrategy -> categoryAttributeValidationStrategy.getType() == attributeType)
                 .findFirst()
-                .orElseThrow(() -> new CategoryValidationException("Category attribute type not found."));
+                .orElseThrow(() -> new CategoryValidationException("CategoryEntity attribute type not found."));
     }
 
 }

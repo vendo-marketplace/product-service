@@ -1,13 +1,13 @@
 package com.vendo.product_service.domain.category.validation.attribute;
 
-import com.vendo.product_service.domain.category.common.exception.CategoryTypeException;
-import com.vendo.product_service.domain.category.common.exception.CategoryValidationException;
-import com.vendo.product_service.common.exception.ValidationBody;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
+import com.vendo.product_service.domain.category.validation.ValidationBody;
 import com.vendo.product_service.domain.category.common.type.CategoryType;
-import com.vendo.product_service.domain.category.db.model.Category;
-import com.vendo.product_service.domain.category.db.model.embedded.AttributeDefinition;
-import com.vendo.product_service.domain.category.db.cqrs.query.CategoryQueryService;
+import com.vendo.product_service.domain.category.exception.CategoryTypeException;
+import com.vendo.product_service.domain.category.exception.CategoryValidationException;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.validation.CategoryTypeResolver;
+import com.vendo.product_service.domain.category.port.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DefaultCategoryAttributeValidator implements CategoryAttributeValidator {
 
-    private final CategoryQueryService categoryQueryService;
+    private final CategoryQueryPort categoryQueryPort;
 
     private final CategoryAttributeValidationFactory categoryAttributeValidationFactory;
 
@@ -27,7 +27,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
     
     @Override
     public void validateCategoryAttributes(String requestCategoryId, Map<String, List<String>> requestAttributes) {
-        Category category = categoryQueryService.findById(requestCategoryId);
+        Category category = categoryQueryPort.findById(requestCategoryId, "Parent category not found.");
         throwIfCategoryNotChild(category);
         validateAttributes(category.getAttributes(), requestAttributes);
     }
@@ -54,7 +54,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         CategoryType categoryType = categoryTypeResolver.resolve(category.getParentId(), category.getAttributes());
 
         if (categoryType != CategoryType.CHILD) {
-            throw new CategoryTypeException("Category type should be child.");
+            throw new CategoryTypeException("CategoryEntity type should be child.");
         }
     }
 

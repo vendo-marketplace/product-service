@@ -1,8 +1,9 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
 import com.vendo.product_service.domain.category.common.type.CategoryType;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.validation.CategoryTypeResolver;
-import com.vendo.product_service.domain.category.web.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,10 @@ public class CreateCategoryValidationService {
 
     private final CategoryCreationValidationFactory creationHandlerFactory;
 
-    public void validateCreation(CreateCategoryRequest createCategoryRequest) {
-        CategoryType categoryType = categoryTypeResolver.resolve(createCategoryRequest.parentId(), createCategoryRequest.attributes());
+    public void validateCreation(Category category) {
+        CategoryType categoryType = categoryTypeResolver.resolve(category.getParentId(), category.getAttributes());
         CategoryCreationValidator creationHandler = creationHandlerFactory.getHandler(categoryType);
-        creationHandler.validate(createCategoryRequest.parentId());
+        creationHandler.validate(category.getParentId());
     }
 
 }
