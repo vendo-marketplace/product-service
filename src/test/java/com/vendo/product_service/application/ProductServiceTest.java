@@ -89,7 +89,14 @@ class ProductServiceTest {
 
             productService.update(existingProduct.getId(), updatedProduct);
 
-            verify(commandPort, times(1)).save(existingProduct);
+            ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+            verify(commandPort).save(captor.capture());
+
+            Product saved = captor.getValue();
+
+            assert saved.getId().equals(existingProduct.getId());
+            assert saved.getTitle().equals("Updated title");
+            assert saved.getOwnerId().equals("user123");
         }
     }
 

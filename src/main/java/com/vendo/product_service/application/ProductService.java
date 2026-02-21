@@ -1,6 +1,8 @@
 package com.vendo.product_service.application;
 
 
+import com.vendo.product_service.adapter.model.product.MongoProduct;
+import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.port.CategoryQueryPort;
 import com.vendo.product_service.domain.product.model.Product;
@@ -9,8 +11,6 @@ import com.vendo.product_service.domain.product.port.ProductQueryPort;
 import com.vendo.security.common.exception.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 import static com.vendo.product_service.security.common.helper.SecurityContextHelper.getUserIdFromContext;
 
@@ -21,6 +21,7 @@ public class ProductService {
     private final ProductCommandPort commandPort;
     private final ProductQueryPort queryPort;
     private final CategoryQueryPort categoryQueryPort;
+    private final ProductEntityMapper productEntityMapper;
 
     public void save(Product product) {
         if (product.getCategoryId() != null && !categoryQueryPort.existsById(product.getCategoryId())) {
@@ -31,7 +32,6 @@ public class ProductService {
     }
 
     public void update(String id, Product updatedProduct) {
-
         Product existing = queryPort.findById(id);
 
         if (!existing.getOwnerId().equals(getUserIdFromContext())) {
@@ -43,10 +43,13 @@ public class ProductService {
             throw new CategoryNotFoundException("Category not found.");
         }
 
-        updatedProduct.setId(id);
-        updatedProduct.setOwnerId(existing.getOwnerId());
+        MongoProduct mongoProduct = productEntityMapper.toMongoEntity(updatedProduct);
+        Product product = productEntityMapper.toEntity(mongoProduct);
 
-        commandPort.save(updatedProduct);
+        product.setId(existing.getId());
+        product.setOwnerId(existing.getOwnerId());
+
+        commandPort.save(product);
     }
 
     public Product findById(String id) {
