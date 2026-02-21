@@ -1,17 +1,16 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.adapter.model.product.ProductEntity;
-import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.adapter.model.product.MongoProduct;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class ProductDataBuilder {
+public class MongoProductBuilder {
 
-    public static ProductEntity.ProductEntityBuilder buildProductWithRequiredFields() {
-        return ProductEntity.builder()
+    public static MongoProduct.MongoProductBuilder buildProductWithRequiredFields() {
+        return MongoProduct.builder()
                 .title("Product title")
                 .description("Product description")
                 .quantity(1)

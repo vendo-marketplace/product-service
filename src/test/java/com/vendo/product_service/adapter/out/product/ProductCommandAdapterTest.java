@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.out.product;
 
-import com.vendo.product_service.adapter.model.product.ProductEntity;
+import com.vendo.product_service.adapter.model.product.MongoProduct;
 import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
 import com.vendo.product_service.domain.product.model.Product;
@@ -33,14 +33,14 @@ class ProductCommandAdapterTest {
     @Test
     void save_shouldMapAndSaveProductEntity() {
         Product product = Product.builder().title("Test").build();
-        ProductEntity entity = ProductEntity.builder().title("Test").build();
+        MongoProduct entity = MongoProduct.builder().title("Test").build();
 
         when(productEntityMapper.toProductEntityFromProductDomain(product)).thenReturn(entity);
 
         productCommandAdapter.save(product);
 
         verify(productEntityMapper).toProductEntityFromProductDomain(product);
-        ArgumentCaptor<ProductEntity> captor = ArgumentCaptor.forClass(ProductEntity.class);
+        ArgumentCaptor<MongoProduct> captor = ArgumentCaptor.forClass(MongoProduct.class);
         verify(productRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(entity);
     }

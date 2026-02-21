@@ -1,6 +1,6 @@
-package com.vendo.product_service.adapter.common.exception.service;
+package com.vendo.product_service.adapter.exception.service;
 
-import com.vendo.product_service.adapter.common.exception.handler.FieldNormalizer;
+import com.vendo.product_service.adapter.exception.handler.FieldNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CommonExceptionService {
+public class MainExceptionService {
 
     private final FieldNormalizer<String, String> fieldNormalizer;
 

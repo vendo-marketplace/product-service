@@ -1,7 +1,7 @@
 package com.vendo.product_service.domain.category.validation;
 
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
-import com.vendo.product_service.domain.category.common.type.CategoryType;
+import com.vendo.product_service.domain.category.model.CategoryType;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;

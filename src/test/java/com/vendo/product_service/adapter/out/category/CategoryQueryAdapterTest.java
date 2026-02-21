@@ -1,13 +1,15 @@
 package com.vendo.product_service.adapter.out.category;
 
-import com.vendo.product_service.adapter.model.category.CategoryEntity;
+import com.vendo.product_service.adapter.model.category.MongoCategory;
 import com.vendo.product_service.adapter.out.category.mapper.CategoryEntityMapper;
 import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 
@@ -34,7 +36,7 @@ class CategoryQueryAdapterTest {
     @Test
     void findById_shouldReturnMappedCategory_whenEntityExists() {
         String id = "cat123";
-        CategoryEntity categoryEntity = CategoryEntity.builder()
+        MongoCategory categoryEntity = MongoCategory.builder()
                 .id("cat123")
                 .code("CODE")
                 .title("Title")
@@ -42,13 +44,13 @@ class CategoryQueryAdapterTest {
         Category category = Category.builder().id(id).code("CODE").title("Title").build();
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(categoryEntity));
-        when(categoryEntityMapper.toCategoryDomainFromCategoryEntity(categoryEntity)).thenReturn(category);
+        when(categoryEntityMapper.toEntity(categoryEntity)).thenReturn(category);
 
         Category result = queryAdapter.findById(id, "unused message");
 
         assertThat(result).isEqualTo(category);
         verify(categoryRepository, times(1)).findById(id);
-        verify(categoryEntityMapper, times(1)).toCategoryDomainFromCategoryEntity(categoryEntity);
+        verify(categoryEntityMapper, times(1)).toEntity(categoryEntity);
     }
 
     @Test

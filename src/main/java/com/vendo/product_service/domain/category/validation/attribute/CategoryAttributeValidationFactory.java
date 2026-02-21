@@ -17,7 +17,7 @@ public class CategoryAttributeValidationFactory {
         return categoryAttributeValidationStrategies.stream()
                 .filter(categoryAttributeValidationStrategy -> categoryAttributeValidationStrategy.getType() == attributeType)
                 .findFirst()
-                .orElseThrow(() -> new CategoryValidationException("CategoryEntity attribute type not found."));
+                .orElseThrow(() -> new CategoryValidationException("Category attribute type not found."));
     }
 
 }

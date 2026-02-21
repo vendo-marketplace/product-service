@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.common.config;
+package com.vendo.product_service.infrastructure.config;
 
 import org.mapstruct.InjectionStrategy;
 import org.mapstruct.MapperConfig;

@@ -4,18 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
-import com.vendo.product_service.adapter.model.product.ProductEntity;
-import com.vendo.product_service.common.builder.*;
-import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.adapter.model.category.CategoryEntity;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
-import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
-import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
-import com.vendo.product_service.service.JwtService;
 import com.vendo.product_service.adapter.in.product.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.in.product.dto.ProductResponse;
 import com.vendo.product_service.adapter.in.product.dto.UpdateProductRequest;
+import com.vendo.product_service.adapter.model.category.MongoCategory;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
+import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
+import com.vendo.product_service.adapter.model.product.MongoProduct;
+import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
+import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
+import com.vendo.product_service.common.builder.*;
+import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ import static com.vendo.security.common.constants.AuthConstants.AUTHORIZATION_HE
 import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -82,7 +82,7 @@ public class ProductControllerIntegrationTest {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(categoryEntity);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
                     .categoryId(categoryEntity.getId())
@@ -90,24 +90,24 @@ public class ProductControllerIntegrationTest {
 
             performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
-            List<ProductEntity> products = productRepository.findAll();
+            List<MongoProduct> products = productRepository.findAll();
             assertThat(products).isNotNull();
             assertThat(products.size()).isEqualTo(1);
 
-            ProductEntity productEntity = products.get(0);
-            assertThat(productEntity.getTitle()).isEqualTo(createProductRequest.title());
-            assertThat(productEntity.getDescription()).isEqualTo(createProductRequest.description());
-            assertThat(productEntity.getQuantity()).isEqualTo(createProductRequest.quantity());
-            assertThat(productEntity.getPrice()).isEqualTo(createProductRequest.price());
-            assertThat(productEntity.getOwnerId()).isEqualTo(userId);
-            assertThat(productEntity.getCategoryId()).isEqualTo(categoryEntity.getId());
-            assertThat(productEntity.getAttributes()).isNotNull();
-            assertThat(productEntity.getAttributes().size()).isEqualTo(createProductRequest.attributes().size());
-            assertThat(productEntity.getAttributes()).isEqualTo(createProductRequest.attributes());
-            assertThat(productEntity.getActive()).isTrue();
-            assertThat(productEntity.getVersion()).isNotNull();
-            assertThat(productEntity.getCreatedAt()).isNotNull();
-            assertThat(productEntity.getUpdatedAt()).isNotNull();
+            MongoProduct mongoProduct = products.get(0);
+            assertThat(mongoProduct.getTitle()).isEqualTo(createProductRequest.title());
+            assertThat(mongoProduct.getDescription()).isEqualTo(createProductRequest.description());
+            assertThat(mongoProduct.getQuantity()).isEqualTo(createProductRequest.quantity());
+            assertThat(mongoProduct.getPrice()).isEqualTo(createProductRequest.price());
+            assertThat(mongoProduct.getOwnerId()).isEqualTo(userId);
+            assertThat(mongoProduct.getCategoryId()).isEqualTo(categoryEntity.getId());
+            assertThat(mongoProduct.getAttributes()).isNotNull();
+            assertThat(mongoProduct.getAttributes().size()).isEqualTo(createProductRequest.attributes().size());
+            assertThat(mongoProduct.getAttributes()).isEqualTo(createProductRequest.attributes());
+            assertThat(mongoProduct.getActive()).isTrue();
+            assertThat(mongoProduct.getVersion()).isNotNull();
+            assertThat(mongoProduct.getCreatedAt()).isNotNull();
+            assertThat(mongoProduct.getUpdatedAt()).isNotNull();
         }
 
         @Test
@@ -165,10 +165,10 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().attributes(null).build();
-            categoryRepository.save(categoryEntity);
+            MongoCategory mongoCategory = MongoCategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            categoryRepository.save(mongoCategory);
             CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-                    .categoryId(categoryEntity.getId())
+                    .categoryId(mongoCategory.getId())
                     .build();
 
             String content = performProductPersist(createProductRequest, jwtPayload)
@@ -180,10 +180,10 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("CategoryEntity type should be child.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category type should be child.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            List<ProductEntity> products = productRepository.findAll();
+            List<MongoProduct> products = productRepository.findAll();
             assertThat(products).isNotNull();
             assertThat(products.size()).isEqualTo(0);
         }
@@ -200,7 +200,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -232,7 +232,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -251,7 +251,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -283,7 +283,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -315,7 +315,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -347,7 +347,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -383,7 +383,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -394,7 +394,7 @@ public class ProductControllerIntegrationTest {
 
                     performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
-                    List<ProductEntity> products = productRepository.findAll();
+                    List<MongoProduct> products = productRepository.findAll();
                     assertThat(products).isNotNull();
                     assertThat(products.size()).isEqualTo(1);
                     assertThat(products.get(0).getCategoryId()).isEqualTo(categoryEntity.getId());
@@ -411,7 +411,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -442,7 +442,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of("Boolean", AttributeDefinition.builder().type(AttributeType.BOOLEAN).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -481,7 +481,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(allowedValues).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -514,7 +514,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -548,7 +548,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(allowedValues).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -585,7 +585,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -596,7 +596,7 @@ public class ProductControllerIntegrationTest {
 
                     performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
-                    List<ProductEntity> products = productRepository.findAll();
+                    List<MongoProduct> products = productRepository.findAll();
                     assertThat(products).isNotNull();
                     assertThat(products.size()).isEqualTo(1);
                     assertThat(products.get(0).getCategoryId()).isEqualTo(categoryEntity.getId());
@@ -616,7 +616,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -649,7 +649,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -682,7 +682,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -715,7 +715,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.RANGE).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -752,7 +752,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.STRING).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -763,7 +763,7 @@ public class ProductControllerIntegrationTest {
 
                     performProductPersist(createProductRequest, jwtPayload).andExpect(status().isOk());
 
-                    List<ProductEntity> products = productRepository.findAll();
+                    List<MongoProduct> products = productRepository.findAll();
                     assertThat(products).isNotNull();
                     assertThat(products.size()).isEqualTo(1);
                     assertThat(products.get(0).getCategoryId()).isEqualTo(categoryEntity.getId());
@@ -782,7 +782,7 @@ public class ProductControllerIntegrationTest {
                     Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
                     JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-                    CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields()
+                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
                             .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.STRING).build()))
                             .build();
                     categoryRepository.save(categoryEntity);
@@ -820,22 +820,22 @@ public class ProductControllerIntegrationTest {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(categoryEntity);
 
             UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
                     .categoryId(categoryEntity.getId())
                     .build();
 
-            ProductEntity product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
+            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
 
             productRepository.save(product);
 
             performProductUpdate(product.getId(), updateProductRequest, jwtPayload).andExpect(status().isOk());
 
-            Optional<ProductEntity> optionalProduct = productRepository.findById(product.getId());
+            Optional<MongoProduct> optionalProduct = productRepository.findById(product.getId());
             assertThat(optionalProduct).isPresent();
-            ProductEntity responseProduct = optionalProduct.get();
+            MongoProduct responseProduct = optionalProduct.get();
             assertThat(responseProduct.getTitle()).isEqualTo(updateProductRequest.title());
             assertThat(responseProduct.getDescription()).isEqualTo(updateProductRequest.description());
             assertThat(responseProduct.getQuantity()).isEqualTo(updateProductRequest.quantity());
@@ -855,7 +855,7 @@ public class ProductControllerIntegrationTest {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(categoryEntity);
 
             UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
@@ -879,11 +879,11 @@ public class ProductControllerIntegrationTest {
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(categoryEntity);
 
             UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
-            ProductEntity product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
+            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
             productRepository.save(product);
 
             String content = performProductUpdate(product.getId(), updateProductRequest, jwtPayload)
@@ -908,7 +908,7 @@ public class ProductControllerIntegrationTest {
             String userId = String.valueOf(UUID.randomUUID());
             Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
             JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-            ProductEntity product = ProductDataBuilder.buildProductWithRequiredFields().ownerId(userId).build();
+            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
             productRepository.save(product);
 
             String content = performProductGet(product.getId(), jwtPayload)

@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static com.vendo.product_service.domain.category.common.constants.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
+import static com.vendo.product_service.domain.category.validation.attribute.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
 
 @Builder
 public record UpdateProductRequest(

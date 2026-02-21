@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryUseCase {
+public class CategoryService {
 
     private final CategoryCommandPort commandPort;
     private final CategoryQueryPort queryPort;

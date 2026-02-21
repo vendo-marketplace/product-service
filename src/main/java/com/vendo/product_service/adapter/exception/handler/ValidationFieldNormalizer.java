@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.common.exception.handler;
+package com.vendo.product_service.adapter.exception.handler;
 
 import org.springframework.stereotype.Component;
 

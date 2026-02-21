@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.common.type;
+package com.vendo.product_service.domain.category.model;
 
 public enum CategoryType {
 

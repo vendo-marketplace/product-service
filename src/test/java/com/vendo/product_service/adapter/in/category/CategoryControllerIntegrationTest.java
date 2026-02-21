@@ -3,16 +3,16 @@ package com.vendo.product_service.adapter.in.category;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
-import com.vendo.product_service.common.builder.CategoryEntityDataBuilder;
-import com.vendo.product_service.common.builder.CreateCategoryRequestDataBuilder;
-import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
-import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.adapter.model.category.CategoryEntity;
+import com.vendo.product_service.adapter.in.category.dto.CategoryEntityResponse;
+import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.model.category.MongoCategory;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
 import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
-import com.vendo.product_service.adapter.in.category.dto.CategoryEntityResponse;
-import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
+import com.vendo.product_service.common.builder.MongoCategoryDataBuilder;
+import com.vendo.product_service.common.builder.CreateCategoryRequestDataBuilder;
+import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
+import com.vendo.product_service.common.dto.JwtPayload;
 import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -34,8 +34,9 @@ import java.util.UUID;
 import static com.vendo.security.common.constants.AuthConstants.AUTHORIZATION_HEADER;
 import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -161,7 +162,7 @@ public class CategoryControllerIntegrationTest {
         @Test
         void save_shouldReturnConflict_whenCategoryIsAlreadyExistsByCode() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields().parentId(null).attributes(null).build();
-            CategoryEntity categoryEntity = CategoryEntity.builder()
+            MongoCategory categoryEntity = MongoCategory.builder()
                     .code(categoryRequest.code())
                     .build();
             categoryRepository.save(categoryEntity);
@@ -234,7 +235,7 @@ public class CategoryControllerIntegrationTest {
 
             performCategoryPersist(categoryRequest).andExpect(status().isOk());
 
-            Optional<CategoryEntity> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            Optional<MongoCategory> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
             assertThat(categoryOptional).isPresent();
             assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
             assertThat(categoryOptional.get().getParentId()).isNull();
@@ -246,7 +247,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldSaveCategory_whenParentIdAndNoAttributes() throws Exception {
-            CategoryEntity parentCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().parentId(null).attributes(null).build();
+            MongoCategory parentCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().parentId(null).attributes(null).build();
             categoryRepository.save(parentCategoryEntity);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(parentCategoryEntity.getId())
@@ -255,7 +256,7 @@ public class CategoryControllerIntegrationTest {
 
             performCategoryPersist(categoryRequest).andExpect(status().isOk());
 
-            Optional<CategoryEntity> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            Optional<MongoCategory> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
             assertThat(categoryOptional).isPresent();
             assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
             assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategoryEntity.getId());
@@ -263,7 +264,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldSaveCategory_whenParentIsSub() throws Exception {
-            CategoryEntity parentCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            MongoCategory parentCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(parentCategoryEntity);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(parentCategoryEntity.getId())
@@ -272,7 +273,7 @@ public class CategoryControllerIntegrationTest {
 
             performCategoryPersist(categoryRequest).andExpect(status().isOk());
 
-            Optional<CategoryEntity> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            Optional<MongoCategory> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
             assertThat(categoryOptional).isPresent();
             assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
             assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategoryEntity.getId());
@@ -299,7 +300,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldReturnBadRequest_whenSubCategoryHasChildParent() throws Exception {
-            CategoryEntity childCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory childCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(childCategoryEntity);
 
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
@@ -326,7 +327,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldSaveCategory_whenParentAndAttributes() throws Exception {
-            CategoryEntity parentCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            MongoCategory parentCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(parentCategoryEntity);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(parentCategoryEntity.getId())
@@ -334,7 +335,7 @@ public class CategoryControllerIntegrationTest {
 
             performCategoryPersist(categoryRequest).andExpect(status().isOk());
 
-            Optional<CategoryEntity> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            Optional<MongoCategory> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
             assertThat(categoryOptional).isPresent();
             assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
             assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategoryEntity.getId());
@@ -342,7 +343,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldSaveCategory_whenParentIsSub() throws Exception {
-            CategoryEntity parentCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            MongoCategory parentCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(parentCategoryEntity);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(parentCategoryEntity.getId())
@@ -350,7 +351,7 @@ public class CategoryControllerIntegrationTest {
 
             performCategoryPersist(categoryRequest).andExpect(status().isOk());
 
-            Optional<CategoryEntity> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
+            Optional<MongoCategory> categoryOptional = categoryRepository.findByCodeIgnoreCase(categoryRequest.code());
             assertThat(categoryOptional).isPresent();
             assertThat(categoryOptional.get().getCode()).isEqualTo(categoryRequest.code());
             assertThat(categoryOptional.get().getParentId()).isEqualTo(parentCategoryEntity.getId());
@@ -361,7 +362,7 @@ public class CategoryControllerIntegrationTest {
             String invalidAttributeName = "invalid_attribute_name";
             AttributeDefinition attributeDefinition = AttributeDefinition.builder().type(AttributeType.STRING).build();
 
-            CategoryEntity parentCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().attributes(null).build();
+            MongoCategory parentCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().attributes(null).build();
             categoryRepository.save(parentCategoryEntity);
 
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
@@ -388,7 +389,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldReturnBadRequest_whenParentCategoryIsChild() throws Exception {
-            CategoryEntity subCategoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory subCategoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             categoryRepository.save(subCategoryEntity);
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.buildCreateCategoryRequestWithAllFields()
                     .parentId(subCategoryEntity.getId())
@@ -430,7 +431,7 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void findById_shouldReturnCategory() throws Exception {
-            CategoryEntity categoryEntity = CategoryEntityDataBuilder.buildCategoryWithAllFields().build();
+            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
             String attributeName = "Attribute";
             categoryRepository.save(categoryEntity);
 

@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.common.constants;
+package com.vendo.product_service.domain.category.validation.attribute;
 
 import lombok.AccessLevel;
 import lombok.Getter;

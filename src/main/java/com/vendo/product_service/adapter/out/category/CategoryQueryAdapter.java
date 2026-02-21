@@ -16,7 +16,7 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
 
     @Override
     public Category findById(String id, String s) {
-        return categoryRepository.findById(id).map(categoryEntityMapper::toCategoryDomainFromCategoryEntity)
+        return categoryRepository.findById(id).map(categoryEntityMapper::toEntity)
                 .orElseThrow(() -> new CategoryNotFoundException("Category not found."));
     }
 

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-class ProductUseCaseTest {
+class ProductServiceTest {
 
     @Mock
     private ProductCommandPort commandPort;
@@ -28,7 +28,7 @@ class ProductUseCaseTest {
     private CategoryQueryPort categoryQueryPort;
 
     @InjectMocks
-    private ProductUseCase productUseCase;
+    private ProductService productService;
 
     @BeforeEach
     void setUp() {
@@ -51,7 +51,7 @@ class ProductUseCaseTest {
 
         when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(true);
 
-        productUseCase.save(product);
+        productService.save(product);
 
         verify(commandPort, times(1)).save(product);
     }
@@ -62,7 +62,7 @@ class ProductUseCaseTest {
 
         when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(false);
 
-        assertThatThrownBy(() -> productUseCase.save(product))
+        assertThatThrownBy(() -> productService.save(product))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found.");
 
@@ -87,7 +87,7 @@ class ProductUseCaseTest {
             when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
             when(categoryQueryPort.existsById(existingProduct.getCategoryId())).thenReturn(true);
 
-            productUseCase.update(existingProduct.getId(), updatedProduct);
+            productService.update(existingProduct.getId(), updatedProduct);
 
             verify(commandPort, times(1)).save(existingProduct);
         }
@@ -108,7 +108,7 @@ class ProductUseCaseTest {
 
             when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
 
-            assertThatThrownBy(() -> productUseCase.update(existingProduct.getId(), updatedProduct))
+            assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
                     .isInstanceOf(AccessDeniedException.class)
                     .hasMessage("Only owner can edit its product.");
 
@@ -122,7 +122,7 @@ class ProductUseCaseTest {
 
         when(queryPort.findById(product.getId())).thenReturn(product);
 
-        Product result = productUseCase.findById(product.getId());
+        Product result = productService.findById(product.getId());
 
         assert result != null;
         verify(queryPort, times(1)).findById(product.getId());

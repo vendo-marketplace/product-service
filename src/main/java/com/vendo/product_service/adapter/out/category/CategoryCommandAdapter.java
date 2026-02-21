@@ -16,6 +16,6 @@ public class CategoryCommandAdapter implements CategoryCommandPort {
 
     @Override
     public void save(Category category) {
-        categoryRepository.save(categoryEntityMapper.toCategoryEntityFromCategoryDomain(category));
+        categoryRepository.save(categoryEntityMapper.toMongoEntity(category));
     }
 }

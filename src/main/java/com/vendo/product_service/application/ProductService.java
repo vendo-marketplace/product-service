@@ -16,7 +16,7 @@ import static com.vendo.product_service.security.common.helper.SecurityContextHe
 
 @Component
 @RequiredArgsConstructor
-public class ProductUseCase {
+public class ProductService {
 
     private final ProductCommandPort commandPort;
     private final ProductQueryPort queryPort;
@@ -31,27 +31,22 @@ public class ProductUseCase {
     }
 
     public void update(String id, Product updatedProduct) {
+
         Product existing = queryPort.findById(id);
 
         if (!existing.getOwnerId().equals(getUserIdFromContext())) {
             throw new AccessDeniedException("Only owner can edit its product.");
         }
 
-        Optional.ofNullable(updatedProduct.getTitle()).ifPresent(existing::setTitle);
-        Optional.ofNullable(updatedProduct.getDescription()).ifPresent(existing::setDescription);
-        Optional.ofNullable(updatedProduct.getQuantity()).ifPresent(existing::setQuantity);
-        Optional.ofNullable(updatedProduct.getPrice()).ifPresent(existing::setPrice);
-        Optional.ofNullable(updatedProduct.getAttributes()).ifPresent(existing::setAttributes);
-        Optional.ofNullable(updatedProduct.getActive()).ifPresent(existing::setActive);
-
         if (updatedProduct.getCategoryId() != null &&
                 !categoryQueryPort.existsById(updatedProduct.getCategoryId())) {
             throw new CategoryNotFoundException("Category not found.");
-        } else {
-            existing.setCategoryId(updatedProduct.getCategoryId());
         }
 
-        commandPort.save(existing);
+        updatedProduct.setId(id);
+        updatedProduct.setOwnerId(existing.getOwnerId());
+
+        commandPort.save(updatedProduct);
     }
 
     public Product findById(String id) {

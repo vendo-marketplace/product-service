@@ -4,7 +4,7 @@ package com.vendo.product_service.adapter.out.product;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.adapter.model.product.ProductEntity;
+import com.vendo.product_service.adapter.model.product.MongoProduct;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
 import com.vendo.product_service.domain.product.port.ProductQueryPort;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class ProductQueryAdapter implements ProductQueryPort {
 
     @Override
     public Product findById(String id) {
-        ProductEntity entity = productRepository.findById(id)
+        MongoProduct entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
         return productEntityMapper.toProductDomainFromProductEntity(entity);
     }

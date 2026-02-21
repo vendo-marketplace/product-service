@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-class CategoryUseCaseTest {
+class CategoryServiceTest {
 
     @Mock
     private CategoryCommandPort commandPort;
@@ -26,7 +26,7 @@ class CategoryUseCaseTest {
     private CreateCategoryValidationService validationService;
 
     @InjectMocks
-    private CategoryUseCase categoryUseCase;
+    private CategoryService categoryService;
 
     @BeforeEach
     void setUp() {
@@ -47,7 +47,7 @@ class CategoryUseCaseTest {
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
 
-        categoryUseCase.save(category);
+        categoryService.save(category);
 
         verify(validationService, times(1)).validateCreation(category);
         verify(commandPort, times(1)).save(category);
@@ -59,7 +59,7 @@ class CategoryUseCaseTest {
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(true);
 
-        assertThatThrownBy(() -> categoryUseCase.save(category))
+        assertThatThrownBy(() -> categoryService.save(category))
                 .isInstanceOf(CategoryAlreadyExistsException.class)
                 .hasMessage("Category already exists by code.");
 
@@ -73,7 +73,7 @@ class CategoryUseCaseTest {
 
         when(queryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
 
-        Category result = categoryUseCase.findById(category.getId());
+        Category result = categoryService.findById(category.getId());
 
         assertThat(result).isEqualTo(category);
         verify(queryPort, times(1)).findById(category.getId(), "Category not found.");
@@ -86,7 +86,7 @@ class CategoryUseCaseTest {
         when(queryPort.findById(categoryId, "Category not found."))
                 .thenThrow(new CategoryNotFoundException("Category not found."));
 
-        assertThatThrownBy(() -> categoryUseCase.findById(categoryId))
+        assertThatThrownBy(() -> categoryService.findById(categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found.");
 

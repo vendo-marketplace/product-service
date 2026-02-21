@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.in.category.controller;
 import com.vendo.product_service.adapter.in.category.dto.CategoryEntityResponse;
 import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.in.category.mapper.CategoryDtoMapper;
-import com.vendo.product_service.application.CategoryUseCase;
+import com.vendo.product_service.application.CategoryService;
 import com.vendo.product_service.domain.category.model.Category;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,19 +17,19 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasAuthority('ADMIN')")
 public class CategoryController {
 
-    private final CategoryUseCase categoryUseCase;
+    private final CategoryService categoryService;
     private final CategoryDtoMapper categoryDtoMapper;
 
     @PostMapping
     public void save(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
-        Category category= categoryDtoMapper.toCategoryDomainFromCategoryRequest(createCategoryRequest);
-        categoryUseCase.save(category);
+        Category category= categoryDtoMapper.toEntity(createCategoryRequest);
+        categoryService.save(category);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CategoryEntityResponse> findById(@PathVariable String id) {
-        Category category = categoryUseCase.findById(id);
-        CategoryEntityResponse categoryEntityResponse = categoryDtoMapper.toCategoryEntityResponseFromCategory(category);
+        Category category = categoryService.findById(id);
+        CategoryEntityResponse categoryEntityResponse = categoryDtoMapper.toResponse(category);
         return ResponseEntity.ok(categoryEntityResponse);
     }
 

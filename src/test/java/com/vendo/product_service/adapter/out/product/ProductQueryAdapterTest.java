@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.out.product;
 
-import com.vendo.product_service.adapter.model.product.ProductEntity;
+import com.vendo.product_service.adapter.model.product.MongoProduct;
 import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
@@ -36,7 +36,7 @@ class ProductQueryAdapterTest {
     @Test
     void findById_shouldReturnMappedProduct_whenEntityExists() {
         String productId = "123";
-        ProductEntity entity = ProductEntity.builder().id(productId).title("Test").build();
+        MongoProduct entity = MongoProduct.builder().id(productId).title("Test").build();
         Product product = Product.builder().id(productId).title("Test").build();
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(entity));

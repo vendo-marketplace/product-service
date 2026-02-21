@@ -1,6 +1,6 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
-import com.vendo.product_service.domain.category.common.type.CategoryType;
+import com.vendo.product_service.domain.category.model.CategoryType;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.validation.CategoryTypeResolver;

@@ -1,7 +1,7 @@
-package com.vendo.product_service.adapter.common.exception.handler;
+package com.vendo.product_service.adapter.exception.handler;
 
 import com.vendo.common.exception.ExceptionResponse;
-import com.vendo.product_service.adapter.common.exception.service.CommonExceptionService;
+import com.vendo.product_service.adapter.exception.service.MainExceptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +16,13 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class CommonExceptionHandler {
+public class MainExceptionHandler {
 
-    private final CommonExceptionService commonExceptionService;
+    private final MainExceptionService mainExceptionService;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        Map<String, String> errors = commonExceptionService.convertFieldErrorsToMap(e.getBindingResult().getFieldErrors());
+        Map<String, String> errors = mainExceptionService.convertFieldErrorsToMap(e.getBindingResult().getFieldErrors());
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
