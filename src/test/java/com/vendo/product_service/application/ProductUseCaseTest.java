@@ -110,7 +110,7 @@ class ProductUseCaseTest {
 
             assertThatThrownBy(() -> productUseCase.update(existingProduct.getId(), updatedProduct))
                     .isInstanceOf(AccessDeniedException.class)
-                    .hasMessage("Only owner can edit product");
+                    .hasMessage("Only owner can edit its product");
 
             verify(commandPort, never()).save(any());
         }
