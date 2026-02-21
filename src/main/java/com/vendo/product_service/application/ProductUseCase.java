@@ -34,7 +34,7 @@ public class ProductUseCase {
         Product existing = queryPort.findById(id);
 
         if (!existing.getOwnerId().equals(getUserIdFromContext())) {
-            throw new AccessDeniedException("Only owner can edit product.");
+            throw new AccessDeniedException("Only owner can edit its product.");
         }
 
         Optional.ofNullable(updatedProduct.getTitle()).ifPresent(existing::setTitle);

@@ -175,7 +175,7 @@ public class CategoryControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("CategoryEntity already exists by code.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category already exists by code.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
         }
 

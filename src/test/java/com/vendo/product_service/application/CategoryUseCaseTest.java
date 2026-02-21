@@ -71,25 +71,25 @@ class CategoryUseCaseTest {
     void findById_shouldReturnCategory_whenExists() {
         Category category = buildCategory();
 
-        when(queryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
+        when(queryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
 
         Category result = categoryUseCase.findById(category.getId());
 
         assertThat(result).isEqualTo(category);
-        verify(queryPort, times(1)).findById(category.getId(), "Parent category not found.");
+        verify(queryPort, times(1)).findById(category.getId(), "Category not found.");
     }
 
     @Test
     void findById_shouldThrowCategoryNotFoundException_whenDoesNotExist() {
         String categoryId = "nonexistent";
 
-        when(queryPort.findById(categoryId, "Parent category not found."))
-                .thenThrow(new CategoryNotFoundException("Parent category not found."));
+        when(queryPort.findById(categoryId, "Category not found."))
+                .thenThrow(new CategoryNotFoundException("Category not found."));
 
         assertThatThrownBy(() -> categoryUseCase.findById(categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Parent category not found.");
 
-        verify(queryPort, times(1)).findById(categoryId, "Parent category not found.");
+        verify(queryPort, times(1)).findById(categoryId, "Category not found.");
     }
 }

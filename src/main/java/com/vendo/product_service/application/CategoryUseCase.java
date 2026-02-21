@@ -19,13 +19,13 @@ public class CategoryUseCase {
     public void save(Category category) {
         validationService.validateCreation(category);
         if (queryPort.existsByCode(category.getCode())) {
-            throw new CategoryAlreadyExistsException("Category already exists.");
+            throw new CategoryAlreadyExistsException("Category already exists by code.");
         }
 
         commandPort.save(category);
     }
 
     public Category findById(String id) {
-        return queryPort.findById(id, "Parent category not found.");
+        return queryPort.findById(id, "Category not found.");
     }
 }

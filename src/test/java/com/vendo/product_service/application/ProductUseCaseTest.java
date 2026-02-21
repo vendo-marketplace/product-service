@@ -31,7 +31,7 @@ class ProductUseCaseTest {
     @InjectMocks
     private ProductUseCase productUseCase;
 
-    @InjectMocks
+    @Mock
     private ProductEntityMapper productEntityMapper;
 
     @BeforeEach
