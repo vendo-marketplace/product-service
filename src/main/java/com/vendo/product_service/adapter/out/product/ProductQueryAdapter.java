@@ -21,7 +21,7 @@ public class ProductQueryAdapter implements ProductQueryPort {
     public Product findById(String id) {
         MongoProduct entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
-        return productEntityMapper.toProductDomainFromProductEntity(entity);
+        return productEntityMapper.toEntity(entity);
     }
 
     @Override

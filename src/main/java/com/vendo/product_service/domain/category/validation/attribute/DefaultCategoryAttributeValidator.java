@@ -54,7 +54,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         CategoryType categoryType = categoryTypeResolver.resolve(category.getParentId(), category.getAttributes());
 
         if (categoryType != CategoryType.CHILD) {
-            throw new CategoryTypeException("CategoryEntity type should be child.");
+            throw new CategoryTypeException("Category type should be child.");
         }
     }
 

@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
 @Mapper(config = MapStructConfig.class)
 public interface ProductEntityMapper {
 
-    MongoProduct toProductEntityFromProductDomain(Product product);
-    Product toProductDomainFromProductEntity(MongoProduct mongoProduct);
+    MongoProduct toMongoEntity(Product product);
+    Product toEntity(MongoProduct mongoProduct);
 
 }

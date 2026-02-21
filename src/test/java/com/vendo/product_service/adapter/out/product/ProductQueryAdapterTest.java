@@ -40,13 +40,13 @@ class ProductQueryAdapterTest {
         Product product = Product.builder().id(productId).title("Test").build();
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(entity));
-        when(productEntityMapper.toProductDomainFromProductEntity(entity)).thenReturn(product);
+        when(productEntityMapper.toEntity(entity)).thenReturn(product);
 
         Product result = productQueryAdapter.findById(productId);
 
         assertThat(result).isEqualTo(product);
         verify(productRepository).findById(productId);
-        verify(productEntityMapper).toProductDomainFromProductEntity(entity);
+        verify(productEntityMapper).toEntity(entity);
     }
 
     @Test

@@ -18,7 +18,7 @@ public class ProductCommandAdapter implements ProductCommandPort {
 
     @Override
     public void save(Product product) {
-        MongoProduct entity = productEntityMapper.toProductEntityFromProductDomain(product);
+        MongoProduct entity = productEntityMapper.toMongoEntity(product);
         productRepository.save(entity);
     }
 }

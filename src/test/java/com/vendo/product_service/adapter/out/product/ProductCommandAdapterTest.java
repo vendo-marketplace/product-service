@@ -35,11 +35,11 @@ class ProductCommandAdapterTest {
         Product product = Product.builder().title("Test").build();
         MongoProduct entity = MongoProduct.builder().title("Test").build();
 
-        when(productEntityMapper.toProductEntityFromProductDomain(product)).thenReturn(entity);
+        when(productEntityMapper.toMongoEntity(product)).thenReturn(entity);
 
         productCommandAdapter.save(product);
 
-        verify(productEntityMapper).toProductEntityFromProductDomain(product);
+        verify(productEntityMapper).toMongoEntity(product);
         ArgumentCaptor<MongoProduct> captor = ArgumentCaptor.forClass(MongoProduct.class);
         verify(productRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(entity);
