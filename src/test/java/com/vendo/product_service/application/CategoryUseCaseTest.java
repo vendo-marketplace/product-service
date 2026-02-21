@@ -61,7 +61,7 @@ class CategoryUseCaseTest {
 
         assertThatThrownBy(() -> categoryUseCase.save(category))
                 .isInstanceOf(CategoryAlreadyExistsException.class)
-                .hasMessage("Category already exists.");
+                .hasMessage("Category already exists by code.");
 
         verify(validationService, times(1)).validateCreation(category);
         verify(commandPort, never()).save(any());

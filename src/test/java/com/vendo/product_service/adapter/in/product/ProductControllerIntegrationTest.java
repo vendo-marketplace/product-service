@@ -156,7 +156,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("CategoryEntity not found.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
         }
 
