@@ -1,8 +1,5 @@
 package com.vendo.product_service.application;
 
-import com.vendo.product_service.adapter.model.product.ProductEntity;
-import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
-import com.vendo.product_service.common.builder.ProductDataBuilder;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.port.CategoryQueryPort;
 import com.vendo.product_service.domain.product.model.Product;
@@ -13,6 +10,8 @@ import com.vendo.security.common.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -31,17 +30,19 @@ class ProductUseCaseTest {
     @InjectMocks
     private ProductUseCase productUseCase;
 
-    @Mock
-    private ProductEntityMapper productEntityMapper;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     private Product buildDomainProduct() {
-        ProductEntity entity = ProductDataBuilder.buildProductWithRequiredFields().build();
-        return productEntityMapper.toProductDomainFromProductEntity(entity);
+        return Product.builder()
+                .id("product-1")
+                .title("Test product")
+                .categoryId("cat-1")
+                .ownerId("user-1")
+                .price(BigDecimal.TEN)
+                .build();
     }
 
     @Test

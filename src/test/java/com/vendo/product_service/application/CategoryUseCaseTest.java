@@ -88,7 +88,7 @@ class CategoryUseCaseTest {
 
         assertThatThrownBy(() -> categoryUseCase.findById(categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
-                .hasMessage("Parent category not found.");
+                .hasMessage("Category not found.");
 
         verify(queryPort, times(1)).findById(categoryId, "Category not found.");
     }
