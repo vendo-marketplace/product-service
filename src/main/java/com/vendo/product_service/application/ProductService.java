@@ -1,8 +1,6 @@
 package com.vendo.product_service.application;
 
 
-import com.vendo.product_service.adapter.model.product.MongoProduct;
-import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.port.CategoryQueryPort;
 import com.vendo.product_service.domain.product.model.Product;
@@ -21,7 +19,6 @@ public class ProductService {
     private final ProductCommandPort commandPort;
     private final ProductQueryPort queryPort;
     private final CategoryQueryPort categoryQueryPort;
-    private final ProductEntityMapper productEntityMapper;
 
     public void save(Product product) {
         if (product.getCategoryId() != null && !categoryQueryPort.existsById(product.getCategoryId())) {
@@ -43,13 +40,11 @@ public class ProductService {
             throw new CategoryNotFoundException("Category not found.");
         }
 
-        MongoProduct mongoProduct = productEntityMapper.toMongoEntity(updatedProduct);
-        Product product = productEntityMapper.toEntity(mongoProduct);
+        updatedProduct.setId(id);
+        updatedProduct.setOwnerId(existing.getOwnerId());
+        updatedProduct.setVersion(existing.getVersion());
 
-        product.setId(existing.getId());
-        product.setOwnerId(existing.getOwnerId());
-
-        commandPort.save(product);
+        commandPort.save(updatedProduct);
     }
 
     public Product findById(String id) {
