@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.out.category;
 
 import com.vendo.product_service.adapter.model.category.MongoCategory;
-import com.vendo.product_service.adapter.out.category.mapper.CategoryEntityMapper;
+import com.vendo.product_service.adapter.out.category.mapper.CategoryMapper;
 import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -23,7 +23,7 @@ class CategoryQueryAdapterTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private CategoryEntityMapper categoryEntityMapper;
+    private CategoryMapper categoryMapper;
 
     @InjectMocks
     private CategoryQueryAdapter queryAdapter;
@@ -44,13 +44,13 @@ class CategoryQueryAdapterTest {
         Category category = Category.builder().id(id).code("CODE").title("Title").build();
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(categoryEntity));
-        when(categoryEntityMapper.toEntity(categoryEntity)).thenReturn(category);
+        when(categoryMapper.toEntity(categoryEntity)).thenReturn(category);
 
         Category result = queryAdapter.findById(id, "unused message");
 
         assertThat(result).isEqualTo(category);
         verify(categoryRepository, times(1)).findById(id);
-        verify(categoryEntityMapper, times(1)).toEntity(categoryEntity);
+        verify(categoryMapper, times(1)).toEntity(categoryEntity);
     }
 
     @Test
@@ -64,7 +64,7 @@ class CategoryQueryAdapterTest {
                 .hasMessage("Category not found.");
 
         verify(categoryRepository, times(1)).findById(id);
-        verifyNoInteractions(categoryEntityMapper);
+        verifyNoInteractions(categoryMapper);
     }
 
     @Test

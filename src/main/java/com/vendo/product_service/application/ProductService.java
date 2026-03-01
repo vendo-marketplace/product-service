@@ -1,53 +1,37 @@
 package com.vendo.product_service.application;
 
-
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.port.CategoryQueryPort;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.domain.product.port.ProductCommandPort;
-import com.vendo.product_service.domain.product.port.ProductQueryPort;
-import com.vendo.security.common.exception.AccessDeniedException;
+import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import static com.vendo.product_service.security.common.helper.SecurityContextHelper.getUserIdFromContext;
 
 @Component
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final ProductCommandPort commandPort;
-    private final ProductQueryPort queryPort;
+    private final ProductCommandPort productCommandPort;
+    private final ProductQueryPort productQueryPort;
     private final CategoryQueryPort categoryQueryPort;
 
-    public void save(Product product) {
-        if (product.getCategoryId() != null && !categoryQueryPort.existsById(product.getCategoryId())) {
-            throw new CategoryNotFoundException("Category not found.");
-        }
-
-        commandPort.save(product);
-    }
-
-    public void update(String id, Product updatedProduct) {
-        Product existing = queryPort.findById(id);
-
-        if (!existing.getOwnerId().equals(getUserIdFromContext())) {
-            throw new AccessDeniedException("Only owner can edit its product.");
-        }
-
-        if (updatedProduct.getCategoryId() != null &&
-                !categoryQueryPort.existsById(updatedProduct.getCategoryId())) {
-            throw new CategoryNotFoundException("Category not found.");
-        }
-
-        updatedProduct.setId(id);
-        updatedProduct.setOwnerId(existing.getOwnerId());
-        updatedProduct.setVersion(existing.getVersion());
-
-        commandPort.save(updatedProduct);
-    }
-
     public Product findById(String id) {
-        return queryPort.findById(id);
+        return productQueryPort.findById(id);
+    }
+
+    public void save(Product product) {
+        throwIfCategoryNotFound(product.getCategoryId());
+        productCommandPort.save(product);
+    }
+
+    public void update(String id, Product product) {
+        productCommandPort.update(id, product);
+    }
+
+    private void throwIfCategoryNotFound(String id) {
+        if (id != null && !categoryQueryPort.existsById(id)) {
+            throw new CategoryNotFoundException("Category not found.");
+        }
     }
 }

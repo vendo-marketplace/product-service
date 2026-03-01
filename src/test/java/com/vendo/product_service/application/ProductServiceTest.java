@@ -1,11 +1,11 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.port.CategoryQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.domain.product.port.ProductCommandPort;
-import com.vendo.product_service.domain.product.port.ProductQueryPort;
-import com.vendo.product_service.security.common.helper.SecurityContextHelper;
+import com.vendo.product_service.port.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
+import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import com.vendo.security.common.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,8 +78,8 @@ class ProductServiceTest {
         updatedProduct.setTitle("Updated title");
         updatedProduct.setCategoryId(existingProduct.getCategoryId());
 
-        try (MockedStatic<com.vendo.product_service.security.common.helper.SecurityContextHelper> securityHelperMock =
-                     Mockito.mockStatic(com.vendo.product_service.security.common.helper.SecurityContextHelper.class)) {
+        try (MockedStatic<SecurityContextHelper> securityHelperMock =
+                     Mockito.mockStatic(SecurityContextHelper.class)) {
 
             securityHelperMock.when(SecurityContextHelper::getUserIdFromContext)
                     .thenReturn("user123");
@@ -107,8 +107,8 @@ class ProductServiceTest {
 
         Product updatedProduct = buildDomainProduct();
 
-        try (MockedStatic<com.vendo.product_service.security.common.helper.SecurityContextHelper> securityHelperMock =
-                     Mockito.mockStatic(com.vendo.product_service.security.common.helper.SecurityContextHelper.class)) {
+        try (MockedStatic<SecurityContextHelper> securityHelperMock =
+                     Mockito.mockStatic(SecurityContextHelper.class)) {
 
             securityHelperMock.when(SecurityContextHelper::getUserIdFromContext)
                     .thenReturn("otherUser");

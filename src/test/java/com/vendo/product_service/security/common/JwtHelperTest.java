@@ -4,7 +4,7 @@ import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
 import com.vendo.product_service.common.builder.JwtPayloadBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.security.common.helper.JwtHelper;
+import com.vendo.product_service.adapter.security.common.helper.JwtHelper;
 import com.vendo.product_service.service.JwtService;
 import com.vendo.security.common.exception.InvalidTokenException;
 import io.jsonwebtoken.*;

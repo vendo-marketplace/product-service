@@ -1,10 +1,10 @@
 package com.vendo.product_service.adapter.out.product;
 
 import com.vendo.product_service.adapter.model.product.MongoProduct;
-import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
+import com.vendo.product_service.adapter.out.product.mapper.ProductMapper;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.domain.product.port.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductCommandPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -22,24 +22,24 @@ class ProductCommandAdapterTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ProductEntityMapper productEntityMapper;
+    private ProductMapper productMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        productCommandAdapter = new ProductCommandAdapter(productRepository, productEntityMapper);
-    }
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.openMocks(this);
+//        productCommandAdapter = new ProductCommandAdapter(productRepository, productMapper);
+//    }
 
     @Test
     void save_shouldMapAndSaveProductEntity() {
         Product product = Product.builder().title("Test").build();
         MongoProduct entity = MongoProduct.builder().title("Test").build();
 
-        when(productEntityMapper.toMongoEntity(product)).thenReturn(entity);
+        when(productMapper.toMongoProduct(product)).thenReturn(entity);
 
         productCommandAdapter.save(product);
 
-        verify(productEntityMapper).toMongoEntity(product);
+        verify(productMapper).toMongoProduct(product);
         ArgumentCaptor<MongoProduct> captor = ArgumentCaptor.forClass(MongoProduct.class);
         verify(productRepository).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(entity);

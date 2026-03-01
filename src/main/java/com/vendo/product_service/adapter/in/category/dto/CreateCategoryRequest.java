@@ -7,7 +7,7 @@ import lombok.Builder;
 
 import java.util.Map;
 
-import static com.vendo.product_service.domain.category.validation.attribute.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
+import static com.vendo.product_service.domain.category.constants.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
 
 @Builder
 public record CreateCategoryRequest(

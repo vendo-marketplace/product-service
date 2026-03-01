@@ -2,12 +2,12 @@ package com.vendo.product_service.domain.category.validation.attribute;
 
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.domain.category.validation.ValidationBody;
-import com.vendo.product_service.domain.category.model.CategoryType;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.validation.CategoryTypeResolver;
-import com.vendo.product_service.domain.category.port.CategoryQueryPort;
+import com.vendo.product_service.domain.category.validation.attribute.strategy.CategoryAttributeValidatorStrategy;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +23,6 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
 
     private final CategoryAttributeValidationFactory categoryAttributeValidationFactory;
 
-    private final CategoryTypeResolver categoryTypeResolver;
-    
     @Override
     public void validateCategoryAttributes(String requestCategoryId, Map<String, List<String>> requestAttributes) {
         Category category = categoryQueryPort.findById(requestCategoryId, "Parent category not found.");
@@ -51,9 +49,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
     }
 
     private void throwIfCategoryNotChild(Category category) {
-        CategoryType categoryType = categoryTypeResolver.resolve(category.getParentId(), category.getAttributes());
-
-        if (categoryType != CategoryType.CHILD) {
+        if (category.getType() != CategoryType.CHILD) {
             throw new CategoryTypeException("Category type should be child.");
         }
     }

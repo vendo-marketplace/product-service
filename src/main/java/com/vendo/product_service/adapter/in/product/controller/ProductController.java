@@ -7,7 +7,7 @@ import com.vendo.product_service.adapter.in.product.mapper.ProductDtoMapper;
 import com.vendo.product_service.application.ProductService;
 import com.vendo.product_service.domain.category.validation.attribute.CategoryAttributeValidator;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.security.common.helper.SecurityContextHelper;
+import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

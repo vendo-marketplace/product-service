@@ -1,7 +1,7 @@
 package com.vendo.product_service.domain.category.validation.creation;
 
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
-import com.vendo.product_service.domain.category.model.CategoryType;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ public class CategoryCreationValidationFactory {
 
     public CategoryCreationValidator getHandler(CategoryType categoryType) {
         return categoryCreationValidators.stream()
-                .filter(handler -> handler.getCategoryType() == categoryType)
+                .filter(handler -> handler.getType() == categoryType)
                 .findFirst()
                 .orElseThrow(() -> new CategoryTypeException("No category creation handler."));
     }

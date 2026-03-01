@@ -1,12 +1,12 @@
 package com.vendo.product_service.adapter.out.product;
 
 
+import com.vendo.product_service.adapter.out.product.mapper.ProductMapper;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
-import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.adapter.model.product.MongoProduct;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
-import com.vendo.product_service.domain.product.port.ProductQueryPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 public class ProductQueryAdapter implements ProductQueryPort {
 
     private final ProductRepository productRepository;
-    private final ProductEntityMapper productEntityMapper;
+    private final ProductMapper productMapper;
 
     @Override
     public Product findById(String id) {
         MongoProduct entity = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
-        return productEntityMapper.toEntity(entity);
+        return productMapper.toProduct(entity);
     }
 
     @Override

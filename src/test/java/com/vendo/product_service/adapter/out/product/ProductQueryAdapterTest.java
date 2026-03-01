@@ -1,11 +1,11 @@
 package com.vendo.product_service.adapter.out.product;
 
 import com.vendo.product_service.adapter.model.product.MongoProduct;
-import com.vendo.product_service.adapter.out.product.mapper.ProductEntityMapper;
+import com.vendo.product_service.adapter.out.product.mapper.ProductMapper;
 import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.domain.product.port.ProductQueryPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -25,12 +25,12 @@ class ProductQueryAdapterTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ProductEntityMapper productEntityMapper;
+    private ProductMapper productMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        productQueryAdapter = new ProductQueryAdapter(productRepository, productEntityMapper);
+        productQueryAdapter = new ProductQueryAdapter(productRepository, productMapper);
     }
 
     @Test
@@ -40,13 +40,13 @@ class ProductQueryAdapterTest {
         Product product = Product.builder().id(productId).title("Test").build();
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(entity));
-        when(productEntityMapper.toEntity(entity)).thenReturn(product);
+        when(productMapper.toProduct(entity)).thenReturn(product);
 
         Product result = productQueryAdapter.findById(productId);
 
         assertThat(result).isEqualTo(product);
         verify(productRepository).findById(productId);
-        verify(productEntityMapper).toEntity(entity);
+        verify(productMapper).toProduct(entity);
     }
 
     @Test
@@ -59,7 +59,7 @@ class ProductQueryAdapterTest {
                 .hasMessage("Product not found.");
 
         verify(productRepository).findById(productId);
-        verifyNoInteractions(productEntityMapper);
+        verifyNoInteractions(productMapper);
     }
 
     @Test
