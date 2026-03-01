@@ -1,6 +1,7 @@
 package com.vendo.product_service.domain.category.model;
 
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
+import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
 
@@ -99,6 +100,12 @@ public class Category {
         }
 
         throw new CategoryValidationException("Invalid category structure.");
+    }
+
+    public void throwIfNotDesiredType(CategoryType desiredType, String message) {
+        if (getType() != desiredType) {
+            throw new CategoryTypeException(message);
+        }
     }
 
     private boolean isParent(String parentId, Map<String, AttributeDefinition> attributes) {

@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.category.validation;
+package com.vendo.product_service.application.category.validation.dto;
 
 import lombok.Builder;
 

@@ -1,12 +1,11 @@
 package com.vendo.product_service.application.category.validation.attribute;
 
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
-import com.vendo.product_service.application.category.validation.ValidationBody;
-import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.domain.category.exception.CategoryTypeException;
+import com.vendo.product_service.application.category.validation.attribute.strategy.CategoryAttributeValidatorStrategy;
+import com.vendo.product_service.application.category.validation.dto.ValidationBody;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.application.category.validation.attribute.strategy.CategoryAttributeValidatorStrategy;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,7 +25,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
     @Override
     public void validateCategoryAttributes(String requestCategoryId, Map<String, List<String>> requestAttributes) {
         Category category = categoryQueryPort.findById(requestCategoryId, "Parent category not found.");
-        throwIfCategoryNotChild(category);
+        category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
         validateAttributes(category.getAttributes(), requestAttributes);
     }
 
@@ -45,13 +44,7 @@ public class DefaultCategoryAttributeValidator implements CategoryAttributeValid
         if (!validationBody.valid()) return validationBody;
 
         CategoryAttributeValidatorStrategy categoryAttributeValidationFactoryValidator = categoryAttributeValidationFactory.getValidator(attributeDefinition.type());
-        return categoryAttributeValidationFactoryValidator.validate(attributeName, attributeDefinition,  requestAttributes.get(attributeName));
-    }
-
-    private void throwIfCategoryNotChild(Category category) {
-        if (category.getType() != CategoryType.CHILD) {
-            throw new CategoryTypeException("Category type should be child.");
-        }
+        return categoryAttributeValidationFactoryValidator.validate(attributeName, attributeDefinition, requestAttributes.get(attributeName));
     }
 
     private ValidationBody validateAttributeRequirement(String attributeName, AttributeDefinition attributeDefinition, List<String> attributesValue) {

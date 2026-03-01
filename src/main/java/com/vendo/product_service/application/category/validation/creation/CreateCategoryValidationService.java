@@ -14,5 +14,4 @@ public class CreateCategoryValidationService {
         CategoryCreationValidator creationHandler = creationHandlerFactory.getHandler(category.getType());
         creationHandler.validate(category.getParentId());
     }
-
 }
