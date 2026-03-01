@@ -1,14 +1,20 @@
-package com.vendo.product_service.domain.category.validation.attribute.strategy;
+package com.vendo.product_service.application.category.validation.attribute.strategy;
 
-import com.vendo.product_service.domain.category.validation.ValidationBody;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
+import com.vendo.product_service.application.category.validation.ValidationBody;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
-public class CategoryNumberAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
+public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
+
+    private final Set<String> BOOLEAN_VALUES = Set.of(
+            Boolean.FALSE.toString(),
+            Boolean.TRUE.toString()
+    );
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
@@ -18,19 +24,9 @@ public class CategoryNumberAttributeValidatorStrategy implements CategoryAttribu
             return validationBody.toBuilder()
                     .errorMessage("Must contain exactly one value.")
                     .build();
-        }
-
-        try {
-            int attributeValue = Integer.parseInt(requestAttributes.get(0));
-            if (attributeValue < 0) {
-                return validationBody.toBuilder()
-                        .errorMessage("Must be equal or greater than zero.")
-                        .build();
-            }
-
-        } catch (NumberFormatException e) {
+        } else if (!BOOLEAN_VALUES.contains(requestAttributes.get(0))) {
             return validationBody.toBuilder()
-                    .errorMessage("Invalid number value.")
+                    .errorMessage("Invalid boolean value. Allowed values: true, false.")
                     .build();
         }
 
@@ -39,6 +35,6 @@ public class CategoryNumberAttributeValidatorStrategy implements CategoryAttribu
 
     @Override
     public AttributeType getType() {
-        return AttributeType.NUMBER;
+        return AttributeType.BOOLEAN;
     }
 }

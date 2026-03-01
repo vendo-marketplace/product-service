@@ -1,10 +1,7 @@
 package com.vendo.product_service.domain.category.exception;
 
-import lombok.Getter;
-
 import java.util.Map;
 
-@Getter
 public class CategoryValidationException extends RuntimeException {
 
     private Map<String, String> errors;
@@ -16,5 +13,9 @@ public class CategoryValidationException extends RuntimeException {
     public CategoryValidationException(String message, Map<String, String> errors) {
         super(message);
         this.errors = errors;
+    }
+
+    public Map<String, String> getErrors() {
+        return errors;
     }
 }

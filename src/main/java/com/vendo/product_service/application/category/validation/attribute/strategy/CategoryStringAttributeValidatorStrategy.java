@@ -1,20 +1,14 @@
-package com.vendo.product_service.domain.category.validation.attribute.strategy;
+package com.vendo.product_service.application.category.validation.attribute.strategy;
 
+import com.vendo.product_service.application.category.validation.ValidationBody;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
-import com.vendo.product_service.domain.category.validation.ValidationBody;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
-public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
-
-    private final Set<String> BOOLEAN_VALUES = Set.of(
-            Boolean.FALSE.toString(),
-            Boolean.TRUE.toString()
-    );
+public class CategoryStringAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
@@ -24,9 +18,11 @@ public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttrib
             return validationBody.toBuilder()
                     .errorMessage("Must contain exactly one value.")
                     .build();
-        } else if (!BOOLEAN_VALUES.contains(requestAttributes.get(0))) {
+        }
+
+        if (requestAttributes.get(0).isBlank()) {
             return validationBody.toBuilder()
-                    .errorMessage("Invalid boolean value. Allowed values: true, false.")
+                    .errorMessage("Must not be blank.")
                     .build();
         }
 
@@ -35,6 +31,6 @@ public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttrib
 
     @Override
     public AttributeType getType() {
-        return AttributeType.BOOLEAN;
+        return AttributeType.STRING;
     }
 }

@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.validation.creation;
+package com.vendo.product_service.application.category.validation.creation;
 
 import com.vendo.product_service.domain.category.type.CategoryType;
 

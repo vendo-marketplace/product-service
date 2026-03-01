@@ -1,6 +1,6 @@
-package com.vendo.product_service.domain.category.validation.attribute.strategy;
+package com.vendo.product_service.application.category.validation.attribute.strategy;
 
-import com.vendo.product_service.domain.category.validation.ValidationBody;
+import com.vendo.product_service.application.category.validation.ValidationBody;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
 import org.springframework.stereotype.Component;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CategoryStringAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
+public class CategoryNumberAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
@@ -20,9 +20,17 @@ public class CategoryStringAttributeValidatorStrategy implements CategoryAttribu
                     .build();
         }
 
-        if (requestAttributes.get(0).isBlank()) {
+        try {
+            int attributeValue = Integer.parseInt(requestAttributes.get(0));
+            if (attributeValue < 0) {
+                return validationBody.toBuilder()
+                        .errorMessage("Must be equal or greater than zero.")
+                        .build();
+            }
+
+        } catch (NumberFormatException e) {
             return validationBody.toBuilder()
-                    .errorMessage("Must not be blank.")
+                    .errorMessage("Invalid number value.")
                     .build();
         }
 
@@ -31,6 +39,6 @@ public class CategoryStringAttributeValidatorStrategy implements CategoryAttribu
 
     @Override
     public AttributeType getType() {
-        return AttributeType.STRING;
+        return AttributeType.NUMBER;
     }
 }

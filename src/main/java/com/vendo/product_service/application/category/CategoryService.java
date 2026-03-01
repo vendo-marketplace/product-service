@@ -1,8 +1,8 @@
-package com.vendo.product_service.application;
+package com.vendo.product_service.application.category;
 
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.validation.creation.CreateCategoryValidationService;
+import com.vendo.product_service.application.category.validation.creation.CreateCategoryValidationService;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
@@ -12,22 +12,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    private final CategoryCommandPort commandPort;
-    private final CategoryQueryPort queryPort;
+    private final CategoryCommandPort categoryCommandPort;
+    private final CategoryQueryPort categoryQueryPort;
     private final CreateCategoryValidationService validationService;
 
     public void save(Category category) {
         validationService.validateCreation(category);
         throwIfExistsByCode(category.getCode());
-        commandPort.save(category);
+        categoryCommandPort.save(category);
     }
 
     public Category findById(String id) {
-        return queryPort.findById(id, "Category not found.");
+        return categoryQueryPort.findById(id, "Category not found.");
     }
 
     private void throwIfExistsByCode(String code) {
-        if (queryPort.existsByCode(code)) {
+        if (categoryQueryPort.existsByCode(code)) {
             throw new CategoryAlreadyExistsException("Category already exists by code.");
         }
     }

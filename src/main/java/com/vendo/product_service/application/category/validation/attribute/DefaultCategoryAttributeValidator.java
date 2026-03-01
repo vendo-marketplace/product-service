@@ -1,12 +1,12 @@
-package com.vendo.product_service.domain.category.validation.attribute;
+package com.vendo.product_service.application.category.validation.attribute;
 
 import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
-import com.vendo.product_service.domain.category.validation.ValidationBody;
+import com.vendo.product_service.application.category.validation.ValidationBody;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.validation.attribute.strategy.CategoryAttributeValidatorStrategy;
+import com.vendo.product_service.application.category.validation.attribute.strategy.CategoryAttributeValidatorStrategy;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

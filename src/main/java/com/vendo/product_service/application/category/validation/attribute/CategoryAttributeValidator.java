@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.validation.attribute;
+package com.vendo.product_service.application.category.validation.attribute;
 
 import java.util.List;
 import java.util.Map;

@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.in.category.controller;
 import com.vendo.product_service.adapter.in.category.dto.CategoryEntityResponse;
 import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.in.category.mapper.CategoryDtoMapper;
-import com.vendo.product_service.application.CategoryService;
+import com.vendo.product_service.application.category.CategoryService;
 import com.vendo.product_service.domain.category.model.Category;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

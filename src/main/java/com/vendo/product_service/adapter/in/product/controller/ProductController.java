@@ -5,7 +5,7 @@ import com.vendo.product_service.adapter.in.product.dto.ProductResponse;
 import com.vendo.product_service.adapter.in.product.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.in.product.mapper.ProductDtoMapper;
 import com.vendo.product_service.application.ProductService;
-import com.vendo.product_service.domain.category.validation.attribute.CategoryAttributeValidator;
+import com.vendo.product_service.application.category.validation.attribute.CategoryAttributeValidator;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import jakarta.validation.Valid;
