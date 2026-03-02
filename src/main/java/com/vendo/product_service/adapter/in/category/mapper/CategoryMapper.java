@@ -7,7 +7,7 @@ import com.vendo.product_service.domain.category.model.Category;
 import org.mapstruct.Mapper;
 
 @Mapper(config = MapStructConfig.class)
-public interface CategoryDtoMapper {
+public interface CategoryMapper {
 
     CategoryEntityResponse toResponse(Category entity);
 

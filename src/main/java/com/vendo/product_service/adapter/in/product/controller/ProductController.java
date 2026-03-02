@@ -3,9 +3,9 @@ package com.vendo.product_service.adapter.in.product.controller;
 import com.vendo.product_service.adapter.in.product.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.in.product.dto.ProductResponse;
 import com.vendo.product_service.adapter.in.product.dto.UpdateProductRequest;
-import com.vendo.product_service.adapter.in.product.mapper.ProductDtoMapper;
+import com.vendo.product_service.adapter.in.product.mapper.ProductMapper;
 import com.vendo.product_service.application.ProductService;
-import com.vendo.product_service.application.category.validation.attribute.CategoryAttributeValidator;
+import com.vendo.product_service.application.category.validation.attribute.CategoryValidator;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import jakarta.validation.Valid;
@@ -19,18 +19,17 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
-    private final ProductDtoMapper productDtoMapper;
-    private final CategoryAttributeValidator categoryAttributeValidator;
+    private final ProductMapper productMapper;
+    private final CategoryValidator categoryValidator;
 
     @PostMapping
     public void save(@Valid @RequestBody CreateProductRequest request) {
-
-        categoryAttributeValidator.validateCategoryAttributes(
+        categoryValidator.validateAttributes(
                 request.categoryId(),
                 request.attributes()
         );
 
-        Product product = productDtoMapper.toEntity(request);
+        Product product = productMapper.toEntity(request);
         product.setOwnerId(SecurityContextHelper.getUserIdFromContext());
         product.setActive(true);
 
@@ -42,7 +41,7 @@ public class ProductController {
             @PathVariable String id,
             @Valid @RequestBody UpdateProductRequest request
     ) {
-        Product product = productDtoMapper.toEntity(request);
+        Product product = productMapper.toEntity(request);
         productService.update(id, product);
     }
 
@@ -50,6 +49,6 @@ public class ProductController {
     public ResponseEntity<ProductResponse> find(@PathVariable String id) {
 
         Product product = productService.findById(id);
-        return ResponseEntity.ok(productDtoMapper.toResponse(product));
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
 }

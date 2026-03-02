@@ -1,7 +1,7 @@
 package com.vendo.product_service.application.category.validation.attribute.strategy;
 
-import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
 import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
+import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.application.category.validation.dto.ValidationBody;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttributeValidatorStrategy {
+public class BooleanAttributeValidatorStrategy implements AttributeValidatorStrategy {
 
     private final Set<String> BOOLEAN_VALUES = Set.of(
             Boolean.FALSE.toString(),
@@ -17,8 +17,8 @@ public class CategoryBooleanAttributeValidatorStrategy implements CategoryAttrib
     );
 
     @Override
-    public ValidationBody validate(String name, AttributeDefinition definition, List<String> requestAttributes) {
-        ValidationBody validationBody = ValidationBody.builder().fieldName(name).build();
+    public ValidationBody validate(AttributePayload payload, List<String> requestAttributes) {
+        ValidationBody validationBody = ValidationBody.builder().fieldName(payload.name()).build();
 
         if (requestAttributes == null || requestAttributes.size() != 1) {
             return validationBody.toBuilder()
