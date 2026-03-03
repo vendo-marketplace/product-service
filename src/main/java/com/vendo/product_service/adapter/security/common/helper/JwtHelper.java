@@ -20,7 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.List;
 
-import static com.vendo.security.common.type.TokenClaim.*;
+import static com.vendo.security.common.type.TokenClaim.ROLES_CLAIM;
+import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 
 @Slf4j
 @Component

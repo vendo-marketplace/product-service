@@ -1,20 +1,20 @@
-package com.vendo.product_service.adapter.in.product;
+package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
+import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
+import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
-import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
-import com.vendo.product_service.domain.category.model.AttributeDefinition;
-import com.vendo.product_service.domain.category.model.AttributeType;
 import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
-import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
 import com.vendo.product_service.common.builder.*;
 import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.domain.category.model.AttributeDefinition;
+import com.vendo.product_service.domain.category.model.AttributeType;
 import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;

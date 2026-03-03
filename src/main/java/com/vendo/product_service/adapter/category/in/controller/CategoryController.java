@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.category.in;
+package com.vendo.product_service.adapter.category.in.controller;
 
 import com.vendo.product_service.adapter.category.in.dto.CategoryEntityResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
@@ -22,7 +22,7 @@ public class CategoryController {
 
     @PostMapping
     public void save(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
-        Category category= categoryMapper.toEntity(createCategoryRequest);
+        Category category = categoryMapper.toEntity(createCategoryRequest);
         categoryService.save(category);
     }
 

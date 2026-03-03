@@ -1,20 +1,22 @@
-package com.vendo.product_service.security.common;
+package com.vendo.product_service.adapter.security.common;
 
 import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
+import com.vendo.product_service.adapter.security.common.helper.JwtHelper;
 import com.vendo.product_service.common.builder.JwtPayloadBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.adapter.security.common.helper.JwtHelper;
 import com.vendo.product_service.service.JwtService;
 import com.vendo.security.common.exception.InvalidTokenException;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.HashMap;
 import java.util.List;

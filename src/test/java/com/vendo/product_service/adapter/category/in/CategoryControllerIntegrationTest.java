@@ -1,18 +1,18 @@
-package com.vendo.product_service.adapter.in.category;
+package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
-import com.vendo.product_service.adapter.in.category.dto.CategoryEntityResponse;
-import com.vendo.product_service.adapter.in.category.dto.CreateCategoryRequest;
-import com.vendo.product_service.adapter.model.category.MongoCategory;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
-import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
+import com.vendo.product_service.adapter.category.in.dto.CategoryEntityResponse;
+import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
+import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
 import com.vendo.product_service.common.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
 import com.vendo.product_service.common.builder.MongoCategoryDataBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.domain.category.model.AttributeDefinition;
+import com.vendo.product_service.domain.category.model.AttributeType;
 import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;

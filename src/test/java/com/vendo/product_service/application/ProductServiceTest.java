@@ -1,21 +1,25 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import com.vendo.product_service.domain.port.product.ProductCommandPort;
+import com.vendo.product_service.domain.port.product.ProductQueryPort;
+import com.vendo.product_service.domain.port.security.CurrentUserPort;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.product.ProductCommandPort;
-import com.vendo.product_service.port.product.ProductQueryPort;
-import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import com.vendo.security.common.exception.AccessDeniedException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
     @Mock
@@ -30,10 +34,9 @@ class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @Mock
+    private CurrentUserPort currentUserPort;
+
 
     private Product buildDomainProduct() {
         return Product.builder()
@@ -78,26 +81,21 @@ class ProductServiceTest {
         updatedProduct.setTitle("Updated title");
         updatedProduct.setCategoryId(existingProduct.getCategoryId());
 
-        try (MockedStatic<SecurityContextHelper> securityHelperMock =
-                     Mockito.mockStatic(SecurityContextHelper.class)) {
+        when(currentUserPort.getCurrentUserId()).thenReturn("user123");
+        when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
+        when(categoryQueryPort.existsById(existingProduct.getCategoryId())).thenReturn(true);
 
-            securityHelperMock.when(SecurityContextHelper::getUserIdFromContext)
-                    .thenReturn("user123");
+        productService.update(existingProduct.getId(), updatedProduct);
 
-            when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
-            when(categoryQueryPort.existsById(existingProduct.getCategoryId())).thenReturn(true);
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(commandPort).save(captor.capture());
 
-            productService.update(existingProduct.getId(), updatedProduct);
+        Product saved = captor.getValue();
 
-            ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-            verify(commandPort).save(captor.capture());
+        assert saved.getId().equals(existingProduct.getId());
+        assert saved.getTitle().equals("Updated title");
+        assert saved.getOwnerId().equals("user123");
 
-            Product saved = captor.getValue();
-
-            assert saved.getId().equals(existingProduct.getId());
-            assert saved.getTitle().equals("Updated title");
-            assert saved.getOwnerId().equals("user123");
-        }
     }
 
     @Test
@@ -107,20 +105,14 @@ class ProductServiceTest {
 
         Product updatedProduct = buildDomainProduct();
 
-        try (MockedStatic<SecurityContextHelper> securityHelperMock =
-                     Mockito.mockStatic(SecurityContextHelper.class)) {
+        when(currentUserPort.getCurrentUserId()).thenReturn("otherUser");
+        when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
+        assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Only owner can edit its product.");
 
-            securityHelperMock.when(SecurityContextHelper::getUserIdFromContext)
-                    .thenReturn("otherUser");
+        verify(commandPort, never()).save(any());
 
-            when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
-
-            assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
-                    .isInstanceOf(AccessDeniedException.class)
-                    .hasMessage("Only owner can edit its product.");
-
-            verify(commandPort, never()).save(any());
-        }
     }
 
     @Test

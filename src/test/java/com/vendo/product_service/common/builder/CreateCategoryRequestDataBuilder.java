@@ -1,8 +1,8 @@
 package com.vendo.product_service.common.builder;
 
+import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.AttributeType;
-import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 
 import java.util.List;
 import java.util.Map;

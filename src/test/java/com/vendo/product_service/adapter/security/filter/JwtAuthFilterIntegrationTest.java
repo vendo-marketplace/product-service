@@ -1,4 +1,4 @@
-package com.vendo.product_service.security.filter;
+package com.vendo.product_service.adapter.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
@@ -25,7 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
-import static com.vendo.product_service.service.JwtService.*;
+import static com.vendo.product_service.service.JwtService.INVALID_STATUS;
+import static com.vendo.product_service.service.JwtService.INVALID_TOKEN_FORMAT;
 import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
 import static com.vendo.security.common.type.TokenClaim.*;
 import static org.apache.kafka.common.security.oauthbearer.internals.secured.HttpAccessTokenRetriever.AUTHORIZATION_HEADER;

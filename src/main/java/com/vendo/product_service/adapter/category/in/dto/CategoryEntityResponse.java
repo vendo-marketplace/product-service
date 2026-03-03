@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.category.in.dto;
 
-import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
+import com.vendo.product_service.domain.category.type.CategoryType;
 
 import java.util.Map;
 

@@ -1,13 +1,12 @@
 package com.vendo.product_service.adapter.product.in.controller;
 
-import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
+import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.application.ProductService;
 import com.vendo.product_service.application.category.validation.attribute.CategoryValidator;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,6 @@ public class ProductController {
         );
 
         Product product = dtoProductMapper.toEntity(request);
-        product.setOwnerId(SecurityContextHelper.getUserIdFromContext());
-        product.setActive(true);
-
         productService.save(product);
     }
 

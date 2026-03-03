@@ -2,15 +2,14 @@ package com.vendo.product_service.adapter.product.out.persistence;
 
 import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import com.vendo.product_service.domain.port.product.ProductCommandPort;
+import com.vendo.product_service.domain.port.security.CurrentUserPort;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.category.CategoryQueryPort;
-import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.security.common.exception.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import static com.vendo.product_service.adapter.security.common.helper.SecurityContextHelper.getUserIdFromContext;
 
 @Component
 @RequiredArgsConstructor
@@ -19,6 +18,7 @@ public class ProductCommandAdapter implements ProductCommandPort {
     private final ProductRepository productRepository;
     private final MongoProductMapper mongoProductMapper;
     private final CategoryQueryPort categoryQueryPort;
+    private final CurrentUserPort currentUserPort;
 
     @Override
     public void save(Product product) {
@@ -44,7 +44,7 @@ public class ProductCommandAdapter implements ProductCommandPort {
     }
 
     private void throwIfNotOwnerOfProduct(String ownerId) {
-        if (!ownerId.equals(getUserIdFromContext())) {
+        if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
             throw new AccessDeniedException("Only owner can edit its product.");
         }
     }
