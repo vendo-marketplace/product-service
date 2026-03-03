@@ -68,30 +68,6 @@ public class CategoryControllerIntegrationTest {
         categoryRepository.deleteAll();
     }
 
-    private ResultActions performCategoryGet(String categoryId) throws Exception {
-        Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
-        return mockMvc.perform(get("/categories/{id}", categoryId)
-                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken));
-    }
-
-    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
-        Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
-        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-
-        return performCategoryPersist(categoryRequest, jwtPayload);
-    }
-
-    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, JwtPayload jwtPayload) throws Exception {
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
-        return mockMvc.perform(post("/categories")
-                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-                .content(objectMapper.writeValueAsString(categoryRequest))
-                .contentType(MediaType.APPLICATION_JSON));
-    }
-
     @Nested
     class SaveCategoryEntityTests {
 
@@ -495,5 +471,29 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/%s".formatted(categoryId));
         }
+    }
+
+    private ResultActions performCategoryGet(String categoryId) throws Exception {
+        Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        return mockMvc.perform(get("/categories/{id}", categoryId)
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken));
+    }
+
+    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
+        Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
+        JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+
+        return performCategoryPersist(categoryRequest, jwtPayload);
+    }
+
+    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, JwtPayload jwtPayload) throws Exception {
+        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        return mockMvc.perform(post("/categories")
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
+                .content(objectMapper.writeValueAsString(categoryRequest))
+                .contentType(MediaType.APPLICATION_JSON));
     }
 }

@@ -1,19 +1,19 @@
 package com.vendo.product_service.adapter.category.out;
 
+
 import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryCommandAdapter;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
 import com.vendo.product_service.domain.category.model.Category;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class CategoryCommandAdapterTest {
 
     @Mock
@@ -24,6 +24,11 @@ class CategoryCommandAdapterTest {
 
     @InjectMocks
     private CategoryCommandAdapter commandAdapter;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     @Test
     void save_shouldMapAndSaveCategory() {

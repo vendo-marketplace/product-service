@@ -7,17 +7,16 @@ import com.vendo.product_service.domain.category.exception.CategoryNotFoundExcep
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.port.category.CategoryCommandPort;
 import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
     @Mock
@@ -32,6 +31,10 @@ class CategoryServiceTest {
     @InjectMocks
     private CategoryService categoryService;
 
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     private Category buildCategory() {
         return Category.builder()

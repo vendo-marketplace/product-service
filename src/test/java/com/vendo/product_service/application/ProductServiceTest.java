@@ -7,19 +7,18 @@ import com.vendo.product_service.domain.port.product.ProductQueryPort;
 import com.vendo.product_service.domain.port.security.CurrentUserPort;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.security.common.exception.AccessDeniedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
     @Mock
@@ -31,12 +30,16 @@ class ProductServiceTest {
     @Mock
     private CategoryQueryPort categoryQueryPort;
 
-    @InjectMocks
-    private ProductService productService;
-
     @Mock
     private CurrentUserPort currentUserPort;
 
+    @InjectMocks
+    private ProductService productService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
     private Product buildDomainProduct() {
         return Product.builder()
@@ -81,7 +84,8 @@ class ProductServiceTest {
         updatedProduct.setTitle("Updated title");
         updatedProduct.setCategoryId(existingProduct.getCategoryId());
 
-        when(currentUserPort.getCurrentUserId()).thenReturn("user123");
+        when(currentUserPort.getCurrentUserId())
+                .thenReturn("user123");
         when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
         when(categoryQueryPort.existsById(existingProduct.getCategoryId())).thenReturn(true);
 
@@ -95,7 +99,6 @@ class ProductServiceTest {
         assert saved.getId().equals(existingProduct.getId());
         assert saved.getTitle().equals("Updated title");
         assert saved.getOwnerId().equals("user123");
-
     }
 
     @Test
@@ -105,14 +108,16 @@ class ProductServiceTest {
 
         Product updatedProduct = buildDomainProduct();
 
-        when(currentUserPort.getCurrentUserId()).thenReturn("otherUser");
+        when(currentUserPort.getCurrentUserId())
+                .thenReturn("otherUser");
+
         when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
+
         assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("Only owner can edit its product.");
 
         verify(commandPort, never()).save(any());
-
     }
 
     @Test
