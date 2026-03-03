@@ -1,6 +1,6 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.adapter.model.product.MongoProduct;
+import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 
 import java.math.BigDecimal;
 import java.util.List;

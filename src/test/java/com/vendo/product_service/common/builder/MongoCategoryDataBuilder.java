@@ -1,8 +1,8 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.adapter.model.category.MongoCategory;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
-import com.vendo.product_service.adapter.model.category.embedded.AttributeType;
+import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
+import com.vendo.product_service.domain.category.model.AttributeDefinition;
+import com.vendo.product_service.domain.category.model.AttributeType;
 
 import java.util.List;
 import java.util.Map;

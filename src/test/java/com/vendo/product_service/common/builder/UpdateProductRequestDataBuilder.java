@@ -1,6 +1,6 @@
 package com.vendo.product_service.common.builder;
 
-import com.vendo.product_service.adapter.in.product.dto.UpdateProductRequest;
+import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 
 import java.math.BigDecimal;
 import java.util.List;

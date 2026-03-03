@@ -1,6 +1,6 @@
 package com.vendo.product_service.application.category.validation.attribute;
 
-import com.vendo.product_service.adapter.model.category.embedded.AttributeDefinition;
+import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.application.category.validation.attribute.strategy.AttributeValidatorStrategy;
 import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.application.category.validation.dto.ValidationBody;

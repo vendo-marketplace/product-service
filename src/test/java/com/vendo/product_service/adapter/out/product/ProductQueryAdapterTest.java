@@ -1,8 +1,9 @@
 package com.vendo.product_service.adapter.out.product;
 
-import com.vendo.product_service.adapter.model.product.MongoProduct;
-import com.vendo.product_service.adapter.out.product.mapper.ProductMapper;
-import com.vendo.product_service.adapter.out.product.repository.ProductRepository;
+import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
+import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
+import com.vendo.product_service.adapter.product.out.persistence.ProductQueryAdapter;
+import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.product.ProductQueryPort;
@@ -25,12 +26,12 @@ class ProductQueryAdapterTest {
     private ProductRepository productRepository;
 
     @Mock
-    private ProductMapper productMapper;
+    private MongoProductMapper mongoProductMapper;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        productQueryAdapter = new ProductQueryAdapter(productRepository, productMapper);
+        productQueryAdapter = new ProductQueryAdapter(productRepository, mongoProductMapper);
     }
 
     @Test
@@ -40,13 +41,13 @@ class ProductQueryAdapterTest {
         Product product = Product.builder().id(productId).title("Test").build();
 
         when(productRepository.findById(productId)).thenReturn(Optional.of(entity));
-        when(productMapper.toProduct(entity)).thenReturn(product);
+        when(mongoProductMapper.toProduct(entity)).thenReturn(product);
 
         Product result = productQueryAdapter.findById(productId);
 
         assertThat(result).isEqualTo(product);
         verify(productRepository).findById(productId);
-        verify(productMapper).toProduct(entity);
+        verify(mongoProductMapper).toProduct(entity);
     }
 
     @Test
@@ -59,7 +60,7 @@ class ProductQueryAdapterTest {
                 .hasMessage("Product not found.");
 
         verify(productRepository).findById(productId);
-        verifyNoInteractions(productMapper);
+        verifyNoInteractions(mongoProductMapper);
     }
 
     @Test

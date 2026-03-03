@@ -1,8 +1,9 @@
 package com.vendo.product_service.adapter.out.category;
 
-import com.vendo.product_service.adapter.model.category.MongoCategory;
-import com.vendo.product_service.adapter.out.category.mapper.CategoryMapper;
-import com.vendo.product_service.adapter.out.category.repository.CategoryRepository;
+import com.vendo.product_service.adapter.category.out.persistence.CategoryCommandAdapter;
+import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
+import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.domain.category.model.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

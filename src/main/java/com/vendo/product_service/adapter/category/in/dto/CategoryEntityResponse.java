@@ -1,0 +1,14 @@
+package com.vendo.product_service.adapter.category.in.dto;
+
+import com.vendo.product_service.domain.category.type.CategoryType;
+import com.vendo.product_service.domain.category.model.AttributeDefinition;
+
+import java.util.Map;
+
+public record CategoryEntityResponse(
+         String id,
+         String title,
+         String parentId,
+         CategoryType categoryType,
+         Map<String, AttributeDefinition> attributes) {
+}
