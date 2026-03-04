@@ -11,7 +11,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -57,17 +56,6 @@ public class JwtService {
             log.error("Invalid token claim type: ", e);
             throw new InvalidTokenException("Invalid token.");
         }
-    }
-
-    public String extractSubject(Claims claims) {
-        String subject = claims.getSubject();
-
-        if (StringUtils.isEmpty(subject)) {
-            log.error("Subject is not present.");
-            throw new InvalidTokenException("Invalid token.");
-        }
-
-        return subject;
     }
 
     public UserStatus extractUserStatus(Claims claims) {

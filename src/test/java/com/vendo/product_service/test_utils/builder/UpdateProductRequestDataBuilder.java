@@ -1,4 +1,4 @@
-package com.vendo.product_service.common.builder;
+package com.vendo.product_service.test_utils.builder;
 
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 

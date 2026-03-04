@@ -7,13 +7,10 @@ import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
-import com.vendo.product_service.common.builder.CreateCategoryRequestDataBuilder;
-import com.vendo.product_service.common.builder.JwtPayloadDataBuilder;
-import com.vendo.product_service.common.builder.MongoCategoryDataBuilder;
-import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
+import com.vendo.product_service.test_utils.builder.MongoCategoryDataBuilder;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.AttributeType;
-import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -51,12 +48,6 @@ public class CategoryControllerIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
-    private JwtPayloadDataBuilder jwtPayloadDataBuilder;
-
-    @Autowired
-    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
@@ -477,7 +468,7 @@ public class CategoryControllerIntegrationTest {
         Map<String, Object> claims = jwtPayloadDataBuilder.buildClaimsWithRole(UserRole.ADMIN);
         JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        String accessToken = testJwtService.generateAccessToken(jwtPayload);
         return mockMvc.perform(get("/categories/{id}", categoryId)
                 .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken));
     }
@@ -490,7 +481,7 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, JwtPayload jwtPayload) throws Exception {
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        String accessToken = testJwtService.generateAccessToken(jwtPayload);
         return mockMvc.perform(post("/categories")
                 .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                 .content(objectMapper.writeValueAsString(categoryRequest))

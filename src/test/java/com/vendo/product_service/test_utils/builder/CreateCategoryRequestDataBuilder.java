@@ -1,4 +1,4 @@
-package com.vendo.product_service.common.builder;
+package com.vendo.product_service.test_utils.builder;
 
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;

@@ -11,11 +11,9 @@ import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
-import com.vendo.product_service.common.builder.*;
-import com.vendo.product_service.common.dto.JwtPayload;
+import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.AttributeType;
-import com.vendo.product_service.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -61,7 +59,7 @@ public class ProductControllerIntegrationTest {
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private JwtService jwtService;
+    private TestJwtService testJwtService;
 
     @BeforeEach
     void setUp() {
@@ -953,7 +951,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductPersist(CreateProductRequest createProductRequest, JwtPayload jwtPayload) throws Exception {
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        String accessToken = testJwtService.generateAccessToken(jwtPayload);
         return mockMvc.perform(post("/products")
                 .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                 .content(objectMapper.writeValueAsString(createProductRequest))
@@ -961,7 +959,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest, JwtPayload jwtPayload) throws Exception {
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        String accessToken = testJwtService.generateAccessToken(jwtPayload);
         return mockMvc.perform(put("/products/{id}", productId)
                 .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                 .content(objectMapper.writeValueAsString(updateProductRequest))
@@ -969,7 +967,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductGet(String productId, JwtPayload jwtPayload) throws Exception {
-        String accessToken = jwtService.generateAccessToken(jwtPayload);
+        String accessToken = testJwtService.generateAccessToken(jwtPayload);
         return mockMvc.perform(get("/products/{id}", productId)
                 .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
                 .contentType(MediaType.APPLICATION_JSON));
