@@ -1,7 +1,6 @@
 package com.vendo.product_service.adapter.category.out;
 
-
-import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryQueryAdapter;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
@@ -25,7 +24,7 @@ class CategoryQueryAdapterTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private CategoryMapper categoryMapper;
+    private MongoCategoryMapper categoryMapper;
 
     @InjectMocks
     private CategoryQueryAdapter queryAdapter;
@@ -46,13 +45,13 @@ class CategoryQueryAdapterTest {
         Category category = Category.builder().id(id).code("CODE").title("Title").build();
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(categoryEntity));
-        when(categoryMapper.toEntity(categoryEntity)).thenReturn(category);
+        when(categoryMapper.toCategory(categoryEntity)).thenReturn(category);
 
         Category result = queryAdapter.findById(id, "unused message");
 
         assertThat(result).isEqualTo(category);
         verify(categoryRepository, times(1)).findById(id);
-        verify(categoryMapper, times(1)).toEntity(categoryEntity);
+        verify(categoryMapper, times(1)).toCategory(categoryEntity);
     }
 
     @Test

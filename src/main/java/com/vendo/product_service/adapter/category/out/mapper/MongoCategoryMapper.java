@@ -6,10 +6,9 @@ import com.vendo.product_service.infrastructure.config.MapStructConfig;
 import org.mapstruct.Mapper;
 
 @Mapper(config = MapStructConfig.class)
-public interface CategoryMapper {
+public interface MongoCategoryMapper {
 
-    Category toEntity(MongoCategory entity);
-
-    MongoCategory toMongoEntity(Category domain);
+    Category toCategory(MongoCategory entity);
+    MongoCategory toMongoEntity(Category category);
 
 }

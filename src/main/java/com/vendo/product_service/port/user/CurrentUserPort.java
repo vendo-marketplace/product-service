@@ -1,5 +1,7 @@
-package com.vendo.product_service.domain.port.security;
+package com.vendo.product_service.port.user;
 
 public interface CurrentUserPort {
+
     String getCurrentUserId();
+
 }

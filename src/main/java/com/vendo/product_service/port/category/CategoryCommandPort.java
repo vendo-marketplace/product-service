@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.port.category;
+package com.vendo.product_service.port.category;
 
 import com.vendo.product_service.domain.category.model.Category;
 

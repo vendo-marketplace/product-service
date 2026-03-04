@@ -4,7 +4,7 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
-import com.vendo.product_service.application.ProductService;
+import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.application.category.validation.attribute.CategoryValidator;
 import com.vendo.product_service.domain.product.model.Product;
 import jakarta.validation.Valid;

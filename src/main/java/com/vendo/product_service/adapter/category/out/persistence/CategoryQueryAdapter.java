@@ -1,9 +1,9 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
-import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,12 +11,12 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryQueryAdapter implements CategoryQueryPort {
 
-    private final CategoryMapper categoryMapper;
+    private final MongoCategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
 
     @Override
     public Category findById(String id, String message) {
-        return categoryRepository.findById(id).map(categoryMapper::toEntity)
+        return categoryRepository.findById(id).map(categoryMapper::toCategory)
                 .orElseThrow(() -> new CategoryNotFoundException(message.isBlank() ? "Category not found." : message));
     }
 

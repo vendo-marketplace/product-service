@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.common.exception.handler;
+package com.vendo.product_service.adapter.security.in.exception;
 
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.security.common.exception.*;

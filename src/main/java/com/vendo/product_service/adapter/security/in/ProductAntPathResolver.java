@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.filter;
+package com.vendo.product_service.adapter.security.in;
 
 import com.vendo.security.AntPathResolver;
 import org.springframework.stereotype.Component;

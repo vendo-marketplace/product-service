@@ -1,6 +1,6 @@
 package com.vendo.product_service.service;
 
-import com.vendo.product_service.adapter.security.common.config.JwtProperties;
+import com.vendo.product_service.adapter.security.in.config.JwtProperties;
 import com.vendo.product_service.common.dto.JwtPayload;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

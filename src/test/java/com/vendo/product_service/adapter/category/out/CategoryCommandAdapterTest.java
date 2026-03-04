@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.category.out;
 
 
-import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryCommandAdapter;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
@@ -20,7 +20,7 @@ class CategoryCommandAdapterTest {
     private CategoryRepository categoryRepository;
 
     @Mock
-    private CategoryMapper categoryMapper;
+    private MongoCategoryMapper categoryMapper;
 
     @InjectMocks
     private CategoryCommandAdapter commandAdapter;

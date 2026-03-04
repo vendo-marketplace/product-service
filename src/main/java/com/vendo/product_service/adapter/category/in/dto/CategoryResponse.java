@@ -5,7 +5,7 @@ import com.vendo.product_service.domain.category.type.CategoryType;
 
 import java.util.Map;
 
-public record CategoryEntityResponse(
+public record CategoryResponse(
          String id,
          String title,
          String parentId,

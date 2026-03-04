@@ -3,8 +3,8 @@ package com.vendo.product_service.application.category;
 import com.vendo.product_service.application.category.validation.creation.CreateCategoryValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.port.category.CategoryCommandPort;
-import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.category.CategoryCommandPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.common.helper;
+package com.vendo.product_service.adapter.security.out;
 
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;

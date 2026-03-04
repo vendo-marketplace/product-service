@@ -1,7 +1,7 @@
-package com.vendo.product_service.adapter.security.filter;
+package com.vendo.product_service.adapter.security.in;
 
 import com.vendo.domain.user.common.type.UserStatus;
-import com.vendo.product_service.adapter.security.common.helper.JwtHelper;
+import com.vendo.product_service.adapter.security.out.jwt.JwtService;
 import com.vendo.security.common.exception.InvalidTokenException;
 import com.vendo.security.common.exception.UserBlockedException;
 import com.vendo.security.common.exception.UserEmailNotVerifiedException;
@@ -34,7 +34,7 @@ import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtHelper jwtHelper;
+    private final JwtService jwtService;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -51,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = getTokenFromRequest(request);
-            Claims claims = jwtHelper.extractAllClaims(jwtToken);
+            Claims claims = jwtService.extractAllClaims(jwtToken);
 
             validateUserAccessibility(claims);
             addAuthenticationToContext(claims);
@@ -80,8 +80,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void validateUserAccessibility(Claims claims) {
-        UserStatus status = jwtHelper.extractUserStatus(claims);
-        Boolean emailVerified = jwtHelper.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
+        UserStatus status = jwtService.extractUserStatus(claims);
+        Boolean emailVerified = jwtService.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
         validateActivity(emailVerified, status);
     }
 
@@ -101,8 +101,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void addAuthenticationToContext(Claims claims) {
-        List<SimpleGrantedAuthority> authorities =  jwtHelper.extractAuthorities(claims);
-        String userId = jwtHelper.extractTokenClaim(TokenClaim.USER_ID_CLAIM, claims, String.class);
+        List<SimpleGrantedAuthority> authorities =  jwtService.extractAuthorities(claims);
+        String userId = jwtService.extractTokenClaim(TokenClaim.USER_ID_CLAIM, claims, String.class);
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(userId, null, authorities);

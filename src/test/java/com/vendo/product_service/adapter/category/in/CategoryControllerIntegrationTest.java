@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.category.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.common.exception.ExceptionResponse;
 import com.vendo.domain.user.common.type.UserRole;
-import com.vendo.product_service.adapter.category.in.dto.CategoryEntityResponse;
+import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
@@ -440,7 +440,7 @@ public class CategoryControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            CategoryEntityResponse categoryResponse = objectMapper.readValue(content, CategoryEntityResponse.class);
+            CategoryResponse categoryResponse = objectMapper.readValue(content, CategoryResponse.class);
             assertThat(categoryResponse).isNotNull();
             assertThat(categoryResponse.title()).isEqualTo(categoryEntity.getTitle());
             assertThat(categoryResponse.parentId()).isEqualTo(categoryEntity.getParentId());

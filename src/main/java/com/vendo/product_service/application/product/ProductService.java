@@ -1,10 +1,10 @@
-package com.vendo.product_service.application;
+package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.port.category.CategoryQueryPort;
-import com.vendo.product_service.domain.port.product.ProductCommandPort;
-import com.vendo.product_service.domain.port.product.ProductQueryPort;
-import com.vendo.product_service.domain.port.security.CurrentUserPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
+import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.domain.product.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,9 +23,9 @@ public class ProductService {
     }
 
     public void save(Product product) {
+        throwIfCategoryNotFound(product.getCategoryId());
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
-        throwIfCategoryNotFound(product.getCategoryId());
         productCommandPort.save(product);
     }
 

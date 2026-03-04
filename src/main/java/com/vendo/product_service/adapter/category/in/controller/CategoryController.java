@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.category.in.controller;
 
-import com.vendo.product_service.adapter.category.in.dto.CategoryEntityResponse;
+import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
-import com.vendo.product_service.adapter.category.in.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.application.category.CategoryService;
 import com.vendo.product_service.domain.category.model.Category;
 import jakarta.validation.Valid;
@@ -18,19 +18,18 @@ import org.springframework.web.bind.annotation.*;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final CategoryMapper categoryMapper;
+    private final DtoCategoryMapper categoryMapper;
 
     @PostMapping
     public void save(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
-        Category category = categoryMapper.toEntity(createCategoryRequest);
+        Category category = categoryMapper.toCategory(createCategoryRequest);
         categoryService.save(category);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryEntityResponse> findById(@PathVariable String id) {
+    public ResponseEntity<CategoryResponse> findById(@PathVariable String id) {
         Category category = categoryService.findById(id);
-        CategoryEntityResponse categoryEntityResponse = categoryMapper.toResponse(category);
-        return ResponseEntity.ok(categoryEntityResponse);
+        return ResponseEntity.ok(categoryMapper.toResponse(category));
     }
 
 }

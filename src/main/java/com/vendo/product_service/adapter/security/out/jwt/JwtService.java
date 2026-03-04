@@ -1,7 +1,7 @@
-package com.vendo.product_service.adapter.security.common.helper;
+package com.vendo.product_service.adapter.security.out.jwt;
 
 import com.vendo.domain.user.common.type.UserStatus;
-import com.vendo.product_service.adapter.security.common.config.JwtProperties;
+import com.vendo.product_service.adapter.security.in.config.JwtProperties;
 import com.vendo.security.common.exception.InvalidTokenException;
 import com.vendo.security.common.type.TokenClaim;
 import io.jsonwebtoken.Claims;
@@ -26,7 +26,7 @@ import static com.vendo.security.common.type.TokenClaim.STATUS_CLAIM;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtHelper {
+public class JwtService {
 
     private final JwtProperties jwtProperties;
 

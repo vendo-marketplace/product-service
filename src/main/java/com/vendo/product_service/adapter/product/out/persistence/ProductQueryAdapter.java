@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.product.out.persistence;
 
 
 import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
-import com.vendo.product_service.domain.port.product.ProductQueryPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import lombok.RequiredArgsConstructor;

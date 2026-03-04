@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.server.in.exception.handler;
 
+import com.vendo.product_service.adapter.server.in.exception.formatter.FieldNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

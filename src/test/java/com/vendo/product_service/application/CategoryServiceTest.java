@@ -5,8 +5,8 @@ import com.vendo.product_service.application.category.validation.creation.Create
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.port.category.CategoryCommandPort;
-import com.vendo.product_service.domain.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.category.CategoryCommandPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

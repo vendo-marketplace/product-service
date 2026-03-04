@@ -2,10 +2,9 @@ package com.vendo.product_service.adapter.security.common;
 
 import com.vendo.domain.user.common.type.UserRole;
 import com.vendo.domain.user.common.type.UserStatus;
-import com.vendo.product_service.adapter.security.common.helper.JwtHelper;
+import com.vendo.product_service.adapter.security.out.jwt.JwtService;
 import com.vendo.product_service.common.builder.JwtPayloadBuilder;
 import com.vendo.product_service.common.dto.JwtPayload;
-import com.vendo.product_service.service.JwtService;
 import com.vendo.security.common.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -32,13 +31,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class JwtHelperTest {
-
-    @Autowired
-    private JwtHelper jwtHelper;
+class JwtServiceTest {
 
     @Autowired
     private JwtService jwtService;
+
+    @Autowired
+    private com.vendo.product_service.service.JwtService jwtService;
 
     @Autowired
     private JwtPayloadBuilder jwtPayloadBuilder;
@@ -51,7 +50,7 @@ class JwtHelperTest {
             JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
             String token = jwtService.generateAccessToken(payload);
 
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
             assertThat(claims).isNotNull();
             assertThat(claims.getSubject()).isEqualTo(JWT_USER_SUBJECT);
@@ -64,7 +63,7 @@ class JwtHelperTest {
                     .build();
             String expiredToken = jwtService.generateAccessToken(payload);
 
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(expiredToken))
+            assertThatThrownBy(() -> jwtService.extractAllClaims(expiredToken))
                     .isInstanceOf(ExpiredJwtException.class);
         }
 
@@ -75,25 +74,25 @@ class JwtHelperTest {
                     .build();
             String invalidSignatureToken = jwtService.generateAccessToken(payload);
 
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(invalidSignatureToken))
+            assertThatThrownBy(() -> jwtService.extractAllClaims(invalidSignatureToken))
                     .isInstanceOf(SignatureException.class);
         }
 
         @Test
         void extractAllClaims_whenTokenMalformed_throwsMalformedJwtException() {
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(INVALID_TOKEN_FORMAT))
+            assertThatThrownBy(() -> jwtService.extractAllClaims(INVALID_TOKEN_FORMAT))
                     .isInstanceOf(MalformedJwtException.class);
         }
 
         @Test
         void extractAllClaims_whenTokenNull_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(null))
+            assertThatThrownBy(() -> jwtService.extractAllClaims(null))
                     .isInstanceOf(IllegalArgumentException.class);
         }
 
         @Test
         void extractAllClaims_whenTokenEmpty_throwsIllegalArgumentException() {
-            assertThatThrownBy(() -> jwtHelper.extractAllClaims(""))
+            assertThatThrownBy(() -> jwtService.extractAllClaims(""))
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
@@ -105,9 +104,9 @@ class JwtHelperTest {
         void extractSubject_whenSubjectPresent_returnsSubject() {
             JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            String subject = jwtHelper.extractSubject(claims);
+            String subject = jwtService.extractSubject(claims);
 
             assertThat(subject).isEqualTo(JWT_USER_SUBJECT);
         }
@@ -118,9 +117,9 @@ class JwtHelperTest {
                     .subject(null)
                     .build();
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
+            assertThatThrownBy(() -> jwtService.extractSubject(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -130,9 +129,9 @@ class JwtHelperTest {
                     .subject("")
                     .build();
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractSubject(claims))
+            assertThatThrownBy(() -> jwtService.extractSubject(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
     }
@@ -144,9 +143,9 @@ class JwtHelperTest {
         void extractAuthorities_whenRolesValid_returnsAuthorities() {
             JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            List<SimpleGrantedAuthority> authorities = jwtHelper.extractAuthorities(claims);
+            List<SimpleGrantedAuthority> authorities = jwtService.extractAuthorities(claims);
 
             assertThat(authorities)
                     .hasSize(1)
@@ -164,9 +163,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+            assertThatThrownBy(() -> jwtService.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -179,9 +178,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+            assertThatThrownBy(() -> jwtService.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -196,9 +195,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+            assertThatThrownBy(() -> jwtService.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -213,9 +212,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractAuthorities(claims))
+            assertThatThrownBy(() -> jwtService.extractAuthorities(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -231,9 +230,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            List<SimpleGrantedAuthority> authorities = jwtHelper.extractAuthorities(claims);
+            List<SimpleGrantedAuthority> authorities = jwtService.extractAuthorities(claims);
 
             assertThat(authorities)
                     .hasSize(3)
@@ -249,9 +248,9 @@ class JwtHelperTest {
         void extractUserStatus_whenStatusValid_returnsStatus() {
             JwtPayload payload = jwtPayloadBuilder.buildValidUserJwtPayload().build();
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            UserStatus status = jwtHelper.extractUserStatus(claims);
+            UserStatus status = jwtService.extractUserStatus(claims);
 
             assertThat(status).isEqualTo(UserStatus.ACTIVE);
         }
@@ -266,9 +265,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
+            assertThatThrownBy(() -> jwtService.extractUserStatus(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -283,9 +282,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
+            assertThatThrownBy(() -> jwtService.extractUserStatus(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
 
@@ -299,9 +298,9 @@ class JwtHelperTest {
                     .build();
 
             String token = jwtService.generateAccessToken(payload);
-            Claims claims = jwtHelper.extractAllClaims(token);
+            Claims claims = jwtService.extractAllClaims(token);
 
-            assertThatThrownBy(() -> jwtHelper.extractUserStatus(claims))
+            assertThatThrownBy(() -> jwtService.extractUserStatus(claims))
                     .isInstanceOf(InvalidTokenException.class);
         }
     }

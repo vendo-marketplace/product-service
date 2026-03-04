@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
-import com.vendo.product_service.adapter.category.out.mapper.CategoryMapper;
+import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.port.category.CategoryCommandPort;
+import com.vendo.product_service.port.category.CategoryCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryCommandAdapter implements CategoryCommandPort {
 
-    private final CategoryMapper categoryMapper;
+    private final MongoCategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
 
     @Override

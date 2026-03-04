@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.common.config;
+package com.vendo.product_service.adapter.security.in.config;
 
 import lombok.Getter;
 import lombok.Setter;

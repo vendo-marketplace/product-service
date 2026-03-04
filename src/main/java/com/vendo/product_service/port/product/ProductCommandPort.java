@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.port.product;
+package com.vendo.product_service.port.product;
 
 
 import com.vendo.product_service.domain.product.model.Product;
