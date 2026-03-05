@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class CreateCategoryRequestDataBuilder {
 
-    public static CreateCategoryRequest.CreateCategoryRequestBuilder buildCreateCategoryRequestWithAllFields() {
+    public static CreateCategoryRequest.CreateCategoryRequestBuilder withAllFields() {
         AttributeDefinition attributeDefinition = AttributeDefinition.builder()
                 .type(AttributeType.STRING)
                 .required(false)

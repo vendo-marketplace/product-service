@@ -6,12 +6,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CreateCategoryValidationService {
+public class CategoryValidationService {
 
-    private final CategoryCreationValidationFactory creationHandlerFactory;
+    private final CreationValidationFactory creationHandlerFactory;
 
     public void validateCreation(Category category) {
-        CategoryCreationValidator creationHandler = creationHandlerFactory.getHandler(category.getType());
+        CreationValidator creationHandler = creationHandlerFactory.getHandler(category.getType());
         creationHandler.validate(category.getParentId());
     }
 }

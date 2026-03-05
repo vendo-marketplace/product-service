@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SubCategoryCreationValidator implements CategoryCreationValidator {
+public class SubCreationValidator implements CreationValidator {
 
     private final CategoryQueryPort categoryQueryPort;
 

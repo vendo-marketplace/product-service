@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class CreateCategoryValidator implements CategoryValidator {
+public class DefaultAttributesValidator implements AttributesValidator {
 
     private final CategoryQueryPort categoryQueryPort;
-    private final CategoryValidationFactory categoryValidationFactory;
+    private final AttributesValidationFactory attributesValidationFactory;
 
     @Override
     public void validateAttributes(String requestId, Map<String, List<String>> requestAttributes) {
@@ -48,7 +48,7 @@ public class CreateCategoryValidator implements CategoryValidator {
         ValidationBody validationBody = validateRequirement(payload, attributesValue);
         if (!validationBody.valid()) return validationBody;
 
-        AttributeValidatorStrategy validationStrategy = categoryValidationFactory.getValidator(payload.definition().type());
+        AttributeValidatorStrategy validationStrategy = attributesValidationFactory.getValidator(payload.definition().type());
         return validationStrategy.validate(payload, attributesValue);
     }
 

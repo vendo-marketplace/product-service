@@ -1,7 +1,7 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.creation.CreateCategoryValidationService;
+import com.vendo.product_service.application.category.validation.creation.CategoryValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -26,7 +26,7 @@ class CategoryServiceTest {
     private CategoryQueryPort queryPort;
 
     @Mock
-    private CreateCategoryValidationService validationService;
+    private CategoryValidationService validationService;
 
     @InjectMocks
     private CategoryService categoryService;

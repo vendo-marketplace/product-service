@@ -6,15 +6,9 @@ import com.vendo.product_service.domain.category.model.AttributeType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Set;
 
 @Component
-public class BooleanAttributeValidatorStrategy implements AttributeValidatorStrategy {
-
-    private final Set<String> BOOLEAN_VALUES = Set.of(
-            Boolean.FALSE.toString(),
-            Boolean.TRUE.toString()
-    );
+public class NumberAttributeValidator implements AttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(AttributePayload payload, List<String> requestAttributes) {
@@ -24,9 +18,19 @@ public class BooleanAttributeValidatorStrategy implements AttributeValidatorStra
             return validationBody.toBuilder()
                     .errorMessage("Must contain exactly one value.")
                     .build();
-        } else if (!BOOLEAN_VALUES.contains(requestAttributes.get(0))) {
+        }
+
+        try {
+            int attributeValue = Integer.parseInt(requestAttributes.get(0));
+            if (attributeValue < 0) {
+                return validationBody.toBuilder()
+                        .errorMessage("Must be equal or greater than zero.")
+                        .build();
+            }
+
+        } catch (NumberFormatException e) {
             return validationBody.toBuilder()
-                    .errorMessage("Invalid boolean value. Allowed values: true, false.")
+                    .errorMessage("Invalid number value.")
                     .build();
         }
 
@@ -35,6 +39,6 @@ public class BooleanAttributeValidatorStrategy implements AttributeValidatorStra
 
     @Override
     public AttributeType getType() {
-        return AttributeType.BOOLEAN;
+        return AttributeType.NUMBER;
     }
 }

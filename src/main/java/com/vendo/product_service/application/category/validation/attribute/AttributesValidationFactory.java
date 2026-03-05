@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryValidationFactory {
+public class AttributesValidationFactory {
 
     private final List<AttributeValidatorStrategy> categoryAttributeValidationStrategies;
 

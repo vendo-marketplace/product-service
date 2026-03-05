@@ -9,12 +9,12 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryCreationValidationFactory {
+public class CreationValidationFactory {
 
-    private final List<CategoryCreationValidator> categoryCreationValidators;
+    private final List<CreationValidator> creationValidators;
 
-    public CategoryCreationValidator getHandler(CategoryType categoryType) {
-        return categoryCreationValidators.stream()
+    public CreationValidator getHandler(CategoryType categoryType) {
+        return creationValidators.stream()
                 .filter(handler -> handler.getType() == categoryType)
                 .findFirst()
                 .orElseThrow(() -> new CategoryTypeException("No category creation handler."));

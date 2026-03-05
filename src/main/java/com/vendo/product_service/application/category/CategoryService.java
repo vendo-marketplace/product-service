@@ -1,6 +1,6 @@
 package com.vendo.product_service.application.category;
 
-import com.vendo.product_service.application.category.validation.creation.CreateCategoryValidationService;
+import com.vendo.product_service.application.category.validation.creation.CategoryValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.category.CategoryCommandPort;
@@ -14,7 +14,7 @@ public class CategoryService {
 
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
-    private final CreateCategoryValidationService validationService;
+    private final CategoryValidationService validationService;
 
     public Category findById(String id) {
         return categoryQueryPort.findById(id, "Category not found.");
