@@ -1,8 +1,7 @@
 package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.common.exception.ExceptionResponse;
-import com.vendo.domain.user.common.type.UserRole;
+import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
@@ -15,6 +14,7 @@ import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.user_lib.type.UserRole;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

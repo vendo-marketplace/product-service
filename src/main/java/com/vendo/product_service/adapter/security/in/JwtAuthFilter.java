@@ -1,13 +1,8 @@
 package com.vendo.product_service.adapter.security.in;
 
-import com.vendo.domain.user.common.type.UserStatus;
-import com.vendo.product_service.adapter.security.out.jwt.JwtService;
-import com.vendo.security.common.exception.InvalidTokenException;
-import com.vendo.security.common.exception.UserBlockedException;
-import com.vendo.security.common.exception.UserEmailNotVerifiedException;
-import com.vendo.security.common.exception.UserIsUnactiveException;
-import com.vendo.security.common.type.TokenClaim;
-import io.jsonwebtoken.Claims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.security_lib.exception.InvalidTokenException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,15 +21,15 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 import java.io.IOException;
 import java.util.List;
 
-import static com.vendo.security.common.constants.AuthConstants.AUTHORIZATION_HEADER;
-import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
+import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
+import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final TokenClaimsParser claimsParser;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -51,10 +46,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = getTokenFromRequest(request);
-            Claims claims = jwtService.extractAllClaims(jwtToken);
+            TokenClaims claims = claimsParser.extract(jwtToken);
+            claims.validateActivity();
 
-            validateUserAccessibility(claims);
-            addAuthenticationToContext(claims);
+            addAuthenticationToContext(claims.userId(), claims.roles());
         } catch (Exception e) {
             handlerExceptionResolver.resolveException(request, response, null, e);
             return;
@@ -79,33 +74,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         throw new InvalidTokenException("Invalid token.");
     }
 
-    private void validateUserAccessibility(Claims claims) {
-        UserStatus status = jwtService.extractUserStatus(claims);
-        Boolean emailVerified = jwtService.extractTokenClaim(TokenClaim.EMAIL_VERIFIED_CLAIM, claims, Boolean.class);
-        validateActivity(emailVerified, status);
-    }
-
-    // TODO move to common
-    private void validateActivity(Boolean emailVerified, UserStatus userStatus) {
-        if (userStatus == UserStatus.BLOCKED) {
-            throw new UserBlockedException("User is blocked.");
-        }
-
-        if (!emailVerified) {
-            throw new UserEmailNotVerifiedException("User email is not verified.");
-        }
-
-        if (userStatus != UserStatus.ACTIVE) {
-            throw new UserIsUnactiveException("User is unactive.");
-        }
-    }
-
-    private void addAuthenticationToContext(Claims claims) {
-        List<SimpleGrantedAuthority> authorities =  jwtService.extractAuthorities(claims);
-        String userId = jwtService.extractTokenClaim(TokenClaim.USER_ID_CLAIM, claims, String.class);
-
+    private void addAuthenticationToContext(String userId, List<String> authorities) {
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userId, null, authorities);
+                new UsernamePasswordAuthenticationToken(userId, null, authorities.stream().map(SimpleGrantedAuthority::new).toList());
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }

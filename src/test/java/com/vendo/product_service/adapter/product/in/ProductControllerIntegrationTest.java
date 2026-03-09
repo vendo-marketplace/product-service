@@ -1,81 +1,201 @@
-//package com.vendo.product_service.adapter.product.in;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.vendo.common.exception.ExceptionResponse;
-//import com.vendo.domain.user.common.type.UserRole;
-//import com.vendo.domain.user.common.type.UserStatus;
-//import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
-//import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
-//import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
-//import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
-//import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
-//import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
-//import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
-//import com.vendo.product_service.test_utils.builder.*;
-//import com.vendo.product_service.domain.category.model.AttributeDefinition;
-//import com.vendo.product_service.domain.category.model.AttributeType;
-//import org.junit.jupiter.api.BeforeEach;
-//import org.junit.jupiter.api.Nested;
-//import org.junit.jupiter.api.Test;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-//import org.springframework.boot.test.context.SpringBootTest;
-//import org.springframework.http.HttpStatus;
-//import org.springframework.http.MediaType;
-//import org.springframework.test.context.ActiveProfiles;
-//import org.springframework.test.context.event.annotation.AfterTestClass;
-//import org.springframework.test.web.servlet.MockMvc;
-//import org.springframework.test.web.servlet.ResultActions;
-//
-//import java.util.List;
-//import java.util.Map;
-//import java.util.Optional;
-//import java.util.UUID;
-//
-//import static com.vendo.security.common.constants.AuthConstants.AUTHORIZATION_HEADER;
-//import static com.vendo.security.common.constants.AuthConstants.BEARER_PREFIX;
-//import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-//
-//@SpringBootTest
-//@AutoConfigureMockMvc
-//@ActiveProfiles("test")
-//public class ProductControllerIntegrationTest {
-//
-//    @Autowired
-//    private ObjectMapper objectMapper;
-//
-//    @Autowired
-//    private MockMvc mockMvc;
-//
-//    @Autowired
-//    private ProductRepository productRepository;
-//
-//    @Autowired
-//    private CategoryRepository categoryRepository;
-//
-//    @BeforeEach
-//    void setUp() {
-//        productRepository.deleteAll();
+package com.vendo.product_service.adapter.product.in;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
+import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
+import org.junit.jupiter.api.Nested;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
+public class ProductControllerIntegrationTest {
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+//    private ResultActions performProductPersist(CreateProductRequest createProductRequest) throws Exception {
+//        return mockMvc.perform(post("/products")
+//                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+//                .content(objectMapper.writeValueAsString(createProductRequest))
+//                .contentType(MediaType.APPLICATION_JSON));
 //    }
 //
-//    @AfterTestClass
-//    void tearDown() {
-//        productRepository.deleteAll();
+//    private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest) throws Exception {
+//        return mockMvc.perform(put("/products/{id}", productId)
+//                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+//                .content(objectMapper.writeValueAsString(updateProductRequest))
+//                .contentType(MediaType.APPLICATION_JSON));
 //    }
 //
+//    private ResultActions performProductGet(String productId) throws Exception {
+//        return mockMvc.perform(get("/products/{id}", productId)
+//                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+//                .contentType(MediaType.APPLICATION_JSON));
+//    }
+
 //    @Nested
-//    class SaveProductTests {
+//    class UpdateProductTests {
 //
 //        @Test
-//        void save_shouldSaveProduct() throws Exception {
+//        void update_shouldUpdateProduct() throws Exception {
 //            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
+//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
 //            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
 //
 //            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
 //            categoryRepository.save(categoryEntity);
+//
+//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
+//                    .categoryId(categoryEntity.getId())
+//                    .build();
+//
+//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
+//
+//            productRepository.save(product);
+//
+//            performProductUpdate(product.getId(), updateProductRequest, jwtPayload).andExpect(status().isOk());
+//
+//            Optional<MongoProduct> optionalProduct = productRepository.findById(product.getId());
+//            assertThat(optionalProduct).isPresent();
+//            MongoProduct responseProduct = optionalProduct.get();
+//            assertThat(responseProduct.getTitle()).isEqualTo(updateProductRequest.title());
+//            assertThat(responseProduct.getDescription()).isEqualTo(updateProductRequest.description());
+//            assertThat(responseProduct.getQuantity()).isEqualTo(updateProductRequest.quantity());
+//            assertThat(responseProduct.getPrice()).isEqualTo(updateProductRequest.price());
+//            assertThat(responseProduct.getCategoryId()).isEqualTo(updateProductRequest.categoryId());
+//            assertThat(responseProduct.getAttributes()).isNotNull();
+//            assertThat(responseProduct.getAttributes().size()).isEqualTo(1);
+//            assertThat(responseProduct.getAttributes()).isEqualTo(updateProductRequest.attributes());
+//            assertThat(responseProduct.getActive()).isEqualTo(updateProductRequest.active());
+//        }
+//
+//        @Test
+//        void update_returnNotFound_whenProductNotFound() throws Exception {
+//            String productId = String.valueOf(UUID.randomUUID());
+//
+//            String userId = String.valueOf(UUID.randomUUID());
+//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
+//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+//
+//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
+//            categoryRepository.save(categoryEntity);
+//
+//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
+//
+//            String content = performProductUpdate(productId, updateProductRequest, jwtPayload)
+//                    .andExpect(status().isNotFound())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+//            assertThat(exceptionResponse).isNotNull();
+//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+//            assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
+//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + productId);
+//        }
+//
+//        @Test
+//        void update_shouldReturnForbidden_whenAuthenticatedUserIsNotOwner() throws Exception {
+//            String userId = String.valueOf(UUID.randomUUID());
+//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
+//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+//
+//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
+//            categoryRepository.save(categoryEntity);
+//
+//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
+//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
+//            productRepository.save(product);
+//
+//            String content = performProductUpdate(product.getId(), updateProductRequest, jwtPayload)
+//                    .andExpect(status().isForbidden())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+//            assertThat(exceptionResponse).isNotNull();
+//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+//            assertThat(exceptionResponse.getMessage()).isEqualTo("Only owner can edit its product.");
+//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + product.getId());
+//        }
+//    }
+//
+//    @Nested
+//    class FindProductTests {
+//
+//        @Test
+//        void findById_shouldReturnProduct() throws Exception {
+//            String userId = String.valueOf(UUID.randomUUID());
+//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
+//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
+//            productRepository.save(product);
+//
+//            String content = performProductGet(product.getId(), jwtPayload)
+//                    .andExpect(status().isOk())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            ProductResponse productResponse = objectMapper.readValue(content, ProductResponse.class);
+//            assertThat(productResponse).isNotNull();
+//            assertThat(productResponse.title()).isEqualTo(product.getTitle());
+//            assertThat(productResponse.description()).isEqualTo(product.getDescription());
+//            assertThat(productResponse.quantity()).isEqualTo(product.getQuantity());
+//            assertThat(productResponse.price()).isEqualTo(product.getPrice());
+//            assertThat(productResponse.ownerId()).isEqualTo(product.getOwnerId());
+//            assertThat(productResponse.categoryId()).isEqualTo(product.getCategoryId());
+//            assertThat(productResponse.attributes()).isNotNull();
+//            assertThat(productResponse.attributes().size()).isEqualTo(1);
+//            assertThat(productResponse.attributes()).isEqualTo(product.getAttributes());
+//            assertThat(productResponse.active()).isTrue();
+//        }
+//
+//        @Test
+//        void findById_shouldReturnNotFound_whenProductNotFound() throws Exception {
+//            String userId = String.valueOf(UUID.randomUUID());
+//            String productId = String.valueOf(UUID.randomUUID());
+//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
+//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
+//
+//            String content = performProductGet(productId, jwtPayload)
+//                    .andExpect(status().isNotFound())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+//            assertThat(exceptionResponse).isNotNull();
+//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+//            assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
+//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + productId);
+//        }
+//    }
+
+    @Nested
+    class SaveProductTests {
+
+//        @Test
+//        void save_shouldSaveProduct() throws Exception {
+//            String userId = String.valueOf(UUID.randomUUID());
+//
+//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
 //            CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
 //                    .categoryId(categoryEntity.getId())
 //                    .build();
@@ -101,7 +221,7 @@
 //            assertThat(mongoProduct.getCreatedAt()).isNotNull();
 //            assertThat(mongoProduct.getUpdatedAt()).isNotNull();
 //        }
-//
+
 //        @Test
 //        void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
 //            String userId = String.valueOf(UUID.randomUUID());
@@ -801,170 +921,6 @@
 //
 //            }
 //        }
-//    }
-//
-//    @Nested
-//    class UpdateProductTests {
-//
-//        @Test
-//        void update_shouldUpdateProduct() throws Exception {
-//            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
-//            categoryRepository.save(categoryEntity);
-//
-//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields()
-//                    .categoryId(categoryEntity.getId())
-//                    .build();
-//
-//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
-//
-//            productRepository.save(product);
-//
-//            performProductUpdate(product.getId(), updateProductRequest, jwtPayload).andExpect(status().isOk());
-//
-//            Optional<MongoProduct> optionalProduct = productRepository.findById(product.getId());
-//            assertThat(optionalProduct).isPresent();
-//            MongoProduct responseProduct = optionalProduct.get();
-//            assertThat(responseProduct.getTitle()).isEqualTo(updateProductRequest.title());
-//            assertThat(responseProduct.getDescription()).isEqualTo(updateProductRequest.description());
-//            assertThat(responseProduct.getQuantity()).isEqualTo(updateProductRequest.quantity());
-//            assertThat(responseProduct.getPrice()).isEqualTo(updateProductRequest.price());
-//            assertThat(responseProduct.getCategoryId()).isEqualTo(updateProductRequest.categoryId());
-//            assertThat(responseProduct.getAttributes()).isNotNull();
-//            assertThat(responseProduct.getAttributes().size()).isEqualTo(1);
-//            assertThat(responseProduct.getAttributes()).isEqualTo(updateProductRequest.attributes());
-//            assertThat(responseProduct.getActive()).isEqualTo(updateProductRequest.active());
-//        }
-//
-//        @Test
-//        void update_returnNotFound_whenProductNotFound() throws Exception {
-//            String productId = String.valueOf(UUID.randomUUID());
-//
-//            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
-//            categoryRepository.save(categoryEntity);
-//
-//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
-//
-//            String content = performProductUpdate(productId, updateProductRequest, jwtPayload)
-//                    .andExpect(status().isNotFound())
-//                    .andReturn()
-//                    .getResponse()
-//                    .getContentAsString();
-//
-//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//            assertThat(exceptionResponse).isNotNull();
-//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-//            assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
-//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + productId);
-//        }
-//
-//        @Test
-//        void update_shouldReturnForbidden_whenAuthenticatedUserIsNotOwner() throws Exception {
-//            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//            MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields().build();
-//            categoryRepository.save(categoryEntity);
-//
-//            UpdateProductRequest updateProductRequest = UpdateProductRequestDataBuilder.buildUpdateProductRequestWithAllFields().build();
-//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(String.valueOf(UUID.randomUUID())).build();
-//            productRepository.save(product);
-//
-//            String content = performProductUpdate(product.getId(), updateProductRequest, jwtPayload)
-//                    .andExpect(status().isForbidden())
-//                    .andReturn()
-//                    .getResponse()
-//                    .getContentAsString();
-//
-//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//            assertThat(exceptionResponse).isNotNull();
-//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-//            assertThat(exceptionResponse.getMessage()).isEqualTo("Only owner can edit its product.");
-//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + product.getId());
-//        }
-//    }
-//
-//    @Nested
-//    class FindProductTests {
-//
-//        @Test
-//        void findById_shouldReturnProduct() throws Exception {
-//            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//            MongoProduct product = MongoProductBuilder.buildProductWithRequiredFields().ownerId(userId).build();
-//            productRepository.save(product);
-//
-//            String content = performProductGet(product.getId(), jwtPayload)
-//                    .andExpect(status().isOk())
-//                    .andReturn()
-//                    .getResponse()
-//                    .getContentAsString();
-//
-//            ProductResponse productResponse = objectMapper.readValue(content, ProductResponse.class);
-//            assertThat(productResponse).isNotNull();
-//            assertThat(productResponse.title()).isEqualTo(product.getTitle());
-//            assertThat(productResponse.description()).isEqualTo(product.getDescription());
-//            assertThat(productResponse.quantity()).isEqualTo(product.getQuantity());
-//            assertThat(productResponse.price()).isEqualTo(product.getPrice());
-//            assertThat(productResponse.ownerId()).isEqualTo(product.getOwnerId());
-//            assertThat(productResponse.categoryId()).isEqualTo(product.getCategoryId());
-//            assertThat(productResponse.attributes()).isNotNull();
-//            assertThat(productResponse.attributes().size()).isEqualTo(1);
-//            assertThat(productResponse.attributes()).isEqualTo(product.getAttributes());
-//            assertThat(productResponse.active()).isTrue();
-//        }
-//
-//        @Test
-//        void findById_shouldReturnNotFound_whenProductNotFound() throws Exception {
-//            String userId = String.valueOf(UUID.randomUUID());
-//            String productId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.USER);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//            String content = performProductGet(productId, jwtPayload)
-//                    .andExpect(status().isNotFound())
-//                    .andReturn()
-//                    .getResponse()
-//                    .getContentAsString();
-//
-//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//            assertThat(exceptionResponse).isNotNull();
-//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-//            assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
-//            assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + productId);
-//        }
-//    }
-//
-//    private ResultActions performProductPersist(CreateProductRequest createProductRequest, JwtPayload jwtPayload) throws Exception {
-//        String accessToken = testJwtService.generateAccessToken(jwtPayload);
-//        return mockMvc.perform(post("/products")
-//                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-//                .content(objectMapper.writeValueAsString(createProductRequest))
-//                .contentType(MediaType.APPLICATION_JSON));
-//    }
-//
-//    private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest, JwtPayload jwtPayload) throws Exception {
-//        String accessToken = testJwtService.generateAccessToken(jwtPayload);
-//        return mockMvc.perform(put("/products/{id}", productId)
-//                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-//                .content(objectMapper.writeValueAsString(updateProductRequest))
-//                .contentType(MediaType.APPLICATION_JSON));
-//    }
-//
-//    private ResultActions performProductGet(String productId, JwtPayload jwtPayload) throws Exception {
-//        String accessToken = testJwtService.generateAccessToken(jwtPayload);
-//        return mockMvc.perform(get("/products/{id}", productId)
-//                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + accessToken)
-//                .contentType(MediaType.APPLICATION_JSON));
-//    }
-//
-//}
+    }
+
+}

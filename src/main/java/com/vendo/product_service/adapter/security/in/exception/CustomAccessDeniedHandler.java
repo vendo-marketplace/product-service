@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.common.exception.ExceptionResponse;
+import com.vendo.core_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

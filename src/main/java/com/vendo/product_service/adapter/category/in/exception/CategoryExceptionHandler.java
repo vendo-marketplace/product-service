@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.category.in.exception;
 
-import com.vendo.common.exception.ExceptionResponse;
+import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;

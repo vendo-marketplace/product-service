@@ -7,7 +7,7 @@ import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.security.common.exception.AccessDeniedException;
+import com.vendo.security_lib.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

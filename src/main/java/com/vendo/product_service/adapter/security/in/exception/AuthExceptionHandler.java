@@ -1,7 +1,11 @@
 package com.vendo.product_service.adapter.security.in.exception;
 
-import com.vendo.common.exception.ExceptionResponse;
-import com.vendo.security.common.exception.*;
+import com.vendo.core_lib.exception.ExceptionResponse;
+import com.vendo.security_lib.exception.AccessDeniedException;
+import com.vendo.security_lib.exception.InvalidTokenException;
+import com.vendo.user_lib.exception.UserBlockedException;
+import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
+import com.vendo.user_lib.exception.UserIsUnactiveException;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;

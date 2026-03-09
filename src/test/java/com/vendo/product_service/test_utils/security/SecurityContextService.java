@@ -1,6 +1,6 @@
 package com.vendo.product_service.test_utils.security;
 
-import com.vendo.domain.user.common.type.UserRole;
+import com.vendo.user_lib.type.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
