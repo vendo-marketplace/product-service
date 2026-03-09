@@ -34,7 +34,13 @@ public class JwtClaimsParser implements TokenClaimsParser {
     }
 
     private String extractId(Claims claims) {
-        return claims.get(UserTokenClaim.ID.getClaim(), String.class);
+        String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
+
+        if (id == null) {
+            throw new InvalidTokenException("Missing id.");
+        }
+
+        return id;
     }
 
     private List<String> extractRoles(Claims claims) {
@@ -57,6 +63,12 @@ public class JwtClaimsParser implements TokenClaimsParser {
     }
 
     private UserStatus extractStatus(Claims claims) {
-        return claims.get(UserTokenClaim.STATUS.getClaim(), UserStatus.class);
+        String status = claims.get(UserTokenClaim.STATUS.getClaim(), String.class);
+
+        try {
+            return UserStatus.valueOf(status);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidTokenException("Invalid status.");
+        }
     }
 }
