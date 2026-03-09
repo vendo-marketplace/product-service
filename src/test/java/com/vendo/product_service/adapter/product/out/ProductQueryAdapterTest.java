@@ -4,13 +4,13 @@ import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
 import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.adapter.product.out.persistence.ProductQueryAdapter;
 import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
-import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
@@ -18,9 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductQueryAdapterTest {
 
-    private ProductQueryPort productQueryAdapter;
+    @InjectMocks
+    private ProductQueryAdapter productQueryAdapter;
 
     @Mock
     private ProductRepository productRepository;
@@ -28,11 +30,6 @@ class ProductQueryAdapterTest {
     @Mock
     private MongoProductMapper mongoProductMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        productQueryAdapter = new ProductQueryAdapter(productRepository, mongoProductMapper);
-    }
 
     @Test
     void findById_shouldReturnMappedProduct_whenEntityExists() {

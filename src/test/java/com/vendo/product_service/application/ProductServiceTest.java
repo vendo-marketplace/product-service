@@ -2,24 +2,26 @@ package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
-import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.security_lib.exception.AccessDeniedException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
     @Mock
@@ -37,10 +39,6 @@ class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     private Product buildDomainProduct() {
         return Product.builder()
@@ -84,6 +82,7 @@ class ProductServiceTest {
         Product updatedProduct = buildDomainProduct();
         updatedProduct.setTitle("Updated title");
         updatedProduct.setCategoryId(existingProduct.getCategoryId());
+        updatedProduct.setOwnerId(existingProduct.getOwnerId());
 
         when(currentUserPort.getCurrentUserId())
                 .thenReturn("user123");
@@ -93,13 +92,13 @@ class ProductServiceTest {
         productService.update(existingProduct.getId(), updatedProduct);
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
-        verify(commandPort).save(captor.capture());
+        verify(commandPort).update(eq(existingProduct.getId()), captor.capture());
 
         Product saved = captor.getValue();
 
-        assert saved.getId().equals(existingProduct.getId());
-        assert saved.getTitle().equals("Updated title");
-        assert saved.getOwnerId().equals("user123");
+        assertThat(saved.getId()).isEqualTo(existingProduct.getId());
+        assertThat(saved.getTitle()).isEqualTo("Updated title");
+        assertThat(saved.getOwnerId()).isEqualTo("user123");
     }
 
     @Test
@@ -118,7 +117,7 @@ class ProductServiceTest {
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessage("Only owner can edit its product.");
 
-        verify(commandPort, never()).save(any());
+        verify(commandPort, never()).update(any(), any());
     }
 
     @Test
@@ -129,7 +128,7 @@ class ProductServiceTest {
 
         Product result = productService.findById(product.getId());
 
-        assert result != null;
+        assertThat(result).isEqualTo(product);
         verify(queryPort, times(1)).findById(product.getId());
     }
 }

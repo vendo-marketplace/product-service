@@ -5,20 +5,21 @@ import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
 import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.adapter.product.out.persistence.ProductCommandAdapter;
 import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
-import com.vendo.product_service.port.category.CategoryQueryPort;
-import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.domain.product.model.Product;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ProductCommandAdapterTest {
 
+    @InjectMocks
     private ProductCommandAdapter productCommandAdapter;
 
     @Mock
@@ -27,20 +28,6 @@ class ProductCommandAdapterTest {
     @Mock
     private MongoProductMapper mongoProductMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-
-        CategoryQueryPort categoryQueryPort = mock(CategoryQueryPort.class);
-        CurrentUserPort currentUserPort = mock(CurrentUserPort.class);
-
-        productCommandAdapter = new ProductCommandAdapter(
-                productRepository,
-                mongoProductMapper,
-                categoryQueryPort,
-                currentUserPort
-        );
-    }
 
     @Test
     void save_shouldMapAndSaveProductEntity() {
@@ -52,8 +39,21 @@ class ProductCommandAdapterTest {
         productCommandAdapter.save(product);
 
         verify(mongoProductMapper).toMongoProduct(product);
-        ArgumentCaptor<MongoProduct> captor = ArgumentCaptor.forClass(MongoProduct.class);
-        verify(productRepository).save(captor.capture());
-        assertThat(captor.getValue()).isEqualTo(entity);
+        verify(productRepository).save(entity);
+    }
+
+    @Test
+    void update_shouldSetIdAndSaveEntity() {
+        Product product = Product.builder().title("Updated").build();
+
+        MongoProduct entity = MongoProduct.builder().title("Updated").build();
+
+        when(mongoProductMapper.toMongoProduct(product)).thenReturn(entity);
+
+        productCommandAdapter.update("product-1", product);
+
+        assertThat(product.getId()).isEqualTo("product-1");
+
+        verify(productRepository).save(entity);
     }
 }

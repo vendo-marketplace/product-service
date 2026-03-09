@@ -1,11 +1,12 @@
 package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
-import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.security_lib.exception.AccessDeniedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,12 +31,20 @@ public class ProductService {
     }
 
     public void update(String id, Product product) {
+        Product existing = productQueryPort.findById(id);
+        throwIfNotOwnerOfProduct(existing.getOwnerId());
+        throwIfCategoryNotFound(product.getCategoryId());
         productCommandPort.update(id, product);
     }
 
     private void throwIfCategoryNotFound(String id) {
         if (id != null && !categoryQueryPort.existsById(id)) {
             throw new CategoryNotFoundException("Category not found.");
+        }
+    }
+    private void throwIfNotOwnerOfProduct(String ownerId) {
+        if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
+            throw new AccessDeniedException("Only owner can edit its product.");
         }
     }
 }
