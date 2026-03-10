@@ -47,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String jwtToken = getTokenFromRequest(request);
             TokenClaims claims = claimsParser.extract(jwtToken);
-            claims.validateActivity();
+            UserActivityValidator.validate(claims.status(), claims.emailVerification());
 
             addAuthenticationToContext(claims.userId(), claims.roles());
         } catch (Exception e) {

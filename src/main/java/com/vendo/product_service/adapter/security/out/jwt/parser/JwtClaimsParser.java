@@ -7,10 +7,12 @@ import com.vendo.user_lib.type.UserStatus;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.RequiredTypeException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class JwtClaimsParser implements TokenClaimsParser {
@@ -26,7 +28,6 @@ public class JwtClaimsParser implements TokenClaimsParser {
             List<String> roles = extractRoles(claims);
             Boolean verification = extractEmailVerification(claims);
             UserStatus status = extractStatus(claims);
-
             return new TokenClaims(id, status, roles, verification);
         } catch (RequiredTypeException e) {
             throw new InvalidTokenException("Invalid token.");
@@ -36,8 +37,8 @@ public class JwtClaimsParser implements TokenClaimsParser {
     private String extractId(Claims claims) {
         String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
 
-        if (id == null) {
-            throw new InvalidTokenException("Missing id.");
+        if (id == null || id.isBlank()) {
+            throw new InvalidTokenException("Invalid token.");
         }
 
         return id;
@@ -45,17 +46,20 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
     private List<String> extractRoles(Claims claims) {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
+        RuntimeException e = new InvalidTokenException("Invalid token.");
 
         if (rawRoles instanceof List<?> list) {
-
             if (list.stream().allMatch(String.class::isInstance)) {
-                return list.stream()
+                List<String> roles = list.stream()
                         .map(String.class::cast)
                         .toList();
+
+                if (roles.isEmpty()) throw e;
+                return roles;
             }
         }
 
-        throw new InvalidTokenException("Invalid roles.");
+        throw e;
     }
 
     private Boolean extractEmailVerification(Claims claims) {
@@ -68,7 +72,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             return UserStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new InvalidTokenException("Invalid status.");
+            throw new InvalidTokenException("Invalid token.");
         }
     }
 }

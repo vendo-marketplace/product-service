@@ -6,8 +6,6 @@ import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
 import com.vendo.user_lib.exception.UserIsUnactiveException;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,29 +33,7 @@ public class AuthExceptionHandler {
         log.error(e.getMessage());
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Invalid token.")
-                .code(HttpStatus.UNAUTHORIZED.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ExceptionResponse> handleExpiredJwtException(ExpiredJwtException e, HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Token has expired.")
-                .code(HttpStatus.UNAUTHORIZED.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ExceptionResponse> handleJwtException(JwtException e,  HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Invalid token.")
+                .message(e.getMessage())
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .path(request.getRequestURI())
                 .build();

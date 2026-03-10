@@ -1,10 +1,8 @@
 package com.vendo.product_service.adapter.security.out.jwt;
 
 import com.vendo.product_service.adapter.security.in.config.JwtProperties;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
+import com.vendo.security_lib.exception.InvalidTokenException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +20,16 @@ public class JwtService {
     private final JwtProperties jwtProperties;
 
     public Claims extractAllClaims(String token) {
-        return parseSignedClaims(token).getPayload();
+        try {
+            return parseSignedClaims(token).getPayload();
+        } catch (ExpiredJwtException e) {
+            throw new InvalidTokenException("Token expired.");
+        } catch (JwtException e) {
+            throw new InvalidTokenException("Invalid token.");
+        }
     }
 
-    public Key getSignInKey() {
+    private Key getSignInKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
     }
 
