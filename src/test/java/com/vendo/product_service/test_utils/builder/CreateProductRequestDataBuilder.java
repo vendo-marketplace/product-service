@@ -5,18 +5,16 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-public class CreateProductRequestDataBuilder {
+public record CreateProductRequestDataBuilder() {
 
-    public static CreateProductRequest.CreateProductRequestBuilder buildCreateProductRequestWithRequiredFields() {
+    public static CreateProductRequest.CreateProductRequestBuilder withAllFields() {
         return CreateProductRequest.builder()
-                .title("Product title")
-                .description("Product description")
-                .quantity(1)
+                .title("title")
+                .description("description")
                 .price(BigDecimal.ONE)
-                .categoryId(String.valueOf(UUID.randomUUID()))
-                .attributes(Map.of("Attribute", List.of("attribute_value")));
+                .quantity(1)
+                .attributes(Map.of("attribute_name", List.of("attribute_value")));
     }
 
 }

@@ -33,11 +33,11 @@ class ProductCommandAdapterTest {
         Product product = Product.builder().title("Test").build();
         MongoProduct entity = MongoProduct.builder().title("Test").build();
 
-        when(mongoProductMapper.toMongoProduct(product)).thenReturn(entity);
+        when(mongoProductMapper.toEntity(product)).thenReturn(entity);
 
         productCommandAdapter.save(product);
 
-        verify(mongoProductMapper).toMongoProduct(product);
+        verify(mongoProductMapper).toEntity(product);
         verify(productRepository).save(entity);
     }
 
@@ -47,7 +47,7 @@ class ProductCommandAdapterTest {
 
         MongoProduct entity = MongoProduct.builder().title("Updated").build();
 
-        when(mongoProductMapper.toMongoProduct(product)).thenReturn(entity);
+        when(mongoProductMapper.toEntity(product)).thenReturn(entity);
 
         productCommandAdapter.update("product-1", product);
 

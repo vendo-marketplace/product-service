@@ -22,21 +22,13 @@ public class MongoProduct  {
 
     @Id
     private String id;
-
     private String title;
-
     private String description;
-
     private Integer quantity;
-
     private BigDecimal price;
-
     private String ownerId;
-
     private String categoryId;
-
     private Map<String, List<String>> attributes;
-
     private Boolean active;
 
     @Version

@@ -4,7 +4,6 @@ server:
 security:
   jwt:
     secret-key: secretKeysecretKeysecretKeysecretKeysecretKey
-    bad-secret-key: wrongSecretKeywrongSecretKeywrongSecretKeywrongSecretKey
     expiration-time: 60000
 
 eureka:

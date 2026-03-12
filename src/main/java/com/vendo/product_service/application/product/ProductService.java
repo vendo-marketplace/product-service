@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.product;
 
+import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
@@ -16,7 +17,10 @@ public class ProductService {
 
     private final ProductCommandPort productCommandPort;
     private final ProductQueryPort productQueryPort;
+
+    private final AttributesValidator attributesValidator;
     private final CategoryQueryPort categoryQueryPort;
+
     private final CurrentUserPort currentUserPort;
 
     public Product findById(String id) {
@@ -24,7 +28,9 @@ public class ProductService {
     }
 
     public void save(Product product) {
+        attributesValidator.validateAttributes(product.getCategoryId(), product.getAttributes());
         throwIfCategoryNotFound(product.getCategoryId());
+
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
         productCommandPort.save(product);
@@ -32,19 +38,23 @@ public class ProductService {
 
     public void update(String id, Product product) {
         Product existing = productQueryPort.findById(id);
+
         throwIfNotOwnerOfProduct(existing.getOwnerId());
-        throwIfCategoryNotFound(product.getCategoryId());
+        if (product.getCategoryId() != null) throwIfCategoryNotFound(product.getCategoryId());
+
         productCommandPort.update(id, product);
     }
 
     private void throwIfCategoryNotFound(String id) {
-        if (id != null && !categoryQueryPort.existsById(id)) {
+        if (!categoryQueryPort.existsById(id)) {
             throw new CategoryNotFoundException("Category not found.");
         }
     }
+
     private void throwIfNotOwnerOfProduct(String ownerId) {
         if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
-            throw new AccessDeniedException("Only owner can edit its product.");
+            throw new AccessDeniedException("You're not product's owner.");
         }
     }
+
 }

@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class UpdateProductRequestDataBuilder {
 
-    public static UpdateProductRequest.UpdateProductRequestBuilder buildUpdateProductRequestWithAllFields() {
+    public static UpdateProductRequest.UpdateProductRequestBuilder withAllFields() {
         return UpdateProductRequest.builder()
                 .title("New Title")
                 .description("New Description")
