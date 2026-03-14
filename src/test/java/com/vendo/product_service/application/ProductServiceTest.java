@@ -115,7 +115,7 @@ class ProductServiceTest {
 
         assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Only owner can edit its product.");
+                .hasMessage("You're not product's owner.");
 
         verify(commandPort, never()).update(any(), any());
     }
