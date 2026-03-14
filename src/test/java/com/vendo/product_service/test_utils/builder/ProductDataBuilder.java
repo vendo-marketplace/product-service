@@ -18,7 +18,7 @@ public record ProductDataBuilder() {
                 .price(BigDecimal.ONE)
                 .ownerId("owner_id")
                 .categoryId("category_id")
-                .attributes(Map.of("attribute_name", List.of("attribute_value")))
+                .attributes(Map.of("Attribute", List.of("attribute_value")))
                 .active(true);
     }
 

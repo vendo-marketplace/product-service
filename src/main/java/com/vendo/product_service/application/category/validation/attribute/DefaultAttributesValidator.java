@@ -23,8 +23,8 @@ public class DefaultAttributesValidator implements AttributesValidator {
     private final AttributesValidationFactory attributesValidationFactory;
 
     @Override
-    public void validateAttributes(String requestId, Map<String, List<String>> requestAttributes) {
-        Category category = categoryQueryPort.findById(requestId, "Parent category not found.");
+    public void validate(String categoryId, Map<String, List<String>> requestAttributes) {
+        Category category = categoryQueryPort.findById(categoryId, "Parent category not found.");
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
         compareAndValidate(category.getAttributes(), requestAttributes);
     }

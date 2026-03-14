@@ -30,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-import java.util.UUID;
+import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -208,47 +208,71 @@ public class ProductControllerIntegrationTest {
 
     @Nested
     class SaveProductTests {
-//
-//        @Test
-//        void save_shouldSaveProduct() throws Exception {
-//            String userId = "user_id";
-//            CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.withAllFields().build();
-////            ArgumentCaptor.forClass()
-//
-//            when(categoryQueryPort.existsById(createProductRequest.categoryId())).thenReturn(true);
-//            when(currentUserPort.getCurrentUserId()).thenReturn(userId);
-//
-//            performProductPersist(createProductRequest).andExpect(status().isOk());
-//
-//        }
 
-//        @Test
-//        void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
-//            String userId = String.valueOf(UUID.randomUUID());
-//            Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-//            JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//            CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-//                    .title(null)
-//                    .description(null)
-//                    .quantity(-1)
-//                    .price(null)
-//                    .categoryId(null)
-//                    .attributes(null)
-//                    .build();
-//
-//            String content = performProductPersist(createProductRequest, jwtPayload)
-//                    .andReturn()
-//                    .getResponse()
-//                    .getContentAsString();
-//
-//            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//            assertThat(exceptionResponse).isNotNull();
-//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-//            assertThat(exceptionResponse.getErrors()).isNotNull();
-//            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
-//            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-//        }
+        @Test
+        void save_shouldSaveProduct() throws Exception {
+            String userId = "user_id";
+            Category category = CategoryDataBuilder.withAllFields().build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
+            Product product = ProductDataBuilder.withAllFields().categoryId(category.getId()).build();
+            ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
+            when(dtoProductMapper.toEntity(request)).thenReturn(product);
+            when(categoryQueryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
+            when(currentUserPort.getCurrentUserId()).thenReturn(userId);
+
+            performProductPersist(request).andExpect(status().isOk());
+
+            verify(dtoProductMapper).toEntity(request);
+            verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
+            verify(currentUserPort).getCurrentUserId();
+            verify(productCommandPort).save(argumentCaptor.capture());
+
+            Product captorValue = argumentCaptor.getValue();
+            assertThat(captorValue.getOwnerId()).isEqualTo(userId);
+            assertThat(captorValue.getActive()).isEqualTo(true);
+
+            product.setActive(captorValue.getActive());
+            product.setOwnerId(captorValue.getOwnerId());
+
+            AssertionUtils.assertFromDto(product, captorValue);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .title(null)
+                    .description(null)
+                    .quantity(-1)
+                    .price(null)
+                    .categoryId(null)
+                    .attributes(null)
+                    .build();
+
+            Category category = CategoryDataBuilder.withAllFields().build();
+            Product product = ProductDataBuilder.withAllFields().categoryId(category.getId()).build();
+
+            when(dtoProductMapper.toEntity(request)).thenReturn(product);
+            when(categoryQueryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
+
+            String content = performProductPersist(request)
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+            verify(dtoProductMapper).toEntity(request);
+            verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
+            verifyNoInteractions(currentUserPort);
+            verifyNoInteractions(productCommandPort);
+        }
 //
 //        @Test
 //        void save_shouldReturnNotFound_whenCategoryNotFound() throws Exception {

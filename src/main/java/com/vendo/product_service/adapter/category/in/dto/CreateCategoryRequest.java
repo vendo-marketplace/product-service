@@ -7,17 +7,17 @@ import lombok.Builder;
 
 import java.util.Map;
 
-import static com.vendo.product_service.domain.category.constants.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
+import static com.vendo.product_service.domain.category.constants.CategoryConstants.*;
 
 @Builder
 public record CreateCategoryRequest(
 
-        // TODO regexp
         @NotBlank(message = "Title is required.")
+        @Pattern(regexp = CATEGORY_TITLE_PATTERN, message = "Title validation failed.")
         String title,
 
-        // TODO regexp
         @NotBlank(message = "Code is required.")
+        @Pattern(regexp = CATEGORY_CODE_PATTERN, message = "Code validation failed.")
         String code,
 
         String parentId,

@@ -14,7 +14,7 @@ public record CreateProductRequestDataBuilder() {
                 .description("description")
                 .price(BigDecimal.ONE)
                 .quantity(1)
-                .attributes(Map.of("attribute_name", List.of("attribute_value")));
+                .attributes(Map.of("Attribute", List.of("attribute_value")));
     }
 
 }

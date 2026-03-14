@@ -28,11 +28,11 @@ public class ProductService {
     }
 
     public void save(Product product) {
-        attributesValidator.validateAttributes(product.getCategoryId(), product.getAttributes());
-        throwIfCategoryNotFound(product.getCategoryId());
+        attributesValidator.validate(product.getCategoryId(), product.getAttributes());
 
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
+
         productCommandPort.save(product);
     }
 
@@ -40,12 +40,12 @@ public class ProductService {
         Product existing = productQueryPort.findById(id);
 
         throwIfNotOwnerOfProduct(existing.getOwnerId());
-        if (product.getCategoryId() != null) throwIfCategoryNotFound(product.getCategoryId());
+        if (product.getCategoryId() != null) throwIfCategoryNotExists(product.getCategoryId());
 
         productCommandPort.update(id, product);
     }
 
-    private void throwIfCategoryNotFound(String id) {
+    private void throwIfCategoryNotExists(String id) {
         if (!categoryQueryPort.existsById(id)) {
             throw new CategoryNotFoundException("Category not found.");
         }

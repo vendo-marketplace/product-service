@@ -19,7 +19,7 @@ public class CategoryDataBuilder {
 
         return Category.builder()
                 .id(String.valueOf(UUID.randomUUID()))
-                .title("Category title")
+                .title("Category")
                 .parentId("parent_id")
                 .code(String.valueOf(UUID.randomUUID()))
                 .attributes(Map.of("Attribute", attributeDefinition));
