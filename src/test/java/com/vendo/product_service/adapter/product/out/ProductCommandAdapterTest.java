@@ -4,6 +4,7 @@ import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
 import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.adapter.product.out.persistence.ProductCommandAdapter;
 import com.vendo.product_service.adapter.product.out.persistence.ProductRepository;
+import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,9 +12,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.Optional;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductCommandAdapterTest {
@@ -27,7 +29,6 @@ class ProductCommandAdapterTest {
     @Mock
     private MongoProductMapper mongoProductMapper;
 
-
     @Test
     void save_shouldMapAndSaveProductEntity() {
         Product product = Product.builder().title("Test").build();
@@ -39,20 +40,38 @@ class ProductCommandAdapterTest {
 
         verify(mongoProductMapper).toEntity(product);
         verify(productRepository).save(entity);
+        verifyNoMoreInteractions(mongoProductMapper, productRepository);
     }
 
     @Test
-    void update_shouldSetIdAndSaveEntity() {
-        Product product = Product.builder().title("Updated").build();
+    void update_shouldFindUpdateAndSaveEntity_whenProductExists() {
+        String id = "product-1";
+        Product productToUpdate = Product.builder().title("Updated").build();
+        MongoProduct existingEntity = MongoProduct.builder().id(id).title("Old").build();
 
-        MongoProduct entity = MongoProduct.builder().title("Updated").build();
+        when(productRepository.findById(id)).thenReturn(Optional.of(existingEntity));
 
-        when(mongoProductMapper.toEntity(product)).thenReturn(entity);
+        productCommandAdapter.update(id, productToUpdate);
 
-        productCommandAdapter.update("product-1", product);
+        verify(productRepository).findById(id);
+        verify(mongoProductMapper).updateEntity(productToUpdate, existingEntity);
+        verify(productRepository).save(existingEntity);
+        verifyNoMoreInteractions(productRepository, mongoProductMapper);
+    }
 
-        assertThat(product.getId()).isEqualTo("product-1");
+    @Test
+    void update_shouldThrowException_whenProductDoesNotExist() {
+        String id = "product-1";
+        Product productToUpdate = Product.builder().title("Updated").build();
 
-        verify(productRepository).save(entity);
+        when(productRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> productCommandAdapter.update(id, productToUpdate))
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Product not found.");
+
+        verify(productRepository).findById(id);
+        verifyNoInteractions(mongoProductMapper);
+        verifyNoMoreInteractions(productRepository);
     }
 }
