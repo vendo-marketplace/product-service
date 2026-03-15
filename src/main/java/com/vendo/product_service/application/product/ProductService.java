@@ -28,6 +28,8 @@ public class ProductService {
     }
 
     public void save(Product product) {
+        throwIfCategoryNotExists(product.getCategoryId());
+
         attributesValidator.validate(product.getCategoryId(), product.getAttributes());
 
         product.setOwnerId(currentUserPort.getCurrentUserId());

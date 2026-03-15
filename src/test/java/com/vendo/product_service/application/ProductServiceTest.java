@@ -1,5 +1,6 @@
 package com.vendo.product_service.application;
 
+import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
@@ -7,6 +8,7 @@ import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
+import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.security_lib.exception.AccessDeniedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,36 +34,40 @@ class ProductServiceTest {
     private CategoryQueryPort categoryQueryPort;
 
     @Mock
+    private AttributesValidator attributesValidator;
+
+    @Mock
     private CurrentUserPort currentUserPort;
 
     @InjectMocks
     private ProductService productService;
 
-
-    private Product buildDomainProduct() {
-        return Product.builder()
-                .id("product-1")
-                .title("Test product")
-                .categoryId("cat-1")
-                .ownerId("user-1")
-                .price(BigDecimal.TEN)
-                .build();
-    }
-
     @Test
-    void save_shouldCallCommandPort_whenCategoryExists() {
-        Product product = buildDomainProduct();
+    void save_shouldSetOwnerAndActiveAndSave_whenCategoryExists() {
+        Product product = ProductDataBuilder.withAllFields().build();
+        String currentUserId = "user-1";
 
         when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(true);
+        when(currentUserPort.getCurrentUserId()).thenReturn(currentUserId);
 
         productService.save(product);
 
-        verify(commandPort, times(1)).save(product);
+        verify(attributesValidator, times(1)).validate(product.getCategoryId(), product.getAttributes());
+        ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+        verify(commandPort, times(1)).save(captor.capture());
+
+        Product savedProduct = captor.getValue();
+
+        assertThat(savedProduct.getOwnerId()).isEqualTo(currentUserId);
+        assertThat(savedProduct.getActive()).isTrue();
+        assertThat(savedProduct.getTitle()).isEqualTo(product.getTitle());
+        assertThat(savedProduct.getCategoryId()).isEqualTo(product.getCategoryId());
+        verifyNoMoreInteractions(commandPort, categoryQueryPort, attributesValidator, currentUserPort);
     }
 
     @Test
     void save_shouldThrowCategoryNotFoundException_whenCategoryDoesNotExist() {
-        Product product = buildDomainProduct();
+        Product product = ProductDataBuilder.withAllFields().build();
 
         when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(false);
 
@@ -71,64 +75,63 @@ class ProductServiceTest {
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found.");
 
-        verify(commandPort, never()).save(any());
+        verify(categoryQueryPort).existsById(product.getCategoryId());
+        verifyNoInteractions(attributesValidator, currentUserPort, commandPort);
     }
 
     @Test
-    void update_shouldUpdateFieldsAndCallCommandPort_whenOwnerMatches() {
-        Product existingProduct = buildDomainProduct();
-        existingProduct.setOwnerId("user123");
+    void update_shouldUpdateFieldsAndCallCommandPort_whenOwnerMatchesAndCategoryExists() {
+        String currentUserId = "user123";
+        Product existingProduct = ProductDataBuilder.withAllFields()
+                .ownerId(currentUserId)
+                .build();
+        Product updatedProduct = ProductDataBuilder.withAllFields()
+                .categoryId("new-cat-id")
+                .title("Updated title")
+                .build();
 
-        Product updatedProduct = buildDomainProduct();
-        updatedProduct.setTitle("Updated title");
-        updatedProduct.setCategoryId(existingProduct.getCategoryId());
-        updatedProduct.setOwnerId(existingProduct.getOwnerId());
-
-        when(currentUserPort.getCurrentUserId())
-                .thenReturn("user123");
         when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
-        when(categoryQueryPort.existsById(existingProduct.getCategoryId())).thenReturn(true);
+        when(currentUserPort.getCurrentUserId()).thenReturn(currentUserId);
+        when(categoryQueryPort.existsById(updatedProduct.getCategoryId())).thenReturn(true);
 
         productService.update(existingProduct.getId(), updatedProduct);
 
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(commandPort).update(eq(existingProduct.getId()), captor.capture());
 
-        Product saved = captor.getValue();
-
-        assertThat(saved.getId()).isEqualTo(existingProduct.getId());
-        assertThat(saved.getTitle()).isEqualTo("Updated title");
-        assertThat(saved.getOwnerId()).isEqualTo("user123");
+        Product passedForUpdate = captor.getValue();
+        assertThat(passedForUpdate.getTitle()).isEqualTo("Updated title");
+        assertThat(passedForUpdate.getCategoryId()).isEqualTo("new-cat-id");
     }
 
     @Test
     void update_shouldThrowAccessDeniedException_whenOwnerDoesNotMatch() {
-        Product existingProduct = buildDomainProduct();
-        existingProduct.setOwnerId("ownerX");
-
-        Product updatedProduct = buildDomainProduct();
-
-        when(currentUserPort.getCurrentUserId())
-                .thenReturn("otherUser");
+        Product existingProduct = ProductDataBuilder.withAllFields().ownerId("ownerX").build();
+        Product updatedProduct = ProductDataBuilder.withAllFields().build();
 
         when(queryPort.findById(existingProduct.getId())).thenReturn(existingProduct);
+        when(currentUserPort.getCurrentUserId()).thenReturn("intruderUser");
 
         assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessage("Only owner can edit its product.");
+                .hasMessage("You're not product's owner.");
 
-        verify(commandPort, never()).update(any(), any());
+        verify(queryPort).findById(existingProduct.getId());
+        verify(currentUserPort).getCurrentUserId();
+
+        verifyNoInteractions(categoryQueryPort, commandPort);
     }
 
     @Test
-    void findById_shouldReturnProductFromQueryPort() {
-        Product product = buildDomainProduct();
+    void findById_shouldReturnProduct_whenProductExists() {
+        Product product = ProductDataBuilder.withAllFields().build();
 
         when(queryPort.findById(product.getId())).thenReturn(product);
 
         Product result = productService.findById(product.getId());
 
         assertThat(result).isEqualTo(product);
-        verify(queryPort, times(1)).findById(product.getId());
+        verify(queryPort).findById(product.getId());
+        verifyNoMoreInteractions(queryPort);
     }
 }
