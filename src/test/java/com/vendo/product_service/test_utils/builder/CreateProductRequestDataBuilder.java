@@ -13,6 +13,7 @@ public record CreateProductRequestDataBuilder() {
                 .title("title")
                 .description("description")
                 .price(BigDecimal.ONE)
+                .categoryId("category_id")
                 .quantity(1)
                 .attributes(Map.of("Attribute", List.of("attribute_value")));
     }
