@@ -41,6 +41,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// TODO refactor
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -252,12 +253,6 @@ public class ProductControllerIntegrationTest {
                     .attributes(null)
                     .build();
 
-            Category category = CategoryDataBuilder.withAllFields().build();
-            Product product = ProductDataBuilder.withAllFields().categoryId(category.getId()).build();
-
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
-
             String content = performProductPersist(request)
                     .andReturn()
                     .getResponse()
@@ -271,8 +266,8 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(category.getId(), "Category not found.");
+            verifyNoInteractions(dtoProductMapper);
+            verifyNoInteractions(categoryQueryPort);
             verifyNoInteractions(currentUserPort);
             verifyNoInteractions(productCommandPort);
         }
@@ -715,18 +710,18 @@ public class ProductControllerIntegrationTest {
                 void save_shouldSaveProductWithEnumAttribute() throws Exception {
                     String validAttributeName = "Enum";
                     String userId = "user_id";
-                    Map<String, List<String>> numberAttribute = Map.of(validAttributeName, List.of("TYPE1", "TYPE2"));
+                    Map<String, List<String>> categoryAttribute = Map.of(validAttributeName, List.of("TYPE1"));
 
                     Category category = CategoryDataBuilder.withAllFields()
-                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).build()))
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().allowedValues(List.of("TYPE1", "TYPE2")).type(AttributeType.ENUM).build()))
                             .build();
                     Product product = ProductDataBuilder.withAllFields()
                             .categoryId(category.getId())
-                            .attributes(numberAttribute)
+                            .attributes(categoryAttribute)
                             .build();
                     CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                             .categoryId(category.getId())
-                            .attributes(numberAttribute)
+                            .attributes(categoryAttribute)
                             .build();
                     String exceptionMessage = "Parent category not found.";
                     ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
@@ -751,73 +746,95 @@ public class ProductControllerIntegrationTest {
 
                     AssertionUtils.assertFromDto(product, captorValue);
                 }
-//
-//                @Test
-//                void save_shouldReturnBadRequest_whenAttributeIsMoreThanOne() throws Exception {
-//                    String userId = String.valueOf(UUID.randomUUID());
-//                    String validAttributeName = "Enum";
-//
-//                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-//                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
-//                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(List.of("TYPE1", "TYPE2")).build()))
-//                            .build();
-//                    categoryRepository.save(categoryEntity);
-//                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-//                            .categoryId(categoryEntity.getId())
-//                            .attributes(Map.of(validAttributeName, List.of("TYPE1", "TYPE2")))
-//                            .build();
-//
-//                    String content = performProductPersist(createProductRequest, jwtPayload)
-//                            .andExpect(status().isBadRequest())
-//                            .andReturn()
-//                            .getResponse()
-//                            .getContentAsString();
-//
-//                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//                    assertThat(exceptionResponse).isNotNull();
-//                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-//                    assertThat(exceptionResponse.getErrors()).isNotNull();
-//                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-//                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly one value.");
-//                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-//                }
-//
-//                @Test
-//                void save_shouldReturnBadRequest_whenAttributeValueIsNotAllowed() throws Exception {
-//                    String userId = String.valueOf(UUID.randomUUID());
-//                    String validAttributeName = "Enum";
-//                    List<String> allowedValues = List.of("TYPE1", "TYPE2");
-//
-//                    Map<String, Object> claims = jwtPayloadDataBuilder.buildUserClaims(userId, true, UserStatus.ACTIVE, UserRole.ADMIN);
-//                    JwtPayload jwtPayload = jwtPayloadDataBuilder.buildValidJwtPayload().claims(claims).build();
-//
-//                    MongoCategory categoryEntity = MongoCategoryDataBuilder.buildCategoryWithAllFields()
-//                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.ENUM).allowedValues(allowedValues).build()))
-//                            .build();
-//                    categoryRepository.save(categoryEntity);
-//                    CreateProductRequest createProductRequest = CreateProductRequestDataBuilder.buildCreateProductRequestWithRequiredFields()
-//                            .categoryId(categoryEntity.getId())
-//                            .attributes(Map.of(validAttributeName, List.of("TYPE3")))
-//                            .build();
-//
-//                    String content = performProductPersist(createProductRequest, jwtPayload)
-//                            .andExpect(status().isBadRequest())
-//                            .andReturn()
-//                            .getResponse()
-//                            .getContentAsString();
-//
-//                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//                    assertThat(exceptionResponse).isNotNull();
-//                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-//                    assertThat(exceptionResponse.getErrors()).isNotNull();
-//                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-//                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid value. Allowed values: " + String.join(", ", allowedValues));
-//                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-//                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsMoreThanOne() throws Exception {
+                    String validAttributeName = "Enum";
+                    String userId = "user_id";
+                    Map<String, List<String>> categoryAttribute = Map.of(validAttributeName, List.of("TYPE1", "TYPE2"));
+
+                    Category category = CategoryDataBuilder.withAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().allowedValues(List.of("TYPE1", "TYPE2")).type(AttributeType.ENUM).build()))
+                            .build();
+                    Product product = ProductDataBuilder.withAllFields()
+                            .categoryId(category.getId())
+                            .attributes(categoryAttribute)
+                            .build();
+                    CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                            .categoryId(category.getId())
+                            .attributes(categoryAttribute)
+                            .build();
+                    String exceptionMessage = "Parent category not found.";
+
+                    when(dtoProductMapper.toEntity(request)).thenReturn(product);
+                    when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+                    when(currentUserPort.getCurrentUserId()).thenReturn(userId);
+
+                    String content = performProductPersist(request)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Must contain exactly one value.");
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+                    verify(dtoProductMapper).toEntity(request);
+                    verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
+                    verifyNoInteractions(currentUserPort);
+                    verifyNoInteractions(productCommandPort);
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeValueIsNotAllowed() throws Exception {
+                    String validAttributeName = "Enum";
+                    String userId = "user_id";
+                    List<String> allowedValues = List.of("TYPE1", "TYPE2");
+                    Map<String, List<String>> categoryAttribute = Map.of(validAttributeName, List.of("TYPE3"));
+
+                    Category category = CategoryDataBuilder.withAllFields()
+                            .attributes(Map.of(validAttributeName, AttributeDefinition.builder().allowedValues(allowedValues).type(AttributeType.ENUM).build()))
+                            .build();
+                    Product product = ProductDataBuilder.withAllFields()
+                            .categoryId(category.getId())
+                            .attributes(categoryAttribute)
+                            .build();
+                    CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                            .categoryId(category.getId())
+                            .attributes(categoryAttribute)
+                            .build();
+                    String exceptionMessage = "Parent category not found.";
+
+                    when(dtoProductMapper.toEntity(request)).thenReturn(product);
+                    when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+                    when(currentUserPort.getCurrentUserId()).thenReturn(userId);
+
+                    String content = performProductPersist(request)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse).isNotNull();
+                    assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors()).isNotNull();
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().get(validAttributeName)).isEqualTo("Invalid value. Allowed values: " + String.join(", ", allowedValues));
+                    assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+                    verify(dtoProductMapper).toEntity(request);
+                    verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
+                    verifyNoInteractions(currentUserPort);
+                    verifyNoInteractions(productCommandPort);
+                }
             }
 //
 //            @Nested

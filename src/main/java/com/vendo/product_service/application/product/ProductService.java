@@ -54,7 +54,7 @@ public class ProductService {
     }
 
     private void throwIfCategoryNotExists(String id) {
-        if (categoryQueryPort.existsById(id)) {
+        if (!categoryQueryPort.existsById(id)) {
             throw new CategoryNotFoundException("Category not found.");
         }
     }
