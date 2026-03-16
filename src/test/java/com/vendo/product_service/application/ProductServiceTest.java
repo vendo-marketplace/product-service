@@ -3,11 +3,13 @@ package com.vendo.product_service.application;
 import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
+import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.security_lib.exception.AccessDeniedException;
 import org.junit.jupiter.api.Test;
@@ -45,14 +47,15 @@ class ProductServiceTest {
     @Test
     void save_shouldSetOwnerAndActiveAndSave_whenCategoryExists() {
         Product product = ProductDataBuilder.withAllFields().build();
+        Category category = CategoryDataBuilder.withAllFields().build();
         String currentUserId = "user-1";
 
-        when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(true);
+        when(categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.")).thenReturn(category);
         when(currentUserPort.getCurrentUserId()).thenReturn(currentUserId);
 
         productService.save(product);
 
-        verify(attributesValidator, times(1)).validate(product.getCategoryId(), product.getAttributes());
+        verify(attributesValidator, times(1)).validate(category, product.getAttributes());
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(commandPort, times(1)).save(captor.capture());
 

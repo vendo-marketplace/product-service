@@ -7,7 +7,6 @@ import com.vendo.product_service.domain.category.exception.CategoryValidationExc
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,18 +18,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DefaultAttributesValidator implements AttributesValidator {
 
-    private final CategoryQueryPort categoryQueryPort;
     private final AttributesValidationFactory attributesValidationFactory;
 
     @Override
-    public void validate(String categoryId, Map<String, List<String>> requestAttributes) {
-        Category category = categoryQueryPort.findById(categoryId, "Parent category not found.");
+    public void validate(Category category, Map<String, List<String>> requestAttributes) {
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
-        compareAndValidate(category.getAttributes(), requestAttributes);
+        compareAndValidate(category, requestAttributes);
     }
 
-    private void compareAndValidate(Map<String, AttributeDefinition> attributes, Map<String, List<String>> requestAttributes) {
-        List<ValidationBody> invalidAttributes = attributes.entrySet().stream()
+    private void compareAndValidate(Category category, Map<String, List<String>> requestAttributes) {
+        List<ValidationBody> invalidAttributes = category.getAttributes().entrySet().stream()
                 .map(attribute -> new AttributePayload(attribute.getKey(), attribute.getValue()))
                 .map(attribute -> isAttributeValid(attribute , requestAttributes))
                 .filter(attribute -> !attribute.valid()).toList();

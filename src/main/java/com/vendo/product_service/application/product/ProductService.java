@@ -2,6 +2,7 @@ package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
@@ -28,9 +29,8 @@ public class ProductService {
     }
 
     public void save(Product product) {
-        throwIfCategoryNotExists(product.getCategoryId());
-
-        attributesValidator.validate(product.getCategoryId(), product.getAttributes());
+        Category category = categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.");
+        attributesValidator.validate(category, product.getAttributes());
 
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
@@ -47,15 +47,15 @@ public class ProductService {
         productCommandPort.update(id, product);
     }
 
-    private void throwIfCategoryNotExists(String id) {
-        if (!categoryQueryPort.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found.");
-        }
-    }
-
     private void throwIfNotOwnerOfProduct(String ownerId) {
         if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
             throw new AccessDeniedException("You're not product's owner.");
+        }
+    }
+
+    private void throwIfCategoryNotExists(String id) {
+        if (categoryQueryPort.existsById(id)) {
+            throw new CategoryNotFoundException("Category not found.");
         }
     }
 
