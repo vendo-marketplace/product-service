@@ -6,7 +6,7 @@ import java.util.List;
 
 @Builder
 public record AttributeDefinition(
-     AttributeType type,
-     boolean required,
-     List<String> allowedValues) {
+        AttributeType type,
+        boolean required,
+        List<String> allowedValues) {
 }
