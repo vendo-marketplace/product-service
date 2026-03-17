@@ -72,13 +72,15 @@ class ProductServiceTest {
     void save_shouldThrowCategoryNotFoundException_whenCategoryDoesNotExist() {
         Product product = ProductDataBuilder.withAllFields().build();
 
-        when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(false);
+        when(categoryQueryPort.findById(any(), any()))
+                .thenThrow(new CategoryNotFoundException("Parent category not found."));
 
         assertThatThrownBy(() -> productService.save(product))
                 .isInstanceOf(CategoryNotFoundException.class)
-                .hasMessage("Category not found.");
+                .hasMessage("Parent category not found.");
 
-        verify(categoryQueryPort).existsById(product.getCategoryId());
+        verify(categoryQueryPort)
+                .findById(eq(product.getCategoryId()), anyString());
         verifyNoInteractions(attributesValidator, currentUserPort, commandPort);
     }
 
