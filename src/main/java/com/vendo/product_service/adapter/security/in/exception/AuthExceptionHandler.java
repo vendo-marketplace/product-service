@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.exception;
 
 import com.vendo.core_lib.exception.ExceptionResponse;
-import com.vendo.security_lib.exception.AccessDeniedException;
+import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
@@ -16,17 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class AuthExceptionHandler {
-
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ExceptionResponse> handleAccessDeniedException(AccessDeniedException e, HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
-                .code(HttpStatus.FORBIDDEN.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
-    }
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<ExceptionResponse> handleInvalidTokenException(InvalidTokenException e, HttpServletRequest request) {
@@ -65,6 +54,17 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(UserEmailNotVerifiedException.class)
     public ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e,  HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.FORBIDDEN.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(NotProductOwnerException.class)
+    public ResponseEntity<ExceptionResponse> handleNotProductOwnerException(NotProductOwnerException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())

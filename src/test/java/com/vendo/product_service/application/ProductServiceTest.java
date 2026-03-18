@@ -4,6 +4,7 @@ import com.vendo.product_service.application.category.validation.attribute.Attri
 import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
@@ -11,7 +12,6 @@ import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
-import com.vendo.security_lib.exception.AccessDeniedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -118,7 +118,7 @@ class ProductServiceTest {
         when(currentUserPort.getCurrentUserId()).thenReturn("intruderUser");
 
         assertThatThrownBy(() -> productService.update(existingProduct.getId(), updatedProduct))
-                .isInstanceOf(AccessDeniedException.class)
+                .isInstanceOf(NotProductOwnerException.class)
                 .hasMessage("You're not product's owner.");
 
         verify(queryPort).findById(existingProduct.getId());

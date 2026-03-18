@@ -116,7 +116,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title is required.");
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title validation failed.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(queryPort);
@@ -164,7 +164,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("code")).isEqualTo("Code is required.");
+            assertThat(exceptionResponse.getErrors().get("code")).isEqualTo("Code validation failed.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(queryPort);
@@ -197,12 +197,12 @@ public class CategoryControllerIntegrationTest {
 
         @Test
         void save_shouldReturnForbidden_whenAuthenticatedUserIsNotAdmin() throws Exception {
-            CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
+            CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                     .parentId(null)
                     .attributes(null)
                     .build();
 
-            String content = performCategoryPersist(categoryRequest, UserRole.USER)
+            String content = performCategoryPersist(request, UserRole.USER)
                     .andExpect(status().isForbidden())
                     .andReturn()
                     .getResponse()
