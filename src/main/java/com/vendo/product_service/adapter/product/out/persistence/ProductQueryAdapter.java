@@ -11,18 +11,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProductQueryAdapter implements ProductQueryPort {
 
-    private final ProductRepository productRepository;
-    private final MongoProductMapper mongoProductMapper;
+    private final ProductRepository repository;
+    private final MongoProductMapper mapper;
 
     @Override
     public Product findById(String id) {
-        MongoProduct entity = productRepository.findById(id)
+        MongoProduct entity = repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
-        return mongoProductMapper.toProduct(entity);
+        return mapper.toProduct(entity);
     }
 
     @Override
     public boolean existsById(String productId) {
-        return productRepository.existsById(productId);
+        return repository.existsById(productId);
     }
 }

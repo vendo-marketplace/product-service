@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProductCommandAdapter implements ProductCommandPort {
 
-    private final ProductRepository productRepository;
-    private final MongoProductMapper mongoProductMapper;
+    private final ProductRepository repository;
+    private final MongoProductMapper mapper;
 
     @Override
     public void save(Product product) {
-        MongoProduct entity = mongoProductMapper.toEntity(product);
-        productRepository.save(entity);
+        MongoProduct entity = mapper.toEntity(product);
+        repository.save(entity);
     }
 
     @Override
     public void update(String id, Product product) {
         MongoProduct entity = findOrThrow(id);
-        mongoProductMapper.updateEntity(product, entity);
-        productRepository.save(entity);
+        mapper.updateEntity(entity, product);
+        repository.save(entity);
     }
 
     private MongoProduct findOrThrow(String id) {
-        return productRepository.findById(id)
+        return repository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found."));
     }
 }

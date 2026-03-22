@@ -36,11 +36,11 @@ class CategoryCommandAdapterTest {
                 .title("Title")
                 .build();
 
-        when(categoryMapper.toMongoEntity(category)).thenReturn(categoryEntity);
+        when(categoryMapper.toEntity(category)).thenReturn(categoryEntity);
 
         commandAdapter.save(category);
 
-        verify(categoryMapper, times(1)).toMongoEntity(category);
+        verify(categoryMapper, times(1)).toEntity(category);
         verify(categoryRepository, times(1)).save(categoryEntity);
         verifyNoMoreInteractions(categoryMapper, categoryRepository);
     }
@@ -56,12 +56,12 @@ class CategoryCommandAdapterTest {
 
         RuntimeException dbException = new RuntimeException("Database error.");
 
-        when(categoryMapper.toMongoEntity(category)).thenReturn(categoryEntity);
+        when(categoryMapper.toEntity(category)).thenReturn(categoryEntity);
         when(categoryRepository.save(categoryEntity)).thenThrow(dbException);
 
         assertThrows(RuntimeException.class, () -> commandAdapter.save(category));
 
-        verify(categoryMapper, times(1)).toMongoEntity(category);
+        verify(categoryMapper, times(1)).toEntity(category);
         verify(categoryRepository, times(1)).save(categoryEntity);
 
         verifyNoMoreInteractions(categoryMapper, categoryRepository);

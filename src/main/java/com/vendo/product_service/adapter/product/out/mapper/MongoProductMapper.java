@@ -12,9 +12,10 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 public interface MongoProductMapper {
 
     MongoProduct toEntity(Product product);
+
     Product toProduct(MongoProduct entity);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntity(Product product, @MappingTarget MongoProduct entity);
+    void updateEntity(@MappingTarget MongoProduct entity, Product product);
 
 }

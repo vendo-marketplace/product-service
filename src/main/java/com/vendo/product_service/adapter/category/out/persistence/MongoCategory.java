@@ -1,10 +1,7 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,10 +12,8 @@ import java.time.Instant;
 import java.util.Map;
 
 @Data
+@Builder
 @Document
-@SuperBuilder
-@NoArgsConstructor
-@EqualsAndHashCode()
 public class MongoCategory {
 
     @Id

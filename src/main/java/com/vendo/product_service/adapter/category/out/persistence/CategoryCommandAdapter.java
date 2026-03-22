@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryCommandAdapter implements CategoryCommandPort {
 
-    private final MongoCategoryMapper categoryMapper;
-    private final CategoryRepository categoryRepository;
+    private final MongoCategoryMapper mapper;
+    private final CategoryRepository repository;
 
     @Override
     public void save(Category category) {
-        categoryRepository.save(categoryMapper.toMongoEntity(category));
+        repository.save(mapper.toEntity(category));
     }
 }

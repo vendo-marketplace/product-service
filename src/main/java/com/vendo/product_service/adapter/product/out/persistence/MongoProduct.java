@@ -2,7 +2,6 @@ package com.vendo.product_service.adapter.product.out.persistence;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,7 +16,6 @@ import java.util.Map;
 @Data
 @Builder
 @Document
-@EqualsAndHashCode()
 public class MongoProduct  {
 
     @Id

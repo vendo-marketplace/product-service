@@ -9,6 +9,6 @@ import org.mapstruct.Mapper;
 public interface MongoCategoryMapper {
 
     Category toCategory(MongoCategory entity);
-    MongoCategory toMongoEntity(Category category);
+    MongoCategory toEntity(Category category);
 
 }

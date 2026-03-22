@@ -11,22 +11,22 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CategoryQueryAdapter implements CategoryQueryPort {
 
-    private final MongoCategoryMapper categoryMapper;
-    private final CategoryRepository categoryRepository;
+    private final MongoCategoryMapper mapper;
+    private final CategoryRepository repository;
 
     @Override
     public Category findById(String id, String message) {
-        return categoryRepository.findById(id).map(categoryMapper::toCategory)
+        return repository.findById(id).map(mapper::toCategory)
                 .orElseThrow(() -> new CategoryNotFoundException(message.isBlank() ? "Category not found." : message));
     }
 
     @Override
     public boolean existsById(String categoryId) {
-        return categoryRepository.existsById(categoryId);
+        return repository.existsById(categoryId);
     }
 
     @Override
     public boolean existsByCode(String code) {
-        return categoryRepository.existsByCode(code);
+        return repository.existsByCode(code);
     }
 }

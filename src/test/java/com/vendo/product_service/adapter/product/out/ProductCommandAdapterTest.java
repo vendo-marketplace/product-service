@@ -54,7 +54,7 @@ class ProductCommandAdapterTest {
         productCommandAdapter.update(id, productToUpdate);
 
         verify(productRepository).findById(id);
-        verify(mongoProductMapper).updateEntity(productToUpdate, existingEntity);
+        verify(mongoProductMapper).updateEntity(existingEntity, productToUpdate);
         verify(productRepository).save(existingEntity);
         verifyNoMoreInteractions(productRepository, mongoProductMapper);
     }
