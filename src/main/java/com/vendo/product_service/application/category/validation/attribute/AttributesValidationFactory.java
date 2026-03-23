@@ -12,10 +12,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AttributesValidationFactory {
 
-    private final List<AttributeValidatorStrategy> categoryAttributeValidationStrategies;
+    private final List<AttributeValidatorStrategy> attributeValidatorStrategies;
 
     public AttributeValidatorStrategy getValidator(AttributeType attributeType) {
-        return categoryAttributeValidationStrategies.stream()
+        return attributeValidatorStrategies.stream()
                 .filter(categoryAttributeValidationStrategy -> categoryAttributeValidationStrategy.getType() == attributeType)
                 .findFirst()
                 .orElseThrow(() -> new CategoryValidationException("Category attribute type not found."));

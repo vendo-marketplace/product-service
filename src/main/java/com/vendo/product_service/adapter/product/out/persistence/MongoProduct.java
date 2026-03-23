@@ -16,7 +16,7 @@ import java.util.Map;
 @Data
 @Builder
 @Document
-public class MongoProduct  {
+public class MongoProduct {
 
     @Id
     private String id;

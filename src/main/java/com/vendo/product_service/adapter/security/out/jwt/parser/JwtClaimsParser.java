@@ -26,11 +26,13 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             String id = extractId(claims);
             List<String> roles = extractRoles(claims);
+
             Boolean verification = extractEmailVerification(claims);
             UserStatus status = extractStatus(claims);
+
             return new TokenClaims(id, status, roles, verification);
         } catch (RequiredTypeException e) {
-            throw new InvalidTokenException("Invalid token.");
+            throw new InvalidTokenException("Couldn't extract role by required type.");
         }
     }
 
@@ -38,7 +40,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
 
         if (id == null || id.isBlank()) {
-            throw new InvalidTokenException("Invalid token.");
+            throw new InvalidTokenException("Id claim is not present.");
         }
 
         return id;
@@ -46,7 +48,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
     private List<String> extractRoles(Claims claims) {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
-        RuntimeException e = new InvalidTokenException("Invalid token.");
+        RuntimeException e = new InvalidTokenException("Invalid roles claim.");
 
         if (rawRoles instanceof List<?> list) {
             if (list.stream().allMatch(String.class::isInstance)) {
@@ -72,7 +74,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             return UserStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new InvalidTokenException("Invalid token.");
+            throw new InvalidTokenException("Invalid status claim, " + status + " is not type of UserStatus.");
         }
     }
 }

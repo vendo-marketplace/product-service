@@ -72,7 +72,7 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(responseContent).isNotBlank();
         ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
 
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid or expired token.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 
@@ -93,7 +93,7 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(responseContent).isNotBlank();
         ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
 
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid or expired token.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 
@@ -126,7 +126,7 @@ public class JwtAuthFilterIntegrationTest {
     void doFilterInternal_shouldReturnUnauthorized_whenTokenExpired() throws Exception {
         String expiredToken = "expired_token";
 
-        when(tokenClaimsParser.extract(expiredToken)).thenThrow(new InvalidTokenException("Token expired."));
+        when(tokenClaimsParser.extract(expiredToken)).thenThrow(new InvalidTokenException("Invalid or expired token."));
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + expiredToken))
                 .andExpect(status().isUnauthorized())
@@ -136,7 +136,7 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(responseContent).isNotBlank();
         ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
 
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Token expired.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid or expired token.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 

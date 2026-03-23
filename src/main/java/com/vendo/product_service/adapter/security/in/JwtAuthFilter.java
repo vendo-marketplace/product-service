@@ -71,7 +71,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authorization.substring(BEARER_PREFIX.length());
         }
 
-        throw new InvalidTokenException("Invalid token.");
+        throw new InvalidTokenException("Exception while extracting token from request.");
     }
 
     private void addAuthenticationToContext(String userId, List<String> authorities) {

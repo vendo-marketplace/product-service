@@ -22,10 +22,8 @@ public class JwtService {
     public Claims extractAllClaims(String token) {
         try {
             return parseSignedClaims(token).getPayload();
-        } catch (ExpiredJwtException e) {
-            throw new InvalidTokenException("Token expired.");
         } catch (JwtException e) {
-            throw new InvalidTokenException("Invalid token.");
+            throw new InvalidTokenException("Couldn't parse claims from token: " + e.getMessage());
         }
     }
 

@@ -22,7 +22,7 @@ public class AuthExceptionHandler {
         log.error(e.getMessage());
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
+                .message("Invalid or expired token.")
                 .code(HttpStatus.UNAUTHORIZED.value())
                 .path(request.getRequestURI())
                 .build();
@@ -31,7 +31,7 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(UserBlockedException.class)
-    public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e,  HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
@@ -42,7 +42,7 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(UserIsUnactiveException.class)
-    public ResponseEntity<ExceptionResponse> handleUserIsUnactiveException(UserIsUnactiveException e,  HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleUserIsUnactiveException(UserIsUnactiveException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
@@ -53,7 +53,7 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(UserEmailNotVerifiedException.class)
-    public ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e,  HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
