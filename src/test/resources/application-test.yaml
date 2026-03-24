@@ -1,16 +1,9 @@
 server:
   url: server_test_url
 
-spring:
-  data:
-    mongodb:
-      uri: mongodb://root:secret@localhost:27017/mydatabase?authSource=admin
-      authentication-database: admin
-
 security:
   jwt:
     secret-key: secretKeysecretKeysecretKeysecretKeysecretKey
-    bad-secret-key: wrongSecretKeywrongSecretKeywrongSecretKeywrongSecretKey
     expiration-time: 60000
 
 eureka:

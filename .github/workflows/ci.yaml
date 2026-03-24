@@ -10,20 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    services:
-      mongo:
-        image: mongo:6.0
-        ports:
-          - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: root
-          MONGO_INITDB_ROOT_PASSWORD: secret
-        options: >-
-          --health-cmd="mongosh --username root --password secret --authenticationDatabase admin --eval 'db.adminCommand(\"ping\")'"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -33,15 +19,6 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: maven
-
-      - name: Wait for MongoDB to be ready
-        run: |
-          echo "⏳ Waiting for MongoDB..."
-          for i in {1..30}; do
-            nc -z localhost 27017 && echo "✅ MongoDB is up!" && break
-            echo "Waiting for MongoDB... attempt $i"
-            sleep 2
-          done
 
       - name: Run tests
         run: mvn -B clean verify -DskipITs=false
