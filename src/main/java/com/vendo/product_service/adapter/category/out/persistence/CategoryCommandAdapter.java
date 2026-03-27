@@ -15,6 +15,8 @@ public class CategoryCommandAdapter implements CategoryCommandPort {
 
     @Override
     public void save(Category category) {
-        repository.save(mapper.toEntity(category));
+        System.out.println("Saving category.");
+        MongoCategory save = repository.save(mapper.toEntity(category));
+        System.out.println("Saved category: " + save);
     }
 }

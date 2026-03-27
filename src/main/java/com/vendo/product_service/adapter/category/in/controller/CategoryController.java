@@ -22,6 +22,7 @@ public class CategoryController {
 
     @PostMapping
     public void save(@Valid @RequestBody CreateCategoryRequest createCategoryRequest) {
+        System.out.println("Received request to save category.");
         Category category = categoryMapper.toCategory(createCategoryRequest);
         categoryService.save(category);
     }
