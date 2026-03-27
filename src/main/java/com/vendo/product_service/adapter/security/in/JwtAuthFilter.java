@@ -39,7 +39,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         SecurityContext securityContext = SecurityContextHolder.getContext();
-        System.out.println("Context: " + securityContext);
         if (securityContext.getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
@@ -47,14 +46,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = getTokenFromRequest(request);
-            System.out.println("Token: " + jwtToken);
             TokenClaims claims = claimsParser.extract(jwtToken);
-            System.out.println("Claims: " + claims);
             UserActivityValidator.validate(claims.status(), claims.emailVerification());
-            System.out.println("Validated user.");
 
             addAuthenticationToContext(claims.userId(), claims.roles());
         } catch (Exception e) {
+            log.error(e.getMessage());
             handlerExceptionResolver.resolveException(request, response, null, e);
             return;
         }
