@@ -1,11 +1,11 @@
 package com.vendo.product_service.adapter.security.out.jwt;
 
 import com.vendo.product_service.adapter.security.in.config.JwtProperties;
-import com.vendo.security_lib.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -20,15 +20,15 @@ public class JwtService {
     private final JwtProperties jwtProperties;
 
     public Claims extractAllClaims(String token) {
-        try {
-            return parseSignedClaims(token).getPayload();
-        } catch (JwtException e) {
-            throw new InvalidTokenException("Couldn't parse claims from token: " + e.getMessage());
-        }
+        return parseSignedClaims(token).getPayload();
     }
 
     private Key getSignInKey() {
-        return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+        try {
+            return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+        } catch (NullPointerException e) {
+            throw new BadCredentialsException("Error while signing secret key.", e);
+        }
     }
 
     private Jws<Claims> parseSignedClaims(String token) throws JwtException {

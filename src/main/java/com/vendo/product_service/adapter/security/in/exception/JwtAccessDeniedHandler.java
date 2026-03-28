@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.in;
+package com.vendo.product_service.adapter.security.in.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.exception.ExceptionResponse;
@@ -16,7 +16,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DefaultAccessDeniedHandler implements AccessDeniedHandler {
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
 

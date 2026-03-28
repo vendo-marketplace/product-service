@@ -9,8 +9,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static com.vendo.product_service.adapter.security.in.ProductAntPathResolver.PERMITTED_PATHS;
@@ -25,16 +27,21 @@ public class SecurityConfig {
 
     private final AccessDeniedHandler accessDeniedHandler;
 
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .anonymous(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PERMITTED_PATHS).permitAll()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(configurer -> configurer.accessDeniedHandler(accessDeniedHandler))
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .exceptionHandling(configurer -> configurer
+                        .accessDeniedHandler(accessDeniedHandler)
+                        .authenticationEntryPoint(authenticationEntryPoint))
+                .addFilterAfter(jwtAuthFilter, ExceptionTranslationFilter.class);
 
         return http.build();
     }

@@ -21,9 +21,7 @@ public class CategoryService {
     }
 
     public void save(Category category) {
-        System.out.println("Checking if exists by code.");
         throwIfExistsByCode(category.getCode());
-        System.out.println("Validating creation.");
         validationService.validateCreation(category);
         categoryCommandPort.save(category);
     }
