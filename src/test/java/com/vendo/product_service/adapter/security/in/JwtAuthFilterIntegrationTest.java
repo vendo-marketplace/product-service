@@ -7,7 +7,6 @@ import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsPars
 import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,11 +41,6 @@ public class JwtAuthFilterIntegrationTest {
 
     @MockitoBean
     private TokenClaimsParser tokenClaimsParser;
-
-    @BeforeEach
-    public void setUp() {
-        SecurityContextHolder.clearContext();
-    }
 
     @Test
     void doFilterInternal_shouldPassAuthorization_whenUserAlreadyAuthorized() throws Exception {
