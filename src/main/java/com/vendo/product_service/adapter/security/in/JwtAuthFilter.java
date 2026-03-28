@@ -48,7 +48,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             addAuthenticationToContext(claims.userId(), claims.roles());
         } catch (JwtException e) {
             log.error(e.getMessage());
-            throw new BadCredentialsException("Invalid or expired token.", e);
+            throw new BadCredentialsException("Invalid or expired token.");
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new InsufficientAuthenticationException(e.getMessage());

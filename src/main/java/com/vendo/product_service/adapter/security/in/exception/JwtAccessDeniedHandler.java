@@ -30,7 +30,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .code(HttpServletResponse.SC_FORBIDDEN)
                 .path(request.getRequestURI())
-                .message("Resource is not reachable.")
+                .message("Resource is unreachable.")
                 .build();
 
         response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
