@@ -25,7 +25,7 @@ public class JwtService {
 
     private Key getSignInKey() {
         try {
-            return Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+            return Keys.hmacShaKeyFor(jwtProperties.getSecret().key().getBytes(StandardCharsets.UTF_8));
         } catch (NullPointerException e) {
             throw new BadCredentialsException("Error while signing secret key.", e);
         }

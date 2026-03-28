@@ -70,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authorization.substring(BEARER_PREFIX.length());
         }
 
-        throw new BadCredentialsException("Exception while extracting token from request.");
+        throw new JwtException("Exception while extracting token from request.");
     }
 
     private void addAuthenticationToContext(String userId, List<String> authorities) {
