@@ -36,6 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         SecurityContext securityContext = SecurityContextHolder.getContext();
+        log.info("Before filter context: {}", securityContext);
         if (securityContext.getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
@@ -44,6 +45,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             String jwtToken = getTokenFromRequest(request);
             TokenClaims claims = claimsParser.extract(jwtToken);
+            log.info("Token claims: {}", claims);
             UserActivityValidator.validate(claims.status(), claims.emailVerification());
             addAuthenticationToContext(claims.userId(), claims.roles());
         } catch (JwtException e) {
@@ -53,6 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             log.error(e.getMessage());
             throw new InsufficientAuthenticationException(e.getMessage());
         }
+
+        log.info("After filter context: {}", SecurityContextHolder.getContext());
 
         filterChain.doFilter(request, response);
     }
