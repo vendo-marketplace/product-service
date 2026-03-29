@@ -2,21 +2,21 @@ package com.vendo.product_service.adapter.security.in;
 
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
-import com.vendo.security_lib.exception.InvalidTokenException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,9 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final ProductAntPathResolver productAntPathResolver;
 
-    @Qualifier("handlerExceptionResolver")
-    private final HandlerExceptionResolver handlerExceptionResolver;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         SecurityContext securityContext = SecurityContextHolder.getContext();
@@ -48,11 +45,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String jwtToken = getTokenFromRequest(request);
             TokenClaims claims = claimsParser.extract(jwtToken);
             UserActivityValidator.validate(claims.status(), claims.emailVerification());
-
             addAuthenticationToContext(claims.userId(), claims.roles());
+        } catch (JwtException e) {
+            log.error(e.getMessage());
+            throw new BadCredentialsException("Invalid or expired token.");
         } catch (Exception e) {
-            handlerExceptionResolver.resolveException(request, response, null, e);
-            return;
+            log.error(e.getMessage());
+            throw new InsufficientAuthenticationException(e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -71,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authorization.substring(BEARER_PREFIX.length());
         }
 
-        throw new InvalidTokenException("Exception while extracting token from request.");
+        throw new JwtException("Exception while extracting token from request.");
     }
 
     private void addAuthenticationToContext(String userId, List<String> authorities) {

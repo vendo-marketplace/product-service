@@ -1,13 +1,10 @@
 server:
   url: server_test_url
 
-client:
-  url: client_test_url
-
 security:
   jwt:
-    secret-key: secretKeysecretKeysecretKeysecretKeysecretKey
-    expiration-time: 60000
+    secret:
+      key: secretKeysecretKeysecretKeysecretKeysecretKey
 
 eureka:
   client:

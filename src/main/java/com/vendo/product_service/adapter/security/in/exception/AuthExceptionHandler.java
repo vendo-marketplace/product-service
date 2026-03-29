@@ -2,7 +2,6 @@ package com.vendo.product_service.adapter.security.in.exception;
 
 import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
-import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
 import com.vendo.user_lib.exception.UserIsUnactiveException;
@@ -16,19 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class AuthExceptionHandler {
-
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ExceptionResponse> handleInvalidTokenException(InvalidTokenException e, HttpServletRequest request) {
-        log.error(e.getMessage());
-
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Invalid or expired token.")
-                .code(HttpStatus.UNAUTHORIZED.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(exceptionResponse);
-    }
 
     @ExceptionHandler(UserBlockedException.class)
     public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {

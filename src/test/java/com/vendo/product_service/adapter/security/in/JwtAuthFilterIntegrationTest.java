@@ -108,7 +108,7 @@ public class JwtAuthFilterIntegrationTest {
         when(tokenClaimsParser.extract(token)).thenReturn(claims);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andReturn().getResponse();
 
         String responseContent = response.getContentAsString();
@@ -116,7 +116,7 @@ public class JwtAuthFilterIntegrationTest {
         ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
 
         assertThat(exceptionResponse.getMessage()).isEqualTo("User is blocked.");
-        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 
         verify(tokenClaimsParser).extract(token);
@@ -152,7 +152,7 @@ public class JwtAuthFilterIntegrationTest {
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnauthorized())
                 .andReturn()
                 .getResponse();
 
@@ -161,7 +161,7 @@ public class JwtAuthFilterIntegrationTest {
         ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
 
         assertThat(exceptionResponse.getMessage()).isEqualTo("User is unactive.");
-        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 
         verify(tokenClaimsParser).extract(token);

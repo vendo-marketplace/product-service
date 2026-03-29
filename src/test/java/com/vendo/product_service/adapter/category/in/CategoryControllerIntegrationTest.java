@@ -211,7 +211,7 @@ public class CategoryControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("You do not have permission to access this resource.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(queryPort);

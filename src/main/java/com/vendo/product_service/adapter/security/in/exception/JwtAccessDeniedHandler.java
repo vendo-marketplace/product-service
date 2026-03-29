@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.in;
+package com.vendo.product_service.adapter.security.in.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.exception.ExceptionResponse;
@@ -16,13 +16,13 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class DefaultAccessDeniedHandler implements AccessDeniedHandler {
+public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException exception) throws IOException {
-        log.warn("Handling access denied exception: ", exception);
+        log.warn("Handling access denied exception: {}.", exception.getMessage());
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -30,7 +30,7 @@ public class DefaultAccessDeniedHandler implements AccessDeniedHandler {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .code(HttpServletResponse.SC_FORBIDDEN)
                 .path(request.getRequestURI())
-                .message("You do not have permission to access this resource.")
+                .message("Resource is unreachable.")
                 .build();
 
         response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));

@@ -1,13 +1,13 @@
 package com.vendo.product_service.adapter.security.out.jwt.parser;
 
 import com.vendo.product_service.adapter.security.out.jwt.JwtService;
-import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.security_lib.type.UserTokenClaim;
 import com.vendo.user_lib.type.UserStatus;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.RequiredTypeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,24 +23,20 @@ public class JwtClaimsParser implements TokenClaimsParser {
     public TokenClaims extract(String token) {
         Claims claims = jwtService.extractAllClaims(token);
 
-        try {
-            String id = extractId(claims);
-            List<String> roles = extractRoles(claims);
+        String id = extractId(claims);
+        List<String> roles = extractRoles(claims);
 
-            Boolean verification = extractEmailVerification(claims);
-            UserStatus status = extractStatus(claims);
+        Boolean verification = extractEmailVerification(claims);
+        UserStatus status = extractStatus(claims);
 
-            return new TokenClaims(id, status, roles, verification);
-        } catch (RequiredTypeException e) {
-            throw new InvalidTokenException("Couldn't extract role by required type.");
-        }
+        return new TokenClaims(id, status, roles, verification);
     }
 
     private String extractId(Claims claims) {
         String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
 
         if (id == null || id.isBlank()) {
-            throw new InvalidTokenException("Id claim is not present.");
+            throw new BadCredentialsException("Id claim is not present.");
         }
 
         return id;
@@ -48,7 +44,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
     private List<String> extractRoles(Claims claims) {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
-        RuntimeException e = new InvalidTokenException("Invalid roles claim.");
+        AuthenticationException e = new BadCredentialsException("Invalid roles claim.");
 
         if (rawRoles instanceof List<?> list) {
             if (list.stream().allMatch(String.class::isInstance)) {
@@ -74,7 +70,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             return UserStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new InvalidTokenException("Invalid status claim, " + status + " is not type of UserStatus.");
+            throw new BadCredentialsException("Invalid status claim, " + status + " is not type of UserStatus.");
         }
     }
 }

@@ -2,7 +2,6 @@ package com.vendo.product_service.adapter.security.out.jwt;
 
 import com.vendo.product_service.adapter.security.out.jwt.parser.JwtClaimsParser;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.security_lib.type.UserTokenClaim;
 import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserStatus;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.List;
 
@@ -61,7 +61,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Id claim is not present.");
 
         verify(jwtService).extractAllClaims(token);
@@ -79,8 +79,7 @@ public class JwtClaimsParserTest {
         when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenThrow(new RequiredTypeException(anyString()));
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
-                .hasMessage("Couldn't extract role by required type.");
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(RequiredTypeException.class);
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -99,7 +98,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid roles claim.");
 
         verify(jwtService).extractAllClaims(token);
@@ -121,7 +120,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid roles claim.");
 
         verify(jwtService).extractAllClaims(token);
@@ -141,7 +140,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid roles claim.");
 
         verify(jwtService).extractAllClaims(token);
@@ -163,8 +162,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
-                .hasMessage("Couldn't extract role by required type.");
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(RequiredTypeException.class);
 
         verify(jwtService).extractAllClaims(token);
 
@@ -187,8 +185,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
-                .hasMessage("Couldn't extract role by required type.");
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(RequiredTypeException.class);
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -210,7 +207,7 @@ public class JwtClaimsParserTest {
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(InvalidTokenException.class)
+        assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
                 .hasMessage("Invalid status claim, not_enum is not type of UserStatus.");
 
         verify(jwtService).extractAllClaims(token);
