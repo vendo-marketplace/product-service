@@ -19,7 +19,7 @@ public record CreateProductRequest(
         @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters.")
         String description,
 
-        @Min(value = 0, message = "Minimal quantity is one.")
+        @Min(value = 1, message = "Minimal quantity is one.")
         int quantity,
 
         @NotNull(message = "Price is required.")

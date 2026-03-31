@@ -65,9 +65,13 @@ public class ProductControllerIntegrationTest {
     private CategoryQueryPort categoryQueryPort;
 
     private ResultActions performProductPersist(CreateProductRequest createProductRequest) throws Exception {
+        return performProductPersist(objectMapper.writeValueAsString(createProductRequest));
+    }
+
+    private ResultActions performProductPersist(String createProductRequest) throws Exception {
         return mockMvc.perform(post("/products")
                 .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
-                .content(objectMapper.writeValueAsString(createProductRequest))
+                .content(createProductRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
@@ -343,6 +347,33 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+            verifyNoInteractions(dtoProductMapper);
+            verifyNoInteractions(categoryQueryPort);
+            verifyNoInteractions(currentUserPort);
+            verifyNoInteractions(productCommandPort);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenInvalidBodyStructure() throws Exception {
+            String invalidRequestBody = """
+                       "title": "Title",
+                       "description": "Description",
+                       "quantity": 1,
+                       "price": 0,
+                       "categoryId": "id",
+                       "attributes": "invalid_attribute_value_structure"
+                    """;
+
+            String content = performProductPersist(invalidRequestBody).andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid body structure.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(dtoProductMapper);
