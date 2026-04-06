@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
-import com.vendo.security_lib.exception.InvalidTokenException;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import org.junit.jupiter.api.Test;
@@ -13,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -126,7 +126,7 @@ public class JwtAuthFilterIntegrationTest {
     void doFilterInternal_shouldReturnUnauthorized_whenTokenExpired() throws Exception {
         String expiredToken = "expired_token";
 
-        when(tokenClaimsParser.extract(expiredToken)).thenThrow(new InvalidTokenException("Invalid or expired token."));
+        when(tokenClaimsParser.extract(expiredToken)).thenThrow(new BadCredentialsException("Invalid or expired token."));
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + expiredToken))
                 .andExpect(status().isUnauthorized())
