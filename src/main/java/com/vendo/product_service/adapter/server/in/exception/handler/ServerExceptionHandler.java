@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.server.in.exception.handler;
 
-import com.vendo.core_lib.exception.ExceptionResponse;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
