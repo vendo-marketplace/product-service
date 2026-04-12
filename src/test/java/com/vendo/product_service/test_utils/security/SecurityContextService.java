@@ -10,6 +10,7 @@ import java.util.Collections;
 
 public class SecurityContextService {
 
+    // TODO replace with UserTokenClaims
     public static Authentication initializeAuth(UserRole role) {
         return new UsernamePasswordAuthenticationToken(
                 new UserTokenClaims(null, null, null, false),

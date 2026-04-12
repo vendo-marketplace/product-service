@@ -11,8 +11,4 @@ public record UserTokenClaims(
         boolean emailVerification
 ) {
 
-    public boolean isAuthCompleted() {
-        return emailVerification && status == UserStatus.ACTIVE;
-    }
-
 }
