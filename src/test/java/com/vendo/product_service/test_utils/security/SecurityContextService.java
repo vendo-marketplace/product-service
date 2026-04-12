@@ -10,12 +10,14 @@ import java.util.Collections;
 
 public class SecurityContextService {
 
-    // TODO replace with UserTokenClaims
-    public static Authentication initializeAuth(UserRole role) {
+    public static Authentication initializeAuth(UserTokenClaims claims) {
+        String role = claims.roles().get(0);
+        if (role == null || role.isBlank()) role = UserRole.USER.name();
+
         return new UsernamePasswordAuthenticationToken(
-                new UserTokenClaims(null, null, null, false),
+                claims,
                 null,
-                Collections.singletonList(new SimpleGrantedAuthority(role.name()))
+                Collections.singletonList(new SimpleGrantedAuthority(role))
         );
     }
 }

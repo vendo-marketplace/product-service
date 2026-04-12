@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/categories")
-@PreAuthorize("hasAuthority('ADMIN') and @userSecurity.checkAuthCompleted(authentication)")
+@PreAuthorize("@userSecurity.validateAdminAndAuthCompleted(authentication)")
 public class CategoryController {
 
     private final CategoryService categoryService;

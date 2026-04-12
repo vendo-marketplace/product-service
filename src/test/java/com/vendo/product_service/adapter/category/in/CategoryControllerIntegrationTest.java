@@ -72,8 +72,9 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryGet(String categoryId) throws Exception {
+        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.ADMIN.name()), true);
         return mockMvc.perform(get("/categories/{id}", categoryId)
-                .with(authentication(SecurityContextService.initializeAuth(UserRole.ADMIN))));
+                .with(authentication(SecurityContextService.initializeAuth(claims))));
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
@@ -81,8 +82,9 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
+        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(role.name()), true);
         return mockMvc.perform(post("/categories")
-                .with(authentication(SecurityContextService.initializeAuth(role)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(objectMapper.writeValueAsString(categoryRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
-@PreAuthorize("@userSecurity.checkAuthCompleted(authentication)")
+@PreAuthorize("@userSecurity.validateAuthCompleted(authentication)")
 public class ProductController {
 
     private final ProductService productService;

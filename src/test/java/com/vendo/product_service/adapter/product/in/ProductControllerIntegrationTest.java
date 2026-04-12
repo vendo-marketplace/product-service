@@ -5,6 +5,7 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
 import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.AttributeType;
@@ -20,6 +21,7 @@ import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserRole;
+import com.vendo.user_lib.type.UserStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -69,22 +71,25 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductPersist(String createProductRequest) throws Exception {
+        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(createProductRequest)
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest) throws Exception {
+        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(put("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(objectMapper.writeValueAsString(updateProductRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductGet(String productId) throws Exception {
+        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(get("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(UserRole.USER)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

@@ -62,7 +62,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Id claim is not present.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -99,7 +99,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
 
@@ -121,7 +121,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -141,7 +141,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -208,7 +208,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid status claim, not_enum is not type of UserStatus.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
