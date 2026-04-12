@@ -1,13 +1,6 @@
 server:
   url: server_test_url
 
-gateway:
-  url: gateway_test_url
-
-client:
-  local:
-    url: client_local_test_url
-
 security:
   jwt:
     secret:

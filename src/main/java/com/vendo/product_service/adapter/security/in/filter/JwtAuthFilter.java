@@ -1,8 +1,8 @@
-package com.vendo.product_service.adapter.security.in;
+package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
-import io.jsonwebtoken.JwtException;
+import com.vendo.product_service.adapter.security.in.filter.exception.AuthInternalException;
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,8 +10,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
 import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
@@ -29,7 +28,7 @@ import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final TokenClaimsParser claimsParser;
+    private final UserTokenClaimsParser claimsParser;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -43,15 +42,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = getTokenFromRequest(request);
-            TokenClaims claims = claimsParser.extract(jwtToken);
-            UserActivityValidator.validate(claims.status(), claims.emailVerification());
-            addAuthenticationToContext(claims.userId(), claims.roles());
-        } catch (JwtException e) {
-            log.error(e.getMessage());
-            throw new BadCredentialsException("Invalid or expired token.");
+            UserTokenClaims claims = claimsParser.extract(jwtToken);
+            addAuthenticationToContext(claims);
+        } catch (AuthenticationException e) {
+            SecurityContextHolder.clearContext();
+            throw e;
         } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new InsufficientAuthenticationException(e.getMessage());
+            SecurityContextHolder.clearContext();
+            throw new AuthInternalException(e.getMessage());
         }
 
         filterChain.doFilter(request, response);
@@ -70,12 +68,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return authorization.substring(BEARER_PREFIX.length());
         }
 
-        throw new JwtException("Exception while extracting token from request.");
+        log.error("Exception while extracting token from request.");
+        throw new BadCredentialsException("Invalid token.");
     }
 
-    private void addAuthenticationToContext(String userId, List<String> authorities) {
+    private void addAuthenticationToContext(UserTokenClaims claims) {
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(userId, null, authorities.stream().map(SimpleGrantedAuthority::new).toList());
+                new UsernamePasswordAuthenticationToken(claims, null, claims.roles().stream().map(SimpleGrantedAuthority::new).toList());
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }

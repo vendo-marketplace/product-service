@@ -9,11 +9,13 @@ import com.vendo.product_service.domain.product.model.Product;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
+@PreAuthorize("@userSecurity.checkAuthCompleted(authentication)")
 public class ProductController {
 
     private final ProductService productService;

@@ -1,7 +1,6 @@
 package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
@@ -18,6 +17,7 @@ import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserRole;
 import org.junit.jupiter.api.Nested;

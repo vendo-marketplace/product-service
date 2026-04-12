@@ -1,9 +1,10 @@
 package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaimsParser;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
@@ -14,7 +15,10 @@ import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
+import com.vendo.user_lib.type.UserStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,14 +27,18 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
+import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -55,6 +63,14 @@ public class CategoryControllerIntegrationTest {
     @MockitoBean
     private CategoryQueryPort queryPort;
 
+    @MockitoBean
+    private UserTokenClaimsParser claimsParser;
+
+    @BeforeEach
+    public void setUp() {
+        SecurityContextHolder.clearContext();
+    }
+
     private ResultActions performCategoryGet(String categoryId) throws Exception {
         return mockMvc.perform(get("/categories/{id}", categoryId)
                 .with(authentication(SecurityContextService.initializeAuth(UserRole.ADMIN))));
@@ -67,6 +83,13 @@ public class CategoryControllerIntegrationTest {
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
         return mockMvc.perform(post("/categories")
                 .with(authentication(SecurityContextService.initializeAuth(role)))
+                .content(objectMapper.writeValueAsString(categoryRequest))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, String token) throws Exception {
+        return mockMvc.perform(post("/categories")
+                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token)
                 .content(objectMapper.writeValueAsString(categoryRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -201,8 +224,12 @@ public class CategoryControllerIntegrationTest {
                     .parentId(null)
                     .attributes(null)
                     .build();
+            String token = "token_with_user_role";
+            UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
 
-            String content = performCategoryPersist(request, UserRole.USER)
+            when(claimsParser.extract(token)).thenReturn(claims);
+
+            String content = performCategoryPersist(request, token)
                     .andExpect(status().isForbidden())
                     .andReturn()
                     .getResponse()

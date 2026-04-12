@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.in.exception;
+package com.vendo.product_service.adapter.security.in.filter.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.security_lib.exception.response.ExceptionResponse;

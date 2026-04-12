@@ -15,12 +15,12 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtClaimsParser implements TokenClaimsParser {
+public class JwtClaimsParserUser implements UserTokenClaimsParser {
 
     private final JwtService jwtService;
 
     @Override
-    public TokenClaims extract(String token) {
+    public UserTokenClaims extract(String token) {
         Claims claims = jwtService.extractAllClaims(token);
 
         String id = extractId(claims);
@@ -29,14 +29,15 @@ public class JwtClaimsParser implements TokenClaimsParser {
         Boolean verification = extractEmailVerification(claims);
         UserStatus status = extractStatus(claims);
 
-        return new TokenClaims(id, status, roles, verification);
+        return new UserTokenClaims(id, status, roles, verification);
     }
 
     private String extractId(Claims claims) {
         String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
 
         if (id == null || id.isBlank()) {
-            throw new BadCredentialsException("Id claim is not present.");
+            log.error("Id claim is not present.");
+            throw new BadCredentialsException("Invalid token.");
         }
 
         return id;
@@ -44,7 +45,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
     private List<String> extractRoles(Claims claims) {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
-        AuthenticationException e = new BadCredentialsException("Invalid roles claim.");
+        AuthenticationException e = new BadCredentialsException("Invalid token.");
 
         if (rawRoles instanceof List<?> list) {
             if (list.stream().allMatch(String.class::isInstance)) {
@@ -52,11 +53,15 @@ public class JwtClaimsParser implements TokenClaimsParser {
                         .map(String.class::cast)
                         .toList();
 
-                if (roles.isEmpty()) throw e;
+                if (roles.isEmpty()) {
+                    log.error("Invalid roles claim.");
+                    throw e;
+                }
                 return roles;
             }
         }
 
+        log.error("Invalid roles claim.");
         throw e;
     }
 
@@ -70,7 +75,8 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             return UserStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new BadCredentialsException("Invalid status claim, " + status + " is not type of UserStatus.");
+            log.error("Invalid status claim, " + status + " is not type of UserStatus.");
+            throw new BadCredentialsException("Invalid token.");
         }
     }
 }

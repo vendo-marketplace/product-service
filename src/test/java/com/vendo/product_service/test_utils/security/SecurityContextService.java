@@ -1,5 +1,6 @@
 package com.vendo.product_service.test_utils.security;
 
+import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
 import com.vendo.user_lib.type.UserRole;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -11,7 +12,7 @@ public class SecurityContextService {
 
     public static Authentication initializeAuth(UserRole role) {
         return new UsernamePasswordAuthenticationToken(
-                new Object(),
+                new UserTokenClaims(null, null, null, false),
                 null,
                 Collections.singletonList(new SimpleGrantedAuthority(role.name()))
         );
