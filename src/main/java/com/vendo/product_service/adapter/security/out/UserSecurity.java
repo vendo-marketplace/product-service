@@ -30,7 +30,7 @@ public class UserSecurity {
 
     }
 
-    public void validateAdminAndAuthCompleted(Authentication auth) {
+    public void validateAuthCompletedAdmin(Authentication auth) {
         UserTokenClaims claims = (UserTokenClaims) auth.getPrincipal();
 
         if (!claims.roles().contains(UserRole.ADMIN.name()))

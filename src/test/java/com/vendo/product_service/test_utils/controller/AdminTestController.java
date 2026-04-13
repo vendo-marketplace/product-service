@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@PreAuthorize("@userSecurity.validateAdminAndAuthCompleted(authentication)")
+@PreAuthorize("@userSecurity.validateAuthCompletedAdmin(authentication)")
 @RequestMapping("/test")
 public class AdminTestController {
 
