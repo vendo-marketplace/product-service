@@ -35,7 +35,7 @@ public class JwtService {
         try {
             return Keys.hmacShaKeyFor(jwtProperties.getSecret().key().getBytes(StandardCharsets.UTF_8));
         } catch (NullPointerException e) {
-            log.error(e.getMessage());
+            log.error("Error while signing secret key: {}.", e.getMessage());
             throw new BadCredentialsException("Invalid token.");
         }
     }
