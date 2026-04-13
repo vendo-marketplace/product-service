@@ -20,7 +20,7 @@ public class UserSecurity {
             throw new UserBlockedException("User is blocked.");
         }
 
-        if (!claims.emailVerification()) {
+        if (!claims.emailVerified()) {
             throw new UserEmailNotVerifiedException("User email is not verified.");
         }
 
