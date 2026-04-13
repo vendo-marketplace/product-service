@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.out.jwt;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.JwtClaimsParserUser;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.JwtClaimsParser;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.security_lib.type.UserTokenClaim;
 import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserStatus;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class JwtClaimsParserTest {
 
     @InjectMocks
-    private JwtClaimsParserUser claimsParser;
+    private JwtClaimsParser claimsParser;
 
     @Mock
     private JwtService jwtService;
@@ -32,17 +32,17 @@ public class JwtClaimsParserTest {
     void extract_shouldReturnTokenClaims() {
         String token = "token";
         Claims claims = mock(Claims.class);
-        UserTokenClaims userTokenClaims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
+        TokenClaims tokenClaims = new TokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
 
-        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(userTokenClaims.userId());
-        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(userTokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(userTokenClaims.emailVerification());
-        when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenReturn(userTokenClaims.status().toString());
+        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
+        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenReturn(tokenClaims.status().toString());
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
-        UserTokenClaims extract = claimsParser.extract(token);
-        AssertionUtils.assertFromDto(extract, userTokenClaims);
+        TokenClaims extract = claimsParser.extract(token);
+        AssertionUtils.assertFromDto(extract, tokenClaims);
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -55,9 +55,9 @@ public class JwtClaimsParserTest {
     void extract_shouldThrowException_whenUserIdIsNotPresent() {
         String token = "token";
         Claims claims = mock(Claims.class);
-        UserTokenClaims userTokenClaims = new UserTokenClaims(null, UserStatus.ACTIVE, List.of("USER"), true);
+        TokenClaims tokenClaims = new TokenClaims(null, UserStatus.ACTIVE, List.of("USER"), true);
 
-        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(userTokenClaims.userId());
+        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
@@ -154,10 +154,10 @@ public class JwtClaimsParserTest {
     void extract_shouldThrowException_whenEmailVerificationIsNotInstanceOfBoolean() {
         String token = "token";
         Claims claims = mock(Claims.class);
-        UserTokenClaims userTokenClaims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
+        TokenClaims tokenClaims = new TokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
 
-        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(userTokenClaims.userId());
-        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(userTokenClaims.roles());
+        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
+        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
         when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenThrow(new RequiredTypeException(anyString()));
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
@@ -176,11 +176,11 @@ public class JwtClaimsParserTest {
     void extract_shouldThrowException_whenUserStatusIsNotInstanceOfString() {
         String token = "token";
         Claims claims = mock(Claims.class);
-        UserTokenClaims userTokenClaims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
+        TokenClaims tokenClaims = new TokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
 
-        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(userTokenClaims.userId());
-        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(userTokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(userTokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
+        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
         when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenThrow(new RequiredTypeException(anyString()));
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
@@ -198,11 +198,11 @@ public class JwtClaimsParserTest {
     void extract_shouldThrowException_whenUserStatusNotValueOfEnum() {
         String token = "token";
         Claims claims = mock(Claims.class);
-        UserTokenClaims userTokenClaims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
+        TokenClaims tokenClaims = new TokenClaims("id", UserStatus.ACTIVE, List.of("USER"), true);
 
-        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(userTokenClaims.userId());
-        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(userTokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(userTokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
+        when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
         when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenReturn("not_enum");
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);

@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.security.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaimsParser;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
@@ -40,11 +40,11 @@ public class JwtAuthFilterIntegrationTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private UserTokenClaimsParser userTokenClaimsParser;
+    private TokenClaimsParser tokenClaimsParser;
 
     @Test
     void doFilterInternal_shouldPassAuthorization_whenUserAlreadyAuthorized() throws Exception {
-        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 claims,
                 null,
@@ -58,7 +58,7 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(responseContent).isNotBlank();
         assertThat(responseContent).isEqualTo("pong");
 
-        verifyNoInteractions(userTokenClaimsParser);
+        verifyNoInteractions(tokenClaimsParser);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
 
-        verifyNoInteractions(userTokenClaimsParser);
+        verifyNoInteractions(tokenClaimsParser);
     }
 
     @Test
@@ -97,15 +97,15 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
 
-        verifyNoInteractions(userTokenClaimsParser);
+        verifyNoInteractions(tokenClaimsParser);
     }
 
     @Test
     void doFilterInternal_shouldReturnForbidden_whenUserBlocked() throws Exception {
         String token = "token";
-        UserTokenClaims claims = new UserTokenClaims("user_id", UserStatus.BLOCKED, List.of(UserRole.USER.toString()), true);
+        TokenClaims claims = new TokenClaims("user_id", UserStatus.BLOCKED, List.of(UserRole.USER.toString()), true);
 
-        when(userTokenClaimsParser.extract(token)).thenReturn(claims);
+        when(tokenClaimsParser.extract(token)).thenReturn(claims);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/user/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isForbidden())
@@ -119,14 +119,14 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
 
-        verify(userTokenClaimsParser).extract(token);
+        verify(tokenClaimsParser).extract(token);
     }
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenTokenExpired() throws Exception {
         String expiredToken = "expired_token";
 
-        when(userTokenClaimsParser.extract(expiredToken)).thenThrow(new BadCredentialsException("Token expired."));
+        when(tokenClaimsParser.extract(expiredToken)).thenThrow(new BadCredentialsException("Token expired."));
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/user/ping").header(AUTHORIZATION_HEADER, BEARER_PREFIX + expiredToken))
                 .andExpect(status().isUnauthorized())
@@ -140,15 +140,15 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
 
-        verify(userTokenClaimsParser).extract(expiredToken);
+        verify(tokenClaimsParser).extract(expiredToken);
     }
 
     @Test
     void doFilterInternal_shouldReturnForbidden_whenUserIsIncomplete() throws Exception {
         String token = "token";
-        UserTokenClaims claims = new UserTokenClaims("user_id", UserStatus.INCOMPLETE, List.of(UserRole.USER.toString()), true);
+        TokenClaims claims = new TokenClaims("user_id", UserStatus.INCOMPLETE, List.of(UserRole.USER.toString()), true);
 
-        when(userTokenClaimsParser.extract(token)).thenReturn(claims);
+        when(tokenClaimsParser.extract(token)).thenReturn(claims);
 
         MockHttpServletResponse response = mockMvc.perform(get("/test/user/ping")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
@@ -164,6 +164,6 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
 
-        verify(userTokenClaimsParser).extract(token);
+        verify(tokenClaimsParser).extract(token);
     }
 }

@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.product_service.adapter.security.in.filter.exception.AuthInternalException;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaimsParser;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,7 +28,7 @@ import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final UserTokenClaimsParser claimsParser;
+    private final TokenClaimsParser claimsParser;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -42,7 +42,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = getTokenFromRequest(request);
-            UserTokenClaims claims = claimsParser.extract(jwtToken);
+            TokenClaims claims = claimsParser.extract(jwtToken);
             addAuthenticationToContext(claims);
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
@@ -72,7 +72,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         throw new BadCredentialsException("Invalid token.");
     }
 
-    private void addAuthenticationToContext(UserTokenClaims claims) {
+    private void addAuthenticationToContext(TokenClaims claims) {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(claims, null, claims.roles().stream().map(SimpleGrantedAuthority::new).toList());
 

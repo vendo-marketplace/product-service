@@ -5,7 +5,7 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import com.vendo.product_service.domain.category.model.AttributeType;
@@ -71,7 +71,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductPersist(String createProductRequest) throws Exception {
-        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(post("/products")
                 .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(createProductRequest)
@@ -79,7 +79,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductUpdate(String productId, UpdateProductRequest updateProductRequest) throws Exception {
-        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(put("/products/{id}", productId)
                 .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(objectMapper.writeValueAsString(updateProductRequest))
@@ -87,7 +87,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductGet(String productId) throws Exception {
-        UserTokenClaims claims = new UserTokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(get("/products/{id}", productId)
                 .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));

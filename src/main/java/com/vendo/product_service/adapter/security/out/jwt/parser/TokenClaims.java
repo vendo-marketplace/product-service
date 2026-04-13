@@ -4,7 +4,7 @@ import com.vendo.user_lib.type.UserStatus;
 
 import java.util.List;
 
-public record UserTokenClaims(
+public record TokenClaims(
         String userId,
         UserStatus status,
         List<String> roles,

@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.security.out;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.UserTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
 import com.vendo.user_lib.exception.UserIsUnactiveException;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class UserSecurity {
 
     public void validateAuthCompleted(Authentication auth) {
-        UserTokenClaims claims = (UserTokenClaims) auth.getPrincipal();
+        TokenClaims claims = (TokenClaims) auth.getPrincipal();
 
         if (claims.status() == UserStatus.BLOCKED) {
             throw new UserBlockedException("User is blocked.");
@@ -31,7 +31,7 @@ public class UserSecurity {
     }
 
     public void validateAuthCompletedAdmin(Authentication auth) {
-        UserTokenClaims claims = (UserTokenClaims) auth.getPrincipal();
+        TokenClaims claims = (TokenClaims) auth.getPrincipal();
 
         if (!claims.roles().contains(UserRole.ADMIN.name()))
             throw new AccessDeniedException("Resource is unreachable.");

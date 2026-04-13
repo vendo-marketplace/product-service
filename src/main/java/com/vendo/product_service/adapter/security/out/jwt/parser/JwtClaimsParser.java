@@ -15,12 +15,12 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtClaimsParserUser implements UserTokenClaimsParser {
+public class JwtClaimsParser implements TokenClaimsParser {
 
     private final JwtService jwtService;
 
     @Override
-    public UserTokenClaims extract(String token) {
+    public TokenClaims extract(String token) {
         Claims claims = jwtService.extractAllClaims(token);
 
         String id = extractId(claims);
@@ -29,7 +29,7 @@ public class JwtClaimsParserUser implements UserTokenClaimsParser {
         Boolean verification = extractEmailVerification(claims);
         UserStatus status = extractStatus(claims);
 
-        return new UserTokenClaims(id, status, roles, verification);
+        return new TokenClaims(id, status, roles, verification);
     }
 
     private String extractId(Claims claims) {
