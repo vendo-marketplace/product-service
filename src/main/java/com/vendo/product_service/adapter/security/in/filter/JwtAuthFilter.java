@@ -49,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throw e;
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            throw new AuthenticationServiceException(e.getMessage());
+            throw new AuthenticationServiceException("Internal authentication error.");
         }
 
         filterChain.doFilter(request, response);
