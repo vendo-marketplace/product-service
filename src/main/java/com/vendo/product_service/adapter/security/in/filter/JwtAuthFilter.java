@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.in.filter.exception.AuthInternalException;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
 import jakarta.servlet.FilterChain;
@@ -9,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -49,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throw e;
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
-            throw new AuthInternalException(e.getMessage());
+            throw new AuthenticationServiceException(e.getMessage());
         }
 
         filterChain.doFilter(request, response);
