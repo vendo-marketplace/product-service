@@ -47,17 +47,12 @@ public class JwtClaimsParser implements TokenClaimsParser {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
         AuthenticationException e = new BadCredentialsException("Invalid token.");
 
-        if (rawRoles instanceof List<?> list) {
+        if (rawRoles instanceof List<?> list && !list.isEmpty()) {
             if (list.stream().allMatch(String.class::isInstance)) {
-                List<String> roles = list.stream()
+
+                return list.stream()
                         .map(String.class::cast)
                         .toList();
-
-                if (roles.isEmpty()) {
-                    log.error("Invalid roles claim.");
-                    throw e;
-                }
-                return roles;
             }
         }
 
