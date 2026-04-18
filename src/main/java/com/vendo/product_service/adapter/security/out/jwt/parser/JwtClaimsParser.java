@@ -36,7 +36,8 @@ public class JwtClaimsParser implements TokenClaimsParser {
         String id = claims.get(UserTokenClaim.ID.getClaim(), String.class);
 
         if (id == null || id.isBlank()) {
-            throw new BadCredentialsException("Id claim is not present.");
+            log.error("Id claim is not present.");
+            throw new BadCredentialsException("Invalid token.");
         }
 
         return id;
@@ -44,19 +45,18 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
     private List<String> extractRoles(Claims claims) {
         Object rawRoles = claims.get(UserTokenClaim.ROLES.getClaim());
-        AuthenticationException e = new BadCredentialsException("Invalid roles claim.");
+        AuthenticationException e = new BadCredentialsException("Invalid token.");
 
-        if (rawRoles instanceof List<?> list) {
+        if (rawRoles instanceof List<?> list && !list.isEmpty()) {
             if (list.stream().allMatch(String.class::isInstance)) {
-                List<String> roles = list.stream()
+
+                return list.stream()
                         .map(String.class::cast)
                         .toList();
-
-                if (roles.isEmpty()) throw e;
-                return roles;
             }
         }
 
+        log.error("Invalid roles claim.");
         throw e;
     }
 
@@ -70,7 +70,8 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             return UserStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new BadCredentialsException("Invalid status claim, " + status + " is not type of UserStatus.");
+            log.error("Invalid status claim, " + status + " is not type of UserStatus.");
+            throw new BadCredentialsException("Invalid token.");
         }
     }
 }

@@ -8,7 +8,7 @@ public record TokenClaims(
         String userId,
         UserStatus status,
         List<String> roles,
-        boolean emailVerification
+        boolean emailVerified
 ) {
 
 }

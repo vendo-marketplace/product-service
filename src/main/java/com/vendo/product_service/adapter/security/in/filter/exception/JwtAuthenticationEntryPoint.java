@@ -1,7 +1,7 @@
-package com.vendo.product_service.adapter.security.in;
+package com.vendo.product_service.adapter.security.in.filter.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.exception.ExceptionResponse;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException {
-        log.warn("Handling authentication exception: {}.", exception.getMessage());
+        log.warn("Handling authentication exception: {}", exception.getMessage());
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

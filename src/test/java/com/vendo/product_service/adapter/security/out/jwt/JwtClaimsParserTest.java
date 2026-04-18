@@ -36,7 +36,7 @@ public class JwtClaimsParserTest {
 
         when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
         when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerified());
         when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenReturn(tokenClaims.status().toString());
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
@@ -62,7 +62,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Id claim is not present.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -99,7 +99,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
 
@@ -121,7 +121,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -141,7 +141,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid roles claim.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);
@@ -180,7 +180,7 @@ public class JwtClaimsParserTest {
 
         when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
         when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerified());
         when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenThrow(new RequiredTypeException(anyString()));
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
@@ -202,13 +202,13 @@ public class JwtClaimsParserTest {
 
         when(claims.get(UserTokenClaim.ID.getClaim(), String.class)).thenReturn(tokenClaims.userId());
         when(claims.get(UserTokenClaim.ROLES.getClaim())).thenReturn(tokenClaims.roles());
-        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerification());
+        when(claims.get(UserTokenClaim.VERIFIED.getClaim(), Boolean.class)).thenReturn(tokenClaims.emailVerified());
         when(claims.get(UserTokenClaim.STATUS.getClaim(), String.class)).thenReturn("not_enum");
 
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         assertThatThrownBy(() -> claimsParser.extract(token)).isInstanceOf(BadCredentialsException.class)
-                .hasMessage("Invalid status claim, not_enum is not type of UserStatus.");
+                .hasMessage("Invalid token.");
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);

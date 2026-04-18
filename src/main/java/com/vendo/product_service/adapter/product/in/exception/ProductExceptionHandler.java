@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.product.in.exception;
 
-import com.vendo.core_lib.exception.ExceptionResponse;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
