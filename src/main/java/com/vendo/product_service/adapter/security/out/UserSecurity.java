@@ -3,7 +3,6 @@ package com.vendo.product_service.adapter.security.out;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
-import com.vendo.user_lib.exception.UserIsUnactiveException;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserSecurity {
 
-    public void validateAuthCompleted(Authentication auth) {
+    public void validateActivation(Authentication auth) {
         TokenClaims claims = (TokenClaims) auth.getPrincipal();
 
         if (claims.status() == UserStatus.BLOCKED) {
@@ -24,19 +23,15 @@ public class UserSecurity {
             throw new UserEmailNotVerifiedException("User email is not verified.");
         }
 
-        if (claims.status() != UserStatus.ACTIVE) {
-            throw new UserIsUnactiveException("User is unactive.");
-        }
-
     }
 
-    public void validateAuthCompletedAdmin(Authentication auth) {
+    public void validateActivatedAdmin(Authentication auth) {
         TokenClaims claims = (TokenClaims) auth.getPrincipal();
 
         if (!claims.roles().contains(UserRole.ADMIN.name()))
             throw new AccessDeniedException("Resource is unreachable.");
 
-        validateAuthCompleted(auth);
+        validateActivation(auth);
     }
 
 }

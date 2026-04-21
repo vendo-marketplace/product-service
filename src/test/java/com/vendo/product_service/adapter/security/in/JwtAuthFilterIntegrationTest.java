@@ -142,28 +142,4 @@ public class JwtAuthFilterIntegrationTest {
 
         verify(tokenClaimsParser).extract(expiredToken);
     }
-
-    @Test
-    void doFilterInternal_shouldReturnForbidden_whenUserIsIncomplete() throws Exception {
-        String token = "token";
-        TokenClaims claims = new TokenClaims("user_id", UserStatus.INCOMPLETE, List.of(UserRole.USER.toString()), true);
-
-        when(tokenClaimsParser.extract(token)).thenReturn(claims);
-
-        MockHttpServletResponse response = mockMvc.perform(get("/test/user/ping")
-                        .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
-                .andExpect(status().isForbidden())
-                .andReturn()
-                .getResponse();
-
-        String responseContent = response.getContentAsString();
-        assertThat(responseContent).isNotBlank();
-        ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
-
-        assertThat(exceptionResponse.getMessage()).isEqualTo("User is unactive.");
-        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-        assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
-
-        verify(tokenClaimsParser).extract(token);
-    }
 }

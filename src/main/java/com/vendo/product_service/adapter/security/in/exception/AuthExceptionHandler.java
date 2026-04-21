@@ -4,7 +4,6 @@ import com.vendo.product_service.domain.product.exception.NotProductOwnerExcepti
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
-import com.vendo.user_lib.exception.UserIsUnactiveException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,17 +17,6 @@ public class AuthExceptionHandler {
 
     @ExceptionHandler(UserBlockedException.class)
     public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
-                .code(HttpStatus.FORBIDDEN.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(UserIsUnactiveException.class)
-    public ResponseEntity<ExceptionResponse> handleUserIsUnactiveException(UserIsUnactiveException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
