@@ -1,7 +1,7 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.creation.CategoryValidationService;
+import com.vendo.product_service.application.category.validation.type.CategoryValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -49,7 +49,7 @@ class CategoryServiceTest {
 
         categoryService.save(category);
 
-        verify(validationService, times(1)).validateCreation(category);
+        verify(validationService, times(1)).validate(category);
         verify(commandPort, times(1)).save(category);
     }
 
@@ -63,7 +63,7 @@ class CategoryServiceTest {
                 .isInstanceOf(CategoryAlreadyExistsException.class)
                 .hasMessage("Category already exists by code.");
 
-        verify(validationService, never()).validateCreation(any());
+        verify(validationService, never()).validate(any());
         verify(commandPort, never()).save(any());
     }
 

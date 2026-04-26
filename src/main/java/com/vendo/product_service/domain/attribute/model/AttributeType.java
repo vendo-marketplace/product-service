@@ -1,4 +1,4 @@
-package com.vendo.product_service.domain.category.model;
+package com.vendo.product_service.domain.attribute.model;
 
 public enum AttributeType {
 

@@ -1,8 +1,9 @@
 package com.vendo.product_service.domain.product.model;
 
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class Product {
@@ -14,10 +15,10 @@ public class Product {
     private BigDecimal price;
     private String ownerId;
     private String categoryId;
-    private Map<String, List<String>> attributes;
+    private List<AttributeValue> attributes;
     private Boolean active;
 
-    public Product(String id, String title, String description, Integer quantity, BigDecimal price, String ownerId, String categoryId, Map<String, List<String>> attributes, Boolean active) {
+    public Product(String id, String title, String description, Integer quantity, BigDecimal price, String ownerId, String categoryId, List<AttributeValue> attributes, Boolean active) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -89,11 +90,11 @@ public class Product {
         this.categoryId = categoryId;
     }
 
-    public Map<String, List<String>> getAttributes() {
+    public List<AttributeValue> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, List<String>> attributes) {
+    public void setAttributes(List<AttributeValue> attributes) {
         this.attributes = attributes;
     }
 
@@ -130,7 +131,7 @@ public class Product {
         private BigDecimal price;
         private String ownerId;
         private String categoryId;
-        private Map<String, List<String>> attributes;
+        private List<AttributeValue> attributes;
         private Boolean active;
 
         public Builder id(String id) {
@@ -168,7 +169,7 @@ public class Product {
             return this;
         }
 
-        public Builder attributes(Map<String, List<String>> attributes) {
+        public Builder attributes(List<AttributeValue> attributes) {
             this.attributes = attributes;
             return this;
         }

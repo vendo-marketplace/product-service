@@ -8,7 +8,7 @@ import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsPars
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
-import com.vendo.product_service.domain.category.model.AttributeType;
+import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;

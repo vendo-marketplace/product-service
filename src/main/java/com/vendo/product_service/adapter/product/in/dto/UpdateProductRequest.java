@@ -1,16 +1,13 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-
-import static com.vendo.product_service.domain.category.constants.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
 
 @Builder
 public record UpdateProductRequest(
@@ -28,7 +25,7 @@ public record UpdateProductRequest(
 
         String categoryId,
 
-        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.") String, List<String>> attributes,
+        List<AttributeValue> attributes,
 
         Boolean active
 ) {

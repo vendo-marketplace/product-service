@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.category.validation.creation;
+package com.vendo.product_service.application.category.validation.type;
 
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ParentCreationValidator implements CreationValidator {
+public class ParentTypeValidator implements TypeValidator {
 
     @Override
     public void validate(String parentId) {

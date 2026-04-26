@@ -8,7 +8,7 @@ import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.domain.category.model.AttributeDefinition;
-import com.vendo.product_service.domain.category.model.AttributeType;
+import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;

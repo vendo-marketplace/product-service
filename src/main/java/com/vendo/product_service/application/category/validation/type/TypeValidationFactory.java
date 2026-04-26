@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.category.validation.creation;
+package com.vendo.product_service.application.category.validation.type;
 
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.type.CategoryType;
@@ -9,12 +9,12 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CreationValidationFactory {
+public class TypeValidationFactory {
 
-    private final List<CreationValidator> creationValidators;
+    private final List<TypeValidator> typeValidators;
 
-    public CreationValidator getHandler(CategoryType categoryType) {
-        return creationValidators.stream()
+    public TypeValidator getHandler(CategoryType categoryType) {
+        return typeValidators.stream()
                 .filter(handler -> handler.getType() == categoryType)
                 .findFirst()
                 .orElseThrow(() -> new CategoryTypeException("No category creation handler."));

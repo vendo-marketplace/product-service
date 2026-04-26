@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.category.validation.creation;
+package com.vendo.product_service.application.category.validation.type;
 
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChildCreationValidator implements CreationValidator {
+public class SubTypeValidator implements TypeValidator {
 
     private final CategoryQueryPort categoryQueryPort;
 
@@ -18,13 +18,12 @@ public class ChildCreationValidator implements CreationValidator {
         Category parentCategory = categoryQueryPort.findById(parentId, "Parent category not found.");
 
         if (parentCategory.getType() == CategoryType.CHILD) {
-            throw new CategoryTypeException("A child category cannot have another child category as its parent.");
+            throw new CategoryTypeException("A subcategory cannot have a child category as its parent.");
         }
     }
 
     @Override
     public CategoryType getType() {
-        return CategoryType.CHILD;
+        return CategoryType.SUB;
     }
-
 }

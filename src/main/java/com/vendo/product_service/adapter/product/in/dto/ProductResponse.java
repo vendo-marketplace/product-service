@@ -1,9 +1,10 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 
 @Builder
 public record ProductResponse (
@@ -14,7 +15,7 @@ public record ProductResponse (
         BigDecimal price,
         String ownerId,
         String categoryId,
-        Map<String, Object> attributes,
+        List<AttributeValue> attributes,
         boolean active
 ) {
 }

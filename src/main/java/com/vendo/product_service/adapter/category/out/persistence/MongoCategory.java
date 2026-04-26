@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
-import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -9,7 +8,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.List;
 
 @Data
 @Builder
@@ -26,7 +25,7 @@ public class MongoCategory {
 
     private String parentId;
 
-    private Map<String, AttributeDefinition> attributes;
+    private List<String> attributes;
 
     @CreatedDate
     private Instant createdAt;
