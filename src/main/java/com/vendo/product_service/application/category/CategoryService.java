@@ -1,32 +1,28 @@
 package com.vendo.product_service.application.category;
 
-import com.vendo.product_service.application.category.validation.type.TypeValidationFactory;
-import com.vendo.product_service.application.category.validation.type.TypeValidator;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.port.category.CategoryCommandPort;
-import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.in.category.CategoryUseCase;
+import com.vendo.product_service.port.out.category.CategoryCommandPort;
+import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryService {
+public class CategoryService implements CategoryUseCase {
 
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
-    private final TypeValidationFactory typeHandlerFactory;
 
+    @Override
     public Category findById(String id) {
         return categoryQueryPort.findById(id, "Category not found.");
     }
 
+    @Override
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
-
-        TypeValidator creationHandler = typeHandlerFactory.getHandler(category.getType());
-        creationHandler.validate(category);
-
         categoryCommandPort.save(category);
     }
 

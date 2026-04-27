@@ -1,13 +1,13 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.type.TypeValidationFactory;
+import com.vendo.product_service.application.category.validation.type.TypeValidationService;
 import com.vendo.product_service.application.category.validation.type.TypeValidator;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.port.category.CategoryCommandPort;
-import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.out.category.CategoryCommandPort;
+import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +25,7 @@ class CategoryServiceTest {
     private CategoryCommandPort commandPort;
 
     @Mock
-    private TypeValidationFactory typeValidationFactory;
+    private TypeValidationService typeValidationService;
 
     @Mock
     private TypeValidator typeValidator;
@@ -49,7 +49,7 @@ class CategoryServiceTest {
         Category category = buildCategory();
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
-        when(typeValidationFactory.getHandler(category.getType())).thenReturn(typeValidator);
+        when(typeValidationService.getHandler(category.getType())).thenReturn(typeValidator);
 
         categoryService.save(category);
 

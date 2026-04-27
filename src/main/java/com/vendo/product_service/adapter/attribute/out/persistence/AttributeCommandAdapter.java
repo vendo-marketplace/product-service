@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.attribute.out.persistence;
 
-import com.vendo.product_service.adapter.attribute.out.mapper.AttributeMapper;
+import com.vendo.product_service.adapter.attribute.out.mapper.MongoAttributeMapper;
 import com.vendo.product_service.domain.attribute.model.Attribute;
-import com.vendo.product_service.port.attribute.AttributeCommandPort;
+import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AttributeCommandAdapter implements AttributeCommandPort {
 
-    private final AttributeMapper mapper;
+    private final MongoAttributeMapper mapper;
     private final AttributeRepository repository;
 
     @Override

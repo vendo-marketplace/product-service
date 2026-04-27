@@ -19,5 +19,5 @@ public class MongoAttribute {
     private String title;
     private AttributeType type;
     private boolean required;
-    private List<String> allowedValue;
+    private List<String> allowedValues;
 }

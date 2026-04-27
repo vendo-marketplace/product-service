@@ -49,7 +49,7 @@ public class DefaultAttributesValidator implements AttributesValidator {
 
     private ValidationBody validateRequestAttribute(Attribute originAttribute, List<AttributeValue> requestAttributes) {
         AttributeValue requestAttribute = getRequestAttributeById(originAttribute.id(), requestAttributes);
-        return isAttributeValid(originAttribute, requestAttribute.value());
+        return isAttributeValid(originAttribute, requestAttribute.values());
     }
 
     private ValidationBody isAttributeValid(Attribute originAttribute, List<String> requestAttributesValue) {

@@ -8,6 +8,6 @@ public record CategoryResponse(
          String id,
          String title,
          String parentId,
-         CategoryType categoryType,
+         CategoryType type,
          List<String> attributes) {
 }

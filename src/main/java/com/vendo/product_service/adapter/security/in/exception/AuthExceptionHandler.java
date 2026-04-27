@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.security.in.exception;
 
-import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.exception.UserBlockedException;
 import com.vendo.user_lib.exception.UserEmailNotVerifiedException;
@@ -13,10 +12,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class AuthExceptionHandler {
+class AuthExceptionHandler {
 
     @ExceptionHandler(UserBlockedException.class)
-    public ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {
+    ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
@@ -27,18 +26,7 @@ public class AuthExceptionHandler {
     }
 
     @ExceptionHandler(UserEmailNotVerifiedException.class)
-    public ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e, HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
-                .code(HttpStatus.FORBIDDEN.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(exceptionResponse);
-    }
-
-    @ExceptionHandler(NotProductOwnerException.class)
-    public ResponseEntity<ExceptionResponse> handleNotProductOwnerException(NotProductOwnerException e, HttpServletRequest request) {
+    ResponseEntity<ExceptionResponse> handleUserEmailNotVerifiedException(UserEmailNotVerifiedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())
