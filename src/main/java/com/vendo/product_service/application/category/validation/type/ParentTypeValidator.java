@@ -1,6 +1,7 @@
 package com.vendo.product_service.application.category.validation.type;
 
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -10,8 +11,8 @@ import org.springframework.stereotype.Component;
 public class ParentTypeValidator implements TypeValidator {
 
     @Override
-    public void validate(String parentId) {
-        if (parentId != null) {
+    public void validate(Category category) {
+        if (category.getParentId() != null) {
             throw new CategoryValidationException("A parent category cannot have a parent.");
         }
     }

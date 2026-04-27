@@ -1,6 +1,7 @@
 package com.vendo.product_service.test_utils.builder;
 
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,7 +16,7 @@ public record CreateProductRequestDataBuilder() {
                 .price(BigDecimal.ONE)
                 .categoryId("category_id")
                 .quantity(1)
-                .attributes(Map.of("Attribute", List.of("attribute_value")));
+                .attributes(List.of(new AttributeValue("attribute_id", List.of("attribute_value"))));
     }
 
 }

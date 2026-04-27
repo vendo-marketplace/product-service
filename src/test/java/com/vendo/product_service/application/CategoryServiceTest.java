@@ -1,7 +1,8 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.type.CategoryValidationService;
+import com.vendo.product_service.application.category.validation.type.TypeValidationFactory;
+import com.vendo.product_service.application.category.validation.type.TypeValidator;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -24,14 +25,16 @@ class CategoryServiceTest {
     private CategoryCommandPort commandPort;
 
     @Mock
-    private CategoryQueryPort queryPort;
+    private TypeValidationFactory typeValidationFactory;
 
     @Mock
-    private CategoryValidationService validationService;
+    private TypeValidator typeValidator;
+
+    @Mock
+    private CategoryQueryPort queryPort;
 
     @InjectMocks
     private CategoryService categoryService;
-
 
     private Category buildCategory() {
         return Category.builder()
@@ -46,10 +49,10 @@ class CategoryServiceTest {
         Category category = buildCategory();
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
+        when(typeValidationFactory.getHandler(category.getType())).thenReturn(typeValidator);
 
         categoryService.save(category);
 
-        verify(validationService, times(1)).validate(category);
         verify(commandPort, times(1)).save(category);
     }
 
@@ -63,7 +66,6 @@ class CategoryServiceTest {
                 .isInstanceOf(CategoryAlreadyExistsException.class)
                 .hasMessage("Category already exists by code.");
 
-        verify(validationService, never()).validate(any());
         verify(commandPort, never()).save(any());
     }
 

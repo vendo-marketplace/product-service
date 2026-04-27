@@ -3,8 +3,8 @@ package com.vendo.product_service.adapter.security.out.jwt;
 import com.vendo.product_service.adapter.security.out.jwt.parser.JwtClaimsParser;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.security_lib.type.UserTokenClaim;
-import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserStatus;
+import com.vendo.utils_lib.AssertionUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.RequiredTypeException;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ public class JwtClaimsParserTest {
         when(jwtService.extractAllClaims(token)).thenReturn(claims);
 
         TokenClaims extract = claimsParser.extract(token);
-        AssertionUtils.assertFromDto(extract, tokenClaims);
+        AssertionUtils.assertFrom(extract, tokenClaims);
 
         verify(jwtService).extractAllClaims(token);
         verify(claims).get(UserTokenClaim.ID.getClaim(), String.class);

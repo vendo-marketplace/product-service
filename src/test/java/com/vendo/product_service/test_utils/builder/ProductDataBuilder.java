@@ -1,11 +1,10 @@
 package com.vendo.product_service.test_utils.builder;
 
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.model.Product;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public record ProductDataBuilder() {
 
@@ -18,7 +17,7 @@ public record ProductDataBuilder() {
                 .price(BigDecimal.ONE)
                 .ownerId("owner_id")
                 .categoryId("category_id")
-                .attributes(Map.of("Attribute", List.of("attribute_value")))
+                .attributes(List.of(new AttributeValue("attribute_id", List.of("attribute_value"))))
                 .active(true);
     }
 

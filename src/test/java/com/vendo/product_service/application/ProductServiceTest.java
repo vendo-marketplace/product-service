@@ -1,16 +1,12 @@
 package com.vendo.product_service.application;
 
-import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.application.product.ProductService;
-import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.CurrentUserPort;
-import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,9 +32,6 @@ class ProductServiceTest {
     private CategoryQueryPort categoryQueryPort;
 
     @Mock
-    private AttributesValidator attributesValidator;
-
-    @Mock
     private CurrentUserPort currentUserPort;
 
     @InjectMocks
@@ -47,15 +40,12 @@ class ProductServiceTest {
     @Test
     void save_shouldSetOwnerAndActiveAndSave_whenCategoryExists() {
         Product product = ProductDataBuilder.withAllFields().build();
-        Category category = CategoryDataBuilder.withAllFields().build();
         String currentUserId = "user-1";
 
-        when(categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.")).thenReturn(category);
         when(currentUserPort.getCurrentUserId()).thenReturn(currentUserId);
 
         productService.save(product);
 
-        verify(attributesValidator, times(1)).validate(category, product.getAttributes());
         ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
         verify(commandPort, times(1)).save(captor.capture());
 
@@ -65,24 +55,25 @@ class ProductServiceTest {
         assertThat(savedProduct.getActive()).isTrue();
         assertThat(savedProduct.getTitle()).isEqualTo(product.getTitle());
         assertThat(savedProduct.getCategoryId()).isEqualTo(product.getCategoryId());
-        verifyNoMoreInteractions(commandPort, categoryQueryPort, attributesValidator, currentUserPort);
+        verifyNoMoreInteractions(commandPort, currentUserPort);
     }
 
-    @Test
-    void save_shouldThrowCategoryNotFoundException_whenCategoryDoesNotExist() {
-        Product product = ProductDataBuilder.withAllFields().build();
-
-        when(categoryQueryPort.findById(any(), any()))
-                .thenThrow(new CategoryNotFoundException("Parent category not found."));
-
-        assertThatThrownBy(() -> productService.save(product))
-                .isInstanceOf(CategoryNotFoundException.class)
-                .hasMessage("Parent category not found.");
-
-        verify(categoryQueryPort)
-                .findById(eq(product.getCategoryId()), anyString());
-        verifyNoInteractions(attributesValidator, currentUserPort, commandPort);
-    }
+    // TODO move to controller tests
+//    @Test
+//    void save_shouldThrowCategoryNotFoundException_whenCategoryDoesNotExist() {
+//        Product product = ProductDataBuilder.withAllFields().build();
+//
+//        when(categoryQueryPort.findById(any(), any()))
+//                .thenThrow(new CategoryNotFoundException("Parent category not found."));
+//
+//        assertThatThrownBy(() -> productService.save(product))
+//                .isInstanceOf(CategoryNotFoundException.class)
+//                .hasMessage("Parent category not found.");
+//
+//        verify(categoryQueryPort)
+//                .findById(eq(product.getCategoryId()), anyString());
+//        verifyNoInteractions(attributesValidator, currentUserPort, commandPort);
+//    }
 
     @Test
     void update_shouldUpdateFieldsAndCallCommandPort_whenOwnerMatchesAndCategoryExists() {

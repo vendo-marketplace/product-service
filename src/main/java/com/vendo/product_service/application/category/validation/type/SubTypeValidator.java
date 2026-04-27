@@ -14,8 +14,8 @@ public class SubTypeValidator implements TypeValidator {
     private final CategoryQueryPort categoryQueryPort;
 
     @Override
-    public void validate(String parentId) {
-        Category parentCategory = categoryQueryPort.findById(parentId, "Parent category not found.");
+    public void validate(Category category) {
+        Category parentCategory = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
 
         if (parentCategory.getType() == CategoryType.CHILD) {
             throw new CategoryTypeException("A subcategory cannot have a child category as its parent.");

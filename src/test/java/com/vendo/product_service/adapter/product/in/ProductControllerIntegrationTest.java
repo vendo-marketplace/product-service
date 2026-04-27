@@ -6,12 +6,13 @@ import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.application.category.validation.dto.AttributePayload;
-import com.vendo.product_service.domain.category.model.AttributeDefinition;
+import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
@@ -19,9 +20,9 @@ import com.vendo.product_service.port.user.CurrentUserPort;
 import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
-import com.vendo.test_utils_lib.AssertionUtils;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
+import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,7 +37,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -51,10 +51,8 @@ public class ProductControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockitoBean
     private DtoProductMapper dtoProductMapper;
     @MockitoBean
@@ -65,6 +63,8 @@ public class ProductControllerIntegrationTest {
     private CurrentUserPort currentUserPort;
     @MockitoBean
     private CategoryQueryPort categoryQueryPort;
+    @MockitoBean
+    private AttributeQueryPort attributeQueryPort;
 
     private ResultActions performProductPersist(CreateProductRequest createProductRequest) throws Exception {
         return performProductPersist(objectMapper.writeValueAsString(createProductRequest));
@@ -93,31 +93,33 @@ public class ProductControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    private void shouldSaveProductWithAttribute(AttributePayload payload, List<String> requestAttributes) throws Exception {
+    private void shouldSaveProductWithAttribute(Attribute attribute, AttributeValue attributeValue) throws Exception {
         String userId = "user_id";
 
         Category category = CategoryDataBuilder.withAllFields()
-                .attributes(Map.of(payload.name(), AttributeDefinition.builder().type(payload.definition().type()).allowedValues(payload.definition().allowedValues()).build()))
+                .attributes(List.of(attributeValue.id()))
                 .build();
         Product product = ProductDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(Map.of(payload.name(), requestAttributes))
+                .attributes(List.of(attributeValue))
                 .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(Map.of(payload.name(), requestAttributes))
+                .attributes(List.of(attributeValue))
                 .build();
         String exceptionMessage = "Parent category not found.";
         ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+        when(attributeQueryPort.findAllByIdsIn(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
+        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
         performProductPersist(request).andExpect(status().isOk());
 
-        verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
+        verify(attributeQueryPort).findAllByIdsIn(List.of(attributeValue.id()));
+        verify(dtoProductMapper).toEntity(request);
         verify(currentUserPort).getCurrentUserId();
         verify(productCommandPort).save(argumentCaptor.capture());
 
@@ -128,27 +130,27 @@ public class ProductControllerIntegrationTest {
         product.setActive(captorValue.getActive());
         product.setOwnerId(captorValue.getOwnerId());
 
-        AssertionUtils.assertFromDto(product, captorValue);
+        AssertionUtils.assertFrom(product, captorValue);
     }
 
-    private void shouldFailValidationOnSaveProductWithAttribute(AttributePayload payload, List<String> requestAttributes, String validationMessage) throws Exception {
+    private void shouldFailValidationOnSaveProductWithAttribute(Attribute attribute, AttributeValue attributeValue, String validationMessage) throws Exception {
         String userId = "user_id";
 
         Category category = CategoryDataBuilder.withAllFields()
-                .attributes(Map.of(payload.name(), AttributeDefinition.builder().type(payload.definition().type()).allowedValues(payload.definition().allowedValues()).build()))
+                .attributes(List.of(attributeValue.id()))
                 .build();
         Product product = ProductDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(Map.of(payload.name(), requestAttributes))
+                .attributes(List.of(attributeValue))
                 .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(Map.of(payload.name(), requestAttributes))
+                .attributes(List.of(attributeValue))
                 .build();
         String exceptionMessage = "Parent category not found.";
 
-        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+        when(attributeQueryPort.findAllByIdsIn(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
         String content = performProductPersist(request)
@@ -163,13 +165,11 @@ public class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
         assertThat(exceptionResponse.getErrors()).isNotNull();
         assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-        assertThat(exceptionResponse.getErrors().get(payload.name())).isEqualTo(validationMessage);
+        assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo(validationMessage);
         assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-        verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
-        verifyNoInteractions(currentUserPort);
-        verifyNoInteractions(productCommandPort);
+        verifyNoInteractions(currentUserPort, productCommandPort, dtoProductMapper);
     }
 
     @Nested
@@ -269,7 +269,7 @@ public class ProductControllerIntegrationTest {
                     .getContentAsString();
 
             ProductResponse productResponse = objectMapper.readValue(content, ProductResponse.class);
-            AssertionUtils.assertFromDto(product, productResponse);
+            AssertionUtils.assertFrom(product, productResponse);
 
             verify(productQueryPort).findById(product.getId());
             verify(dtoProductMapper).toResponse(product);
@@ -304,19 +304,25 @@ public class ProductControllerIntegrationTest {
         @Test
         void save_shouldSaveProduct() throws Exception {
             String userId = "user_id";
-            Category category = CategoryDataBuilder.withAllFields().build();
-            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
+            Attribute attribute = AttributeDataBuilder.withAllFields();
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Text"))))
+                    .build();
             Product product = ProductDataBuilder.withAllFields().categoryId(category.getId()).build();
             ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(categoryQueryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
+            when(attributeQueryPort.findAllByIdsIn(List.of(attribute.id()))).thenReturn(List.of(attribute));
+            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
             performProductPersist(request).andExpect(status().isOk());
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
+            verify(attributeQueryPort).findAllByIdsIn(List.of(attribute.id()));
+            verify(dtoProductMapper).toEntity(request);
             verify(currentUserPort).getCurrentUserId();
             verify(productCommandPort).save(argumentCaptor.capture());
 
@@ -327,7 +333,7 @@ public class ProductControllerIntegrationTest {
             product.setActive(captorValue.getActive());
             product.setOwnerId(captorValue.getOwnerId());
 
-            AssertionUtils.assertFromDto(product, captorValue);
+            AssertionUtils.assertFrom(product, captorValue);
         }
 
         @Test
@@ -391,10 +397,8 @@ public class ProductControllerIntegrationTest {
         void save_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
             String categoryId = "category_id";
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(categoryId).build();
-            Product product = ProductDataBuilder.withAllFields().categoryId(categoryId).build();
             String exceptionMessage = "Parent category not found.";
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(categoryQueryPort.findById(categoryId, exceptionMessage)).thenThrow(new ProductNotFoundException(exceptionMessage));
 
             String content = performProductPersist(request).andExpect(status().isNotFound())
@@ -408,21 +412,17 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(categoryId, exceptionMessage);
-            verifyNoInteractions(currentUserPort);
-            verifyNoInteractions(productCommandPort);
+            verifyNoInteractions(currentUserPort, productCommandPort, dtoProductMapper);
         }
 
         @Test
         void save_shouldReturnBadRequest_whenCategoryIsNotChild() throws Exception {
             Category category = CategoryDataBuilder.withAllFields().attributes(null).parentId(null).build();
-            Product product = ProductDataBuilder.withAllFields().categoryId(category.getId()).build();
-            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
             String exceptionMessage = "Parent category not found.";
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+            when(categoryQueryPort.findById(request.categoryId(), exceptionMessage)).thenReturn(category);
 
             String content = performProductPersist(request)
                     .andExpect(status().isBadRequest())
@@ -436,80 +436,77 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category type should be child.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
-            verifyNoInteractions(currentUserPort);
-            verifyNoInteractions(productCommandPort);
+            verifyNoInteractions(currentUserPort, productCommandPort, dtoProductMapper);
         }
 
         @Nested
         class SaveProductWithAttributes {
 
-            @Test
-            void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
-                String validAttributeName = "Number", invalidAttributeName = "number";
-                Category category = CategoryDataBuilder.withAllFields()
-                        .attributes(Map.of(validAttributeName, AttributeDefinition.builder().type(AttributeType.NUMBER).build()))
-                        .build();
-                CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
-                        .categoryId(category.getId())
-                        .attributes(Map.of(invalidAttributeName, List.of("1")))
-                        .build();
-
-                String content = performProductPersist(request)
-                        .andExpect(status().isBadRequest())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
-
-                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-                assertThat(exceptionResponse).isNotNull();
-                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-                assertThat(exceptionResponse.getErrors()).isNotNull();
-                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                assertThat(exceptionResponse.getErrors().get(invalidAttributeName)).isEqualTo("Attribute name validation failed.");
-                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-
-                verifyNoInteractions(dtoProductMapper);
-            }
+            // TODO move to attributes creation
+//            void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
+//                Category category = CategoryDataBuilder.withAllFields()
+//                        .attributes(List.of(ATTRIBUTE_VALUE.id()))
+//                        .build();
+//                CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+//                        .categoryId(category.getId())
+//                        .attributes(List.of(ATTRIBUTE_VALUE))
+//                        .build();
+//
+//                String content = performProductPersist(request)
+//                        .andExpect(status().isBadRequest())
+//                        .andReturn()
+//                        .getResponse()
+//                        .getContentAsString();
+//
+//                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+//                assertThat(exceptionResponse).isNotNull();
+//                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+//                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+//                assertThat(exceptionResponse.getErrors()).isNotNull();
+//                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+//                assertThat(exceptionResponse.getErrors().get()).isEqualTo("Attribute name validation failed.");
+//                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+//
+//                verifyNoInteractions(dtoProductMapper);
+//            }
 
             @Nested
             class SaveProductWithNumberAttribute {
 
                 @Test
                 void save_shouldSaveProductWithNumberAttribute() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.NUMBER, false, null);
-                    AttributePayload payload = new AttributePayload("Number", attributeDefinition);
-                    shouldSaveProductWithAttribute(payload, List.of("1"));
+                    Attribute attribute = new Attribute("id", "Title", AttributeType.NUMBER, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsMoreThanOne() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.NUMBER, false, null);
-                    AttributePayload payload = new AttributePayload("Number", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("1", "2"), "Must contain exactly one value.");
+                    Attribute attribute = new Attribute("id", "Title", AttributeType.NUMBER, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1", "2"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsNegative() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.NUMBER, false, null);
-                    AttributePayload payload = new AttributePayload("Number", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("-1"), "Must be equal or greater than zero.");
+                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("-1"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must be equal or greater than zero.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsNotNumeric() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.NUMBER, false, null);
-                    AttributePayload payload = new AttributePayload("Number", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("not_numeric"), "Invalid number value.");
+                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_numeric"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid number value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsHigherThanIntegerMaxValue() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.NUMBER, false, null);
-                    AttributePayload payload = new AttributePayload("Number", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("1_000_000_000_000"), "Invalid number value.");
+                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1_000_000_000_000"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid number value.");
                 }
             }
 
@@ -518,23 +515,23 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithBooleanAttribute() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.BOOLEAN, false, null);
-                    AttributePayload payload = new AttributePayload("Boolean", attributeDefinition);
-                    shouldSaveProductWithAttribute(payload, List.of("true"));
+                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("true"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenBooleanAttributeIsMoreThanOne() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.BOOLEAN, false, null);
-                    AttributePayload payload = new AttributePayload("Boolean", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("true", "false"), "Must contain exactly one value.");
+                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("true", "false"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenInvalidBooleanAttributeValue() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.BOOLEAN, false, null);
-                    AttributePayload payload = new AttributePayload("Boolean", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("not_boolean_value"), "Invalid boolean value. Allowed values: true, false.");
+                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_boolean_value"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid boolean value. Allowed values: true, false.");
                 }
             }
 
@@ -543,23 +540,23 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithEnumAttribute() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
-                    AttributePayload payload = new AttributePayload("Enum", attributeDefinition);
-                    shouldSaveProductWithAttribute(payload, List.of("TYPE1"));
+                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE1"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeIsMoreThanOne() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
-                    AttributePayload payload = new AttributePayload("Enum", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("TYPE1", "TYPE2"), "Must contain exactly one value.");
+                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE1", "TYPE2"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeValueIsNotAllowed() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
-                    AttributePayload payload = new AttributePayload("Enum", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("TYPE3"), "Invalid value. Allowed values: " + String.join(", ", attributeDefinition.allowedValues()));
+                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE3"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid value. Allowed values: " + String.join(", ", attribute.allowedValues()));
                 }
             }
 
@@ -568,37 +565,37 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithRangeAttribute() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.RANGE, false, List.of("0", "100"));
-                    AttributePayload payload = new AttributePayload("Range", attributeDefinition);
-                    shouldSaveProductWithAttribute(payload, List.of("50", "70"));
+                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "70"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributesAreMoreThanTwo() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.RANGE, false, List.of("0", "100"));
-                    AttributePayload payload = new AttributePayload("Range", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("50", "70", "90"), "Must contain exactly two values.");
+                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "70", "90"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly two values.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenFirstAttributeValueIsLowerThanZero() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.RANGE, false, List.of("0", "100"));
-                    AttributePayload payload = new AttributePayload("Range", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("-1", "100"), "The first value must be equal or greater than to zero.");
+                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("-1", "100"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "The first value must be equal or greater than to zero.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenFirstAttributeValueIsGreaterThanSecond() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.RANGE, false, List.of("0", "100"));
-                    AttributePayload payload = new AttributePayload("Range", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("50", "10"), "The first value must be less than the second value.");
+                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "10"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "The first value must be less than the second value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributesAreNotNumericType() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.RANGE, false, List.of("0", "100"));
-                    AttributePayload payload = new AttributePayload("Range", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of("not_numeric", "not_numeric"), "Invalid range value format.");
+                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_numeric", "not_numeric"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid range value format.");
                 }
             }
 
@@ -607,16 +604,16 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithStringAttribute() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.STRING, false, List.of("string"));
-                    AttributePayload payload = new AttributePayload("String", attributeDefinition);
-                    shouldSaveProductWithAttribute(payload, List.of("string"));
+                    Attribute attribute = new Attribute("id", "String", AttributeType.STRING, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeIsBlank() throws Exception {
-                    AttributeDefinition attributeDefinition = new AttributeDefinition(AttributeType.STRING, false, null);
-                    AttributePayload payload = new AttributePayload("String", attributeDefinition);
-                    shouldFailValidationOnSaveProductWithAttribute(payload, List.of(""), "Must not be blank.");
+                    Attribute attribute = new Attribute("id", "String", AttributeType.STRING, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of(""));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must not be blank.");
                 }
             }
         }

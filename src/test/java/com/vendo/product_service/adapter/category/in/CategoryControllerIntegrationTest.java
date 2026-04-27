@@ -5,11 +5,12 @@ import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.model.AttributeDefinition;
-import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
@@ -18,6 +19,7 @@ import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
+import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,7 +36,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
@@ -51,20 +52,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class CategoryControllerIntegrationTest {
 
+    private final Attribute ATTRIBUTE = new Attribute("id", "title", AttributeType.STRING, false, null);
     @Autowired
     private ObjectMapper objectMapper;
-
     @Autowired
     private MockMvc mockMvc;
-
     @MockitoBean
     private CategoryCommandPort commandPort;
-
     @MockitoBean
     private CategoryQueryPort queryPort;
-
     @MockitoBean
     private TokenClaimsParser claimsParser;
+    @MockitoBean
+    private AttributeQueryPort attributeQueryPort;
 
     @BeforeEach
     public void setUp() {
@@ -277,7 +277,6 @@ public class CategoryControllerIntegrationTest {
         @Test
         void findById_shouldReturnCategory() throws Exception {
             Category category = CategoryDataBuilder.withAllFields().build();
-            String attributeName = "Attribute";
 
             when(queryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
 
@@ -289,19 +288,7 @@ public class CategoryControllerIntegrationTest {
 
             CategoryResponse categoryResponse = objectMapper.readValue(content, CategoryResponse.class);
 
-            assertThat(categoryResponse).isNotNull();
-            assertThat(categoryResponse.title()).isEqualTo(category.getTitle());
-            assertThat(categoryResponse.parentId()).isEqualTo(category.getParentId());
-            assertThat(categoryResponse.attributes()).isNotNull();
-            assertThat(categoryResponse.attributes().size()).isEqualTo(category.getAttributes().size());
-            assertThat(categoryResponse.attributes().get(attributeName)).isNotNull();
-
-            AttributeDefinition responseAttributeName = categoryResponse.attributes().get(attributeName);
-            AttributeDefinition categoryAttributeName = category.getAttributes().get(attributeName);
-            assertThat(responseAttributeName.type()).isEqualTo(categoryAttributeName.type());
-            assertThat(responseAttributeName.required()).isEqualTo(categoryAttributeName.required());
-            assertThat(responseAttributeName.allowedValues()).isNotNull();
-            assertThat(responseAttributeName.allowedValues().size()).isEqualTo(categoryAttributeName.allowedValues().size());
+            AssertionUtils.assertFrom(category, categoryResponse, "categoryType");
 
             verify(queryPort).findById(category.getId(), "Category not found.");
         }
@@ -476,6 +463,7 @@ public class CategoryControllerIntegrationTest {
 
                 when(queryPort.existsByCode(categoryRequest.code())).thenReturn(false);
                 when(queryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
+                when(attributeQueryPort.findAllByIdsIn(parentCategory.getAttributes())).thenReturn(List.of(ATTRIBUTE));
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
                 performCategoryPersist(categoryRequest).andExpect(status().isOk());
@@ -487,38 +475,8 @@ public class CategoryControllerIntegrationTest {
 
                 verify(queryPort).existsByCode(categoryRequest.code());
                 verify(queryPort).findById(categoryRequest.parentId(), "Parent category not found.");
+                verify(attributeQueryPort).findAllByIdsIn(categoryRequest.attributes());
                 verify(commandPort).save(capturedCategory);
-            }
-
-            @Test
-            void save_shouldReturnBadRequest_whenAttributeNameIsInvalid() throws Exception {
-                String invalidAttributeName = "invalid_attribute_name";
-                AttributeDefinition attributeDefinition = AttributeDefinition.builder().type(AttributeType.STRING).build();
-
-                Category parentCategory = CategoryDataBuilder.withAllFields().attributes(null).build();
-                CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
-                        .parentId(parentCategory.getId())
-                        .attributes(Map.of(invalidAttributeName, attributeDefinition))
-                        .build();
-
-                String content = performCategoryPersist(categoryRequest)
-                        .andExpect(status().isBadRequest())
-                        .andReturn()
-                        .getResponse()
-                        .getContentAsString();
-
-                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-                assertThat(exceptionResponse).isNotNull();
-                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-                assertThat(exceptionResponse.getErrors()).isNotNull();
-                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-                assertThat(exceptionResponse.getErrors().containsKey(invalidAttributeName)).isTrue();
-                assertThat(exceptionResponse.getErrors().get(invalidAttributeName)).isEqualTo("Attribute name validation failed.");
-                assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
-
-                verifyNoInteractions(queryPort);
-                verifyNoInteractions(commandPort);
             }
 
             @Test
@@ -530,6 +488,7 @@ public class CategoryControllerIntegrationTest {
 
                 when(queryPort.existsByCode(categoryRequest.code())).thenReturn(false);
                 when(queryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(subCategory);
+                when(attributeQueryPort.findAllByIdsIn(categoryRequest.attributes())).thenReturn(anyList());
 
                 String content = performCategoryPersist(categoryRequest)
                         .andExpect(status().isBadRequest())
@@ -545,6 +504,7 @@ public class CategoryControllerIntegrationTest {
 
                 verify(queryPort).existsByCode(categoryRequest.code());
                 verify(queryPort).findById(categoryRequest.parentId(), "Parent category not found.");
+                verify(attributeQueryPort).findAllByIdsIn(categoryRequest.attributes());
                 verifyNoInteractions(commandPort);
             }
 
