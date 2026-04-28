@@ -68,7 +68,7 @@ public class AttributeControllerIntegrationTest {
         void save_shouldSuccessfullySave() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
             Attribute attribute = AttributeDataBuilder.withAllFields();
-            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields();
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
 
             when(mapper.toAttribute(request)).thenReturn(attribute);
@@ -90,7 +90,7 @@ public class AttributeControllerIntegrationTest {
         @Test
         void save_shouldReturnBadRequest_whenAttributeTitleIsNotValid() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
-            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields("invalid_title");
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().title("invalid_title").build();
 
             String content = mockMvc.perform(post("/attributes")
                             .with(authentication(SecurityContextService.initializeAuth(claims)))
@@ -112,9 +112,33 @@ public class AttributeControllerIntegrationTest {
         }
 
         @Test
+        void save_shouldReturnBadRequest_whenAttributeTypeIsNotPresent() throws Exception {
+            TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().type(null).build();
+
+            String content = mockMvc.perform(post("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(claims)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get("type")).isEqualTo("Type is required.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeCommandPort, mapper);
+        }
+
+        @Test
         void save_shouldReturnUnauthorized_whenNotAdmin() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.USER);
-            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields();
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
 
             String content = mockMvc.perform(post("/attributes")
                             .with(authentication(SecurityContextService.initializeAuth(claims)))

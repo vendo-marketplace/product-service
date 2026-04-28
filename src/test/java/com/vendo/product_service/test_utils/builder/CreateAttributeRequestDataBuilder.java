@@ -5,12 +5,11 @@ import com.vendo.product_service.domain.attribute.model.AttributeType;
 
 public class CreateAttributeRequestDataBuilder {
 
-    public static CreateAttributeRequest withAllFields() {
-        return new CreateAttributeRequest("Title", AttributeType.STRING, false, null);
+    public static CreateAttributeRequest.CreateAttributeRequestBuilder withAllFields() {
+        return CreateAttributeRequest.builder()
+                .title("Title")
+                .type(AttributeType.STRING)
+                .required(false)
+                .allowedValues(null);
     }
-
-    public static CreateAttributeRequest withAllFields(String title) {
-        return new CreateAttributeRequest(title, AttributeType.STRING, false, null);
-    }
-
 }
