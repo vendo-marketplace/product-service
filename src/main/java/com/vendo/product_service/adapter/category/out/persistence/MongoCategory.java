@@ -27,6 +27,8 @@ public class MongoCategory {
 
     private List<String> attributes;
 
+    private List<String> path;
+
     @CreatedDate
     private Instant createdAt;
 

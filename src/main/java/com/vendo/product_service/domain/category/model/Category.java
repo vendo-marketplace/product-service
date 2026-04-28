@@ -14,13 +14,15 @@ public class Category {
     private String code;
     private String parentId;
     private List<String> attributes;
+    private List<String> path;
 
-    public Category(String id, String title, String code, String parentId, List<String> attributes) {
+    public Category(String id, String title, String code, String parentId, List<String> attributes, List<String> path) {
         this.id = id;
         this.title = title;
         this.code = code;
         this.parentId = parentId;
         this.attributes = attributes;
+        this.path = path;
     }
 
     public static Builder builder() {
@@ -47,6 +49,10 @@ public class Category {
         return code;
     }
 
+    public List<String> getPath() {
+        return path;
+    }
+
     public void setCode(String code) {
         this.code = code;
     }
@@ -65,6 +71,10 @@ public class Category {
 
     public void setAttributes(List<String> attributes) {
         this.attributes = attributes;
+    }
+
+    public void setPath(List<String> path) {
+        this.path = path;
     }
 
     @Override
@@ -125,6 +135,7 @@ public class Category {
         private String code;
         private String parentId;
         private List<String> attributes;
+        private List<String> path;
 
         public Builder id(String id) {
             this.id = id;
@@ -151,8 +162,13 @@ public class Category {
             return this;
         }
 
+        public Builder path(List<String> path) {
+            this.path = path;
+            return this;
+        }
+
         public Category build() {
-            return new Category(id, title, code, parentId, attributes);
+            return new Category(id, title, code, parentId, attributes, path);
         }
     }
 }

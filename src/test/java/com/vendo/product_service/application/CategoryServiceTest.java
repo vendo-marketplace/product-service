@@ -45,6 +45,8 @@ class CategoryServiceTest {
         categoryService.save(category);
 
         verify(commandPort, times(1)).save(category);
+
+        assertThat(category.getPath().contains(("cat123")));
     }
 
     @Test

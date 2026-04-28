@@ -11,7 +11,8 @@ public class CreateCategoryRequestDataBuilder {
                 .title("Title")
                 .parentId("parent_id")
                 .code("code")
-                .attributes(List.of("id_1"));
+                .attributes(List.of("id_1"))
+                .path(List.of("root_id", "parent_id"));
     }
 
 }

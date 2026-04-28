@@ -21,5 +21,7 @@ public record CreateCategoryRequest(
 
         String parentId,
 
-        List<String> attributes) {
+        List<String> attributes,
+
+        List<String> path) {
 }
