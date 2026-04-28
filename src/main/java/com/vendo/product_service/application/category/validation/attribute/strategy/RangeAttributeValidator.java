@@ -1,8 +1,8 @@
 package com.vendo.product_service.application.category.validation.attribute.strategy;
 
-import com.vendo.product_service.application.category.validation.dto.AttributePayload;
 import com.vendo.product_service.application.category.validation.dto.ValidationBody;
-import com.vendo.product_service.domain.category.model.AttributeType;
+import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,8 +11,8 @@ import java.util.List;
 public class RangeAttributeValidator implements AttributeValidatorStrategy {
 
     @Override
-    public ValidationBody validate(AttributePayload payload, List<String> requestAttributes) {
-        ValidationBody validationBody = ValidationBody.builder().fieldName(payload.name()).build();
+    public ValidationBody validate(Attribute originAttribute, List<String> requestAttributes) {
+        ValidationBody validationBody = ValidationBody.builder().fieldName(originAttribute.title()).build();
 
         if (requestAttributes == null || requestAttributes.size() != 2) {
             return validationBody.toBuilder()

@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.category.exception.CategoryTypeException
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 public class Category {
@@ -13,9 +13,9 @@ public class Category {
     private String title;
     private String code;
     private String parentId;
-    private Map<String, AttributeDefinition> attributes;
+    private List<String> attributes;
 
-    public Category(String id, String title, String code, String parentId, Map<String, AttributeDefinition> attributes) {
+    public Category(String id, String title, String code, String parentId, List<String> attributes) {
         this.id = id;
         this.title = title;
         this.code = code;
@@ -59,11 +59,11 @@ public class Category {
         this.parentId = parentId;
     }
 
-    public Map<String, AttributeDefinition> getAttributes() {
+    public List<String> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, AttributeDefinition> attributes) {
+    public void setAttributes(List<String> attributes) {
         this.attributes = attributes;
     }
 
@@ -107,15 +107,15 @@ public class Category {
         }
     }
 
-    private boolean isParent(String parentId, Map<String, AttributeDefinition> attributes) {
+    private boolean isParent(String parentId, List<String> attributes) {
         return parentId == null && attributes == null;
     }
 
-    private boolean isSub(String parentId, Map<String, AttributeDefinition> attributes) {
+    private boolean isSub(String parentId, List<String> attributes) {
         return (parentId != null && !parentId.isEmpty()) && attributes == null;
     }
 
-    private boolean isChild(String parentId, Map<String, AttributeDefinition> attributes) {
+    private boolean isChild(String parentId, List<String> attributes) {
         return (parentId != null && !parentId.isEmpty()) && attributes != null && !attributes.isEmpty();
     }
 
@@ -124,7 +124,7 @@ public class Category {
         private String title;
         private String code;
         private String parentId;
-        private Map<String, AttributeDefinition> attributes;
+        private List<String> attributes;
 
         public Builder id(String id) {
             this.id = id;
@@ -146,7 +146,7 @@ public class Category {
             return this;
         }
 
-        public Builder attributes(Map<String, AttributeDefinition> attributes) {
+        public Builder attributes(List<String> attributes) {
             this.attributes = attributes;
             return this;
         }

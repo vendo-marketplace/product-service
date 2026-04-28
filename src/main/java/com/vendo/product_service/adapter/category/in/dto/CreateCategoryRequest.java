@@ -1,11 +1,10 @@
 package com.vendo.product_service.adapter.category.in.dto;
 
-import com.vendo.product_service.domain.category.model.AttributeDefinition;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 
-import java.util.Map;
+import java.util.List;
 
 import static com.vendo.product_service.domain.category.constants.CategoryConstants.*;
 
@@ -22,5 +21,5 @@ public record CreateCategoryRequest(
 
         String parentId,
 
-        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.") String, AttributeDefinition> attributes) {
+        List<String> attributes) {
 }

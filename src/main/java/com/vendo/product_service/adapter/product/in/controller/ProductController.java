@@ -4,8 +4,9 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
-import com.vendo.product_service.application.product.ProductService;
 import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.port.in.product.ProductUseCase;
+import com.vendo.product_service.port.out.product.ProductValidationPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,29 +17,29 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/products")
 @PreAuthorize("@userSecurity.validateActivation(authentication)")
-public class ProductController {
+class ProductController {
 
-    private final ProductService productService;
-    private final DtoProductMapper dtoProductMapper;
+    private final ProductUseCase productUseCase;
+    private final ProductValidationPort validationPort;
+    private final DtoProductMapper mapper;
 
     @PostMapping
-    public void save(@Valid @RequestBody CreateProductRequest request) {
-        Product product = dtoProductMapper.toEntity(request);
-        productService.save(product);
+    void save(@Valid @RequestBody CreateProductRequest request) {
+        validationPort.validateOnSave(request);
+        productUseCase.save(mapper.toEntity(request));
     }
 
     @PutMapping("/{id}")
-    public void update(
+    void update(
             @PathVariable String id,
             @Valid @RequestBody UpdateProductRequest request
     ) {
-        Product product = dtoProductMapper.toEntity(request);
-        productService.update(id, product);
+        productUseCase.update(id, mapper.toEntity(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductResponse> find(@PathVariable String id) {
-        Product product = productService.findById(id);
-        return ResponseEntity.ok(dtoProductMapper.toResponse(product));
+    ResponseEntity<ProductResponse> find(@PathVariable String id) {
+        Product product = productUseCase.findById(id);
+        return ResponseEntity.ok(mapper.toResponse(product));
     }
 }

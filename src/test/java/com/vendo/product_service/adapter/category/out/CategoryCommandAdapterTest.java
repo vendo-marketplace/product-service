@@ -66,4 +66,5 @@ class CategoryCommandAdapterTest {
 
         verifyNoMoreInteractions(categoryMapper, categoryRepository);
     }
+
 }

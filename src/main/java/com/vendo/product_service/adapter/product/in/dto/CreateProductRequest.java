@@ -1,13 +1,11 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-
-import static com.vendo.product_service.domain.category.constants.CategoryConstants.CATEGORY_ATTRIBUTE_NAME_PATTERN;
 
 @Builder
 public record CreateProductRequest(
@@ -31,5 +29,5 @@ public record CreateProductRequest(
         String categoryId,
 
         @NotEmpty(message = "Minimum 1 attribute is required.")
-        Map<@Pattern(regexp = CATEGORY_ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.") String, List<String>> attributes) {
+        List<AttributeValue> attributes) {
 }

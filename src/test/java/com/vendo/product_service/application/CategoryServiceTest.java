@@ -1,12 +1,11 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.creation.CategoryValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.port.category.CategoryCommandPort;
-import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.out.category.CategoryCommandPort;
+import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,12 +25,8 @@ class CategoryServiceTest {
     @Mock
     private CategoryQueryPort queryPort;
 
-    @Mock
-    private CategoryValidationService validationService;
-
     @InjectMocks
     private CategoryService categoryService;
-
 
     private Category buildCategory() {
         return Category.builder()
@@ -49,7 +44,6 @@ class CategoryServiceTest {
 
         categoryService.save(category);
 
-        verify(validationService, times(1)).validateCreation(category);
         verify(commandPort, times(1)).save(category);
     }
 
@@ -63,7 +57,6 @@ class CategoryServiceTest {
                 .isInstanceOf(CategoryAlreadyExistsException.class)
                 .hasMessage("Category already exists by code.");
 
-        verify(validationService, never()).validateCreation(any());
         verify(commandPort, never()).save(any());
     }
 
