@@ -88,7 +88,7 @@ public class AttributeControllerIntegrationTest {
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenAttributeTitleIsNotValid() throws Exception {
+        void save_shouldReturnBadRequest_whenTitleIsNotValid() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().title("invalid_title").build();
 
@@ -105,14 +105,14 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Attribute name validation failed.");
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title validation failed.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort, mapper);
         }
 
         @Test
-        void save_shouldReturnBadRequest_whenAttributeTypeIsNotPresent() throws Exception {
+        void save_shouldReturnBadRequest_whenTypeIsNotPresent() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().type(null).build();
 

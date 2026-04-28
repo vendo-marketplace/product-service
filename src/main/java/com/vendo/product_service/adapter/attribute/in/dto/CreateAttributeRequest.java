@@ -12,7 +12,7 @@ import static com.vendo.product_service.domain.attribute.constants.AttributeCons
 @Builder
 public record CreateAttributeRequest(
 
-        @Pattern(regexp = ATTRIBUTE_NAME_PATTERN, message = "Attribute name validation failed.")
+        @Pattern(regexp = ATTRIBUTE_NAME_PATTERN, message = "Title validation failed.")
         String title,
 
         @NotNull(message = "Type is required.")
