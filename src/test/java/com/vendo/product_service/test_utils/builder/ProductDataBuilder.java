@@ -5,12 +5,13 @@ import com.vendo.product_service.domain.product.model.Product;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 public record ProductDataBuilder() {
 
     public static Product.Builder withAllFields() {
         return Product.builder()
-                .id("id")
+                .id(String.valueOf(UUID.randomUUID()))
                 .title("title")
                 .description("description")
                 .quantity(1)

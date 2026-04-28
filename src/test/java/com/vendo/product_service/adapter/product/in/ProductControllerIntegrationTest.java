@@ -257,7 +257,7 @@ public class ProductControllerIntegrationTest {
         @Test
         void findById_shouldReturnProduct() throws Exception {
             Product product = ProductDataBuilder.withAllFields().build();
-            ProductResponse response = ProductResponseDataBuilder.withAllFields().build();
+            ProductResponse response = ProductResponseDataBuilder.withAllFields().id(product.getId()).build();
 
             when(productQueryPort.findById(product.getId())).thenReturn(product);
             when(dtoProductMapper.toResponse(product)).thenReturn(response);

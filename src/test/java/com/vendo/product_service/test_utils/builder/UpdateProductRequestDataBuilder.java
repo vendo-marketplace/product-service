@@ -11,8 +11,8 @@ public class UpdateProductRequestDataBuilder {
 
     public static UpdateProductRequest.UpdateProductRequestBuilder withAllFields() {
         return UpdateProductRequest.builder()
-                .title("New Title")
-                .description("New Description")
+                .title("Title")
+                .description("Description")
                 .quantity(1)
                 .price(BigDecimal.TEN)
                 .categoryId(String.valueOf(UUID.randomUUID()))

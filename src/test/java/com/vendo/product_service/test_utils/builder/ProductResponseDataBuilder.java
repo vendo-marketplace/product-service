@@ -6,12 +6,13 @@ import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public record ProductResponseDataBuilder() {
 
     public static ProductResponse.ProductResponseBuilder withAllFields() {
         return ProductResponse.builder()
-                .id("id")
+                .id(String.valueOf(UUID.randomUUID()))
                 .title("title")
                 .description("description")
                 .quantity(1)

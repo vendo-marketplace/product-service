@@ -12,8 +12,8 @@ public class CategoryDataBuilder {
                 .id(String.valueOf(UUID.randomUUID()))
                 .title("Category")
                 .parentId("parent_id")
-                .code(String.valueOf(UUID.randomUUID()))
-                .attributes(List.of("id_1", "id_2", "id_3"));
+                .code("code")
+                .attributes(List.of("id_1"));
     }
 
 }

@@ -1,8 +1,6 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.category.CategoryService;
-import com.vendo.product_service.application.category.validation.type.TypeValidationService;
-import com.vendo.product_service.application.category.validation.type.TypeValidator;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -25,12 +23,6 @@ class CategoryServiceTest {
     private CategoryCommandPort commandPort;
 
     @Mock
-    private TypeValidationService typeValidationService;
-
-    @Mock
-    private TypeValidator typeValidator;
-
-    @Mock
     private CategoryQueryPort queryPort;
 
     @InjectMocks
@@ -49,7 +41,6 @@ class CategoryServiceTest {
         Category category = buildCategory();
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
-        when(typeValidationService.getHandler(category.getType())).thenReturn(typeValidator);
 
         categoryService.save(category);
 
