@@ -9,7 +9,7 @@ public class CreateCategoryRequestDataBuilder {
 
     public static CreateCategoryRequest.CreateCategoryRequestBuilder withAllFields() {
         return CreateCategoryRequest.builder()
-                .title("CategoryEntity title")
+                .title("Title")
                 .parentId("parent_id")
                 .code(String.valueOf(UUID.randomUUID()))
                 .attributes(List.of("attribute_id"));

@@ -442,35 +442,6 @@ public class ProductControllerIntegrationTest {
 
         @Nested
         class SaveProductWithAttributes {
-
-            // TODO move to attributes creation
-//            void save_shouldReturnBadRequest_whenAttributeNameIsNotValid() throws Exception {
-//                Category category = CategoryDataBuilder.withAllFields()
-//                        .attributes(List.of(ATTRIBUTE_VALUE.id()))
-//                        .build();
-//                CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
-//                        .categoryId(category.getId())
-//                        .attributes(List.of(ATTRIBUTE_VALUE))
-//                        .build();
-//
-//                String content = performProductPersist(request)
-//                        .andExpect(status().isBadRequest())
-//                        .andReturn()
-//                        .getResponse()
-//                        .getContentAsString();
-//
-//                ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-//                assertThat(exceptionResponse).isNotNull();
-//                assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//                assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-//                assertThat(exceptionResponse.getErrors()).isNotNull();
-//                assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-//                assertThat(exceptionResponse.getErrors().get()).isEqualTo("Attribute name validation failed.");
-//                assertThat(exceptionResponse.getPath()).isEqualTo("/products");
-//
-//                verifyNoInteractions(dtoProductMapper);
-//            }
-
             @Nested
             class SaveProductWithNumberAttribute {
 

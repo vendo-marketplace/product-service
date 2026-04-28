@@ -52,7 +52,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 public class CategoryControllerIntegrationTest {
 
-    private final Attribute ATTRIBUTE = new Attribute("id", "title", AttributeType.STRING, false, null);
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
@@ -458,12 +457,13 @@ public class CategoryControllerIntegrationTest {
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(parentCategory.getId())
                         .build();
+                Attribute attribute = new Attribute("id", "title", AttributeType.STRING, false, null);
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
                 when(queryPort.existsByCode(categoryRequest.code())).thenReturn(false);
                 when(queryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
-                when(attributeQueryPort.findAllByIdsIn(parentCategory.getAttributes())).thenReturn(List.of(ATTRIBUTE));
+                when(attributeQueryPort.findAllByIdsIn(parentCategory.getAttributes())).thenReturn(List.of(attribute));
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
                 performCategoryPersist(categoryRequest).andExpect(status().isOk());
