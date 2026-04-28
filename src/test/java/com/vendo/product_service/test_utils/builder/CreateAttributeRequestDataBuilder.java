@@ -9,4 +9,8 @@ public class CreateAttributeRequestDataBuilder {
         return new CreateAttributeRequest("Title", AttributeType.STRING, false, null);
     }
 
+    public static CreateAttributeRequest withAllFields(String title) {
+        return new CreateAttributeRequest(title, AttributeType.STRING, false, null);
+    }
+
 }

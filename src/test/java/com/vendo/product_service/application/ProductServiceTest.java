@@ -1,6 +1,7 @@
 package com.vendo.product_service.application;
 
 import com.vendo.product_service.application.product.ProductService;
+import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
@@ -57,23 +58,6 @@ class ProductServiceTest {
         assertThat(savedProduct.getCategoryId()).isEqualTo(product.getCategoryId());
         verifyNoMoreInteractions(commandPort, currentUserPort);
     }
-
-    // TODO move to controller tests
-//    @Test
-//    void save_shouldThrowCategoryNotFoundException_whenCategoryDoesNotExist() {
-//        Product product = ProductDataBuilder.withAllFields().build();
-//
-//        when(categoryQueryPort.findById(any(), any()))
-//                .thenThrow(new CategoryNotFoundException("Parent category not found."));
-//
-//        assertThatThrownBy(() -> productService.save(product))
-//                .isInstanceOf(CategoryNotFoundException.class)
-//                .hasMessage("Parent category not found.");
-//
-//        verify(categoryQueryPort)
-//                .findById(eq(product.getCategoryId()), anyString());
-//        verifyNoInteractions(attributesValidator, currentUserPort, commandPort);
-//    }
 
     @Test
     void update_shouldUpdateFieldsAndCallCommandPort_whenOwnerMatchesAndCategoryExists() {
