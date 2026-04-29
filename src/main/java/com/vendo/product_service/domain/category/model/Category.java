@@ -52,13 +52,17 @@ public class Category {
         return (parentId != null && !parentId.isEmpty()) && attributes != null && !attributes.isEmpty();
     }
 
-    public List<String> buildPath(Category parent) {
-        if (parent == null) {
-            return List.of(this.getId());
+    public List<String> buildPath(List<String> parentPath) {
+        String currentId = this.getId();
+        if (currentId == null) throw new IllegalStateException("Id is empty.");
+
+        if (parentPath.isEmpty()) {
+            return List.of(currentId);
         }
 
-        List<String> path = new ArrayList<>(parent.getPath());
-        path.add(this.getId());
-        return path;
+        List<String> result = new ArrayList<>(parentPath);
+        result.add(currentId);
+
+        return result;
     }
 }

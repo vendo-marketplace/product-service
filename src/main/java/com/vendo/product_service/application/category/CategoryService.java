@@ -9,6 +9,9 @@ import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class CategoryService implements CategoryUseCase {
@@ -26,8 +29,7 @@ public class CategoryService implements CategoryUseCase {
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
         category.setId(idGenerationPort.generate());
-        Category parent = resolveParent(category);
-        category.setPath(category.buildPath(parent));
+        category.setPath(category.buildPath(getParentPath(category)));
         categoryCommandPort.save(category);
     }
 
@@ -37,8 +39,9 @@ public class CategoryService implements CategoryUseCase {
         }
     }
 
-    private Category resolveParent(Category category) {
-        if (category.getParentId() == null) return null;
-        return categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
+    private List<String> getParentPath(Category category) {
+        if (category.getParentId() == null) return Collections.emptyList();
+        Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
+        return parent.getPath();
     }
 }
