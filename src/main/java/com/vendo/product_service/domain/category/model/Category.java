@@ -53,16 +53,15 @@ public class Category {
     }
 
     public List<String> buildPath(List<String> parentPath) {
-        String currentId = this.getId();
-        if (currentId == null) throw new IllegalStateException("Id is empty.");
+        if (id == null) throw new IllegalStateException("Id is empty.");
 
         if (parentPath.isEmpty()) {
-            return List.of(currentId);
+            return List.of(id);
         }
 
-        List<String> result = new ArrayList<>(parentPath);
-        result.add(currentId);
+        List<String> path = new ArrayList<>(parentPath);
+        path.add(id);
 
-        return result;
+        return path;
     }
 }
