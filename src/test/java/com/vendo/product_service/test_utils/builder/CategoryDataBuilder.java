@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class CategoryDataBuilder {
 
-    public static Category.Builder withAllFields() {
+    public static Category.CategoryBuilder withAllFields() {
         return Category.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .title("Category")

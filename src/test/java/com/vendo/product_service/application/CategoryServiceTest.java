@@ -4,6 +4,7 @@ import com.vendo.product_service.application.category.CategoryService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,9 @@ class CategoryServiceTest {
     @Mock
     private CategoryQueryPort queryPort;
 
+    @Mock
+    private IdGenerationPort idGenerationPort;
+
     @InjectMocks
     private CategoryService categoryService;
 
@@ -41,10 +45,12 @@ class CategoryServiceTest {
         Category category = buildCategory();
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
+        when(idGenerationPort.generate()).thenReturn(category.getId());
 
         categoryService.save(category);
 
         verify(commandPort, times(1)).save(category);
+        verify(idGenerationPort, times(1)).generate();
 
         assertThat(category.getPath().contains(("cat123")));
     }
