@@ -6,6 +6,7 @@ import com.vendo.product_service.port.in.category.CategoryUseCase;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,6 +22,7 @@ public class CategoryService implements CategoryUseCase {
     }
 
     @Override
+    @CacheEvict(value = "categoryTree", key = "'tree'")
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
         categoryCommandPort.save(category);

@@ -7,6 +7,8 @@ import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class CategoryQueryAdapter implements CategoryQueryPort {
@@ -28,5 +30,21 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
     @Override
     public boolean existsByCode(String code) {
         return repository.existsByCode(code);
+    }
+
+    @Override
+    public List<Category> findAll() {
+        return repository.findAll()
+                .stream()
+                .map(mapper::toCategory)
+                .toList();
+    }
+
+    @Override
+    public List<Category> findByParentId(String parentId) {
+        return repository.findByParentId(parentId)
+                .stream()
+                .map(mapper::toCategory)
+                .toList();
     }
 }

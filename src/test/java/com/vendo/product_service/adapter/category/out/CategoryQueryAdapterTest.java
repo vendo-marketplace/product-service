@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -129,5 +130,26 @@ class CategoryQueryAdapterTest {
         assertThat(exists).isFalse();
         verify(categoryRepository, times(1)).existsByCode(code);
         verifyNoMoreInteractions(categoryRepository);
+    }
+
+    @Test
+    void findByParentId_shouldMapCorrectly() {
+        MongoCategory entity = MongoCategory.builder()
+                .id("2")
+                .parentId("1")
+                .build();
+
+        Category domain = Category.builder()
+                .id("2")
+                .parentId("1")
+                .build();
+
+        when(categoryRepository.findByParentId("1")).thenReturn(List.of(entity));
+        when(categoryMapper.toCategory(entity)).thenReturn(domain);
+
+        List<Category> result = queryAdapter.findByParentId("1");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getParentId()).isEqualTo("1");
     }
 }
