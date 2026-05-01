@@ -4,6 +4,7 @@ import com.vendo.product_service.application.category.CategoryService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
@@ -25,6 +26,9 @@ class CategoryServiceTest {
 
     @Mock
     private CategoryQueryPort queryPort;
+
+    @Mock
+    private TypeValidationPort typeValidationPort;
 
     @Mock
     private IdGenerationPort idGenerationPort;

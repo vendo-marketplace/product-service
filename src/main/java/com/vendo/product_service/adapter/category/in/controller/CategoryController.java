@@ -5,7 +5,6 @@ import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryUseCase;
-import com.vendo.product_service.port.in.category.TypeValidationPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +17,12 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
 class CategoryController {
 
-    private final CategoryUseCase categoryUseCase;
-    private final TypeValidationPort typeValidationPort;
     private final DtoCategoryMapper mapper;
+    private final CategoryUseCase categoryUseCase;
 
     @PostMapping
     void save(@Valid @RequestBody CreateCategoryRequest request) {
-        Category category = mapper.toCategory(request);
-        typeValidationPort.validate(category);
-        categoryUseCase.save(category);
+        categoryUseCase.save(mapper.toCategory(request));
     }
 
     @GetMapping("/{id}")

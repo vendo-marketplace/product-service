@@ -3,11 +3,13 @@ package com.vendo.product_service.application.category;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryUseCase;
+import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryService implements CategoryUseCase {
 
+    private final TypeValidationPort typeValidationPort;
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
     private final IdGenerationPort idGenerationPort;
@@ -26,17 +29,23 @@ public class CategoryService implements CategoryUseCase {
     }
 
     @Override
+    @Transactional
     public void save(Category category) {
+        typeValidationPort.validate(category);
         throwIfExistsByCode(category.getCode());
-        category.setId(idGenerationPort.generate());
-        category.setPath(category.buildPath(getParentPath(category)));
-        categoryCommandPort.save(category);
+        persist(category);
     }
 
     private void throwIfExistsByCode(String code) {
         if (categoryQueryPort.existsByCode(code)) {
             throw new CategoryAlreadyExistsException("Category already exists by code.");
         }
+    }
+
+    private void persist(Category category) {
+        category.setId(idGenerationPort.generate());
+        category.setPath(category.buildPath(getParentPath(category)));
+        categoryCommandPort.save(category);
     }
 
     private List<String> getParentPath(Category category) {
