@@ -127,6 +127,7 @@ public class ProductControllerIntegrationTest {
         verify(attributeQueryPort).findAllByIdsIn(List.of(attributeValue.id()));
         verify(dtoProductMapper).toEntity(request);
         verify(currentUserPort).getCurrentUserId();
+        verify(productEventSenderPort).sendCreated(product);
         verify(productCommandPort).save(argumentCaptor.capture());
 
         Product captorValue = argumentCaptor.getValue();
@@ -177,7 +178,7 @@ public class ProductControllerIntegrationTest {
 
         verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
-        verifyNoInteractions(currentUserPort, productCommandPort);
+        verifyNoInteractions(currentUserPort, productCommandPort, productEventSenderPort);
     }
 
     @Nested
@@ -194,7 +195,6 @@ public class ProductControllerIntegrationTest {
             when(currentUserPort.getCurrentUserId()).thenReturn(product.getOwnerId());
             when(attributeQueryPort.findAllByIdsIn(product.getAttributes().stream().map(AttributeValue::id).toList())).thenReturn(attributes);
             when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(true);
-            doNothing().when(productEventSenderPort).sendUpdated(product, attributes);
 
             performProductUpdate(product.getId(), request).andExpect(status().isOk());
 
@@ -228,7 +228,7 @@ public class ProductControllerIntegrationTest {
 
             verify(dtoProductMapper).toEntity(request);
             verify(productQueryPort).findById(product.getId());
-            verifyNoInteractions(currentUserPort, categoryQueryPort, productCommandPort);
+            verifyNoInteractions(currentUserPort, categoryQueryPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -256,7 +256,7 @@ public class ProductControllerIntegrationTest {
             verify(dtoProductMapper).toEntity(request);
             verify(productQueryPort).findById(product.getId());
             verify(currentUserPort).getCurrentUserId();
-            verifyNoInteractions(categoryQueryPort, productCommandPort);
+            verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
         }
     }
 
@@ -336,6 +336,7 @@ public class ProductControllerIntegrationTest {
             verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
             verify(currentUserPort).getCurrentUserId();
             verify(attributeQueryPort).findAllByIdsIn(List.of(attribute.id()));
+            verify(productEventSenderPort).sendCreated(product);
             verify(productCommandPort).save(argumentCaptor.capture());
 
             Product captorValue = argumentCaptor.getValue();
@@ -372,10 +373,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verifyNoInteractions(dtoProductMapper);
-            verifyNoInteractions(categoryQueryPort);
-            verifyNoInteractions(currentUserPort);
-            verifyNoInteractions(productCommandPort);
+            verifyNoInteractions(dtoProductMapper, categoryQueryPort, currentUserPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -399,10 +397,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid body structure.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verifyNoInteractions(dtoProductMapper);
-            verifyNoInteractions(categoryQueryPort);
-            verifyNoInteractions(currentUserPort);
-            verifyNoInteractions(productCommandPort);
+            verifyNoInteractions(dtoProductMapper, categoryQueryPort, currentUserPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -431,7 +426,7 @@ public class ProductControllerIntegrationTest {
 
             verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(categoryId, exceptionMessage);
-            verifyNoInteractions(currentUserPort, productCommandPort);
+            verifyNoInteractions(currentUserPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -462,7 +457,7 @@ public class ProductControllerIntegrationTest {
 
             verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
-            verifyNoInteractions(currentUserPort, productCommandPort);
+            verifyNoInteractions(currentUserPort, productCommandPort, productEventSenderPort);
         }
 
         @Nested
