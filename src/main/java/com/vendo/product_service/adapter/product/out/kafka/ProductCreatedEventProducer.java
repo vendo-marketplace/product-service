@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.product.out;
+package com.vendo.product_service.adapter.product.out.kafka;
 
 import com.vendo.event_lib.product.ProductCreatedEvent;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProductUpdatedEventProducer {
+public class ProductCreatedEventProducer {
 
     @Value("${kafka.events.product.created-event.topic}")
     private String productCreatedEventTopic;
@@ -21,5 +21,4 @@ public class ProductUpdatedEventProducer {
         log.info("Sent event for product created: {}.", event);
         kafkaTemplate.send(productCreatedEventTopic, event);
     }
-
 }
