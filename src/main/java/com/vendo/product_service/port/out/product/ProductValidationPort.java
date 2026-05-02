@@ -1,9 +1,10 @@
 package com.vendo.product_service.port.out.product;
 
-import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
+import com.vendo.product_service.domain.product.model.Product;
 
 public interface ProductValidationPort {
 
-    void validateOnSave(CreateProductRequest request);
+    void validateOnSave(Product product);
+    void validateOnUpdate(String id, Product product);
 
 }
