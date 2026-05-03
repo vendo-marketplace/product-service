@@ -12,4 +12,12 @@ public record Attribute(
         boolean required,
         List<String> allowedValues
 ) {
+
+    public static Attribute getById(String id, List<Attribute> attributes) {
+        return attributes.stream()
+                .filter(attribute -> attribute.id().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Attribute %s not found.".formatted(id)));
+    }
+
 }
