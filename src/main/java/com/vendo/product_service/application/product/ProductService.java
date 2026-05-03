@@ -43,15 +43,19 @@ public class ProductService implements ProductUseCase {
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
 
-        productCommandPort.save(product);
+        String productId = productCommandPort.save(product);
+        product.setId(productId);
         eventSenderPort.sendCreated(product, attributes);
     }
 
     @Override
     @Transactional
     public void update(String id, Product product) {
+        product.setId(id);
+
         validationPort.validateOnUpdate(id, product);
         List<Attribute> attributes = loadAttributesFor(product);
+
         productCommandPort.update(id, product);
         eventSenderPort.sendUpdated(product, attributes);
     }
