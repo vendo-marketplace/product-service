@@ -20,8 +20,8 @@ public class ProductEventSenderAdapter implements ProductEventSenderPort {
     private final EventProductMapper mapper;
 
     @Override
-    public void sendCreated(Product product) {
-        ProductCreatedEvent event = mapper.toCreatedEvent(product);
+    public void sendCreated(Product product, List<Attribute> attributes) {
+        ProductCreatedEvent event = mapper.toCreatedEvent(product, attributes);
         createdEventProducer.send(event);
     }
 

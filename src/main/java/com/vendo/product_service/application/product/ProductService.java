@@ -37,13 +37,14 @@ public class ProductService implements ProductUseCase {
     @Override
     @Transactional
     public void save(Product product) {
-        validationPort.validateOnSave(product);
+        List<Attribute> attributes = loadAttributesFor(product);
+        validationPort.validateOnSave(product, attributes);
 
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
 
         productCommandPort.save(product);
-        eventSenderPort.sendCreated(product);
+        eventSenderPort.sendCreated(product, attributes);
     }
 
     @Override

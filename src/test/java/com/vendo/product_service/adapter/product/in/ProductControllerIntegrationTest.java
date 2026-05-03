@@ -127,7 +127,7 @@ public class ProductControllerIntegrationTest {
         verify(attributeQueryPort).findAllByIdsIn(List.of(attributeValue.id()));
         verify(dtoProductMapper).toEntity(request);
         verify(currentUserPort).getCurrentUserId();
-        verify(productEventSenderPort).sendCreated(product);
+        verify(productEventSenderPort).sendCreated(product, List.of(attribute));
         verify(productCommandPort).save(argumentCaptor.capture());
 
         Product captorValue = argumentCaptor.getValue();
@@ -336,7 +336,7 @@ public class ProductControllerIntegrationTest {
             verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
             verify(currentUserPort).getCurrentUserId();
             verify(attributeQueryPort).findAllByIdsIn(List.of(attribute.id()));
-            verify(productEventSenderPort).sendCreated(product);
+            verify(productEventSenderPort).sendCreated(product, List.of(attribute));
             verify(productCommandPort).save(argumentCaptor.capture());
 
             Product captorValue = argumentCaptor.getValue();

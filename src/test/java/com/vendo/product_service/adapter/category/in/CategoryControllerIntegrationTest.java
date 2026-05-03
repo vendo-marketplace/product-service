@@ -302,8 +302,6 @@ public class CategoryControllerIntegrationTest {
 
                 Category capturedCategory = argumentCaptor.getValue();
 
-                System.out.println(capturedCategory);
-
                 assertThat(capturedCategory).isNotNull();
                 assertThat(capturedCategory.getCode()).isEqualTo(categoryRequest.code());
                 assertThat(capturedCategory.getParentId()).isNull();

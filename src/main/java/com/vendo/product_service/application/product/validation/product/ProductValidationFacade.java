@@ -7,7 +7,6 @@ import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
 import com.vendo.product_service.port.out.product.ProductValidationPort;
@@ -21,17 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductValidationFacade implements ProductValidationPort {
 
-    private final AttributeQueryPort attributeQueryPort;
     private final AttributesValidator attributesValidator;
     private final CategoryQueryPort categoryQueryPort;
     private final ProductQueryPort productQueryPort;
     private final CurrentUserPort currentUserPort;
 
     @Override
-    public void validateOnSave(Product product) {
+    public void validateOnSave(Product product, List<Attribute> originAttributes) {
         Category category = categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.");
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
-        List<Attribute> originAttributes = attributeQueryPort.findAllByIdsIn(category.getAttributes());
         attributesValidator.validate(originAttributes, product.getAttributes());
     }
 

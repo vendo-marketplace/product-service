@@ -13,7 +13,8 @@ import java.util.List;
 @Mapper(config = MapStructConfig.class)
 public interface EventProductMapper {
 
-    ProductCreatedEvent toCreatedEvent(Product product);
+    @Mapping(target = "attributes", source = "attributes")
+    ProductCreatedEvent toCreatedEvent(Product product, List<Attribute> attributes);
 
     @Mapping(target = "attributes", source = "attributes")
     ProductUpdatedEvent toUpdatedEvent(Product product, List<Attribute> attributes);

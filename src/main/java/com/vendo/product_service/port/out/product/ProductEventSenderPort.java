@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ProductEventSenderPort {
 
-    void sendCreated(Product product);
+    void sendCreated(Product product, @Nullable List<Attribute> attributes);
 
     void sendUpdated(Product product, @Nullable List<Attribute> attributes);
 
