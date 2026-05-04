@@ -55,8 +55,9 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-cache</artifactId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
         </dependency>
+
 
         <!--metric dependencies-->
 
@@ -165,6 +166,11 @@
             <groupId>io.github.vendo-marketplace-be</groupId>
             <artifactId>security-lib</artifactId>
             <version>4.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.vendo-marketplace-be</groupId>
+            <artifactId>redis-lib</artifactId>
+            <version>3.0.1</version>
         </dependency>
 
     </dependencies>

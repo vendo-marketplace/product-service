@@ -1,9 +1,6 @@
 package com.vendo.product_service.adapter.category.in.exception;
 
-import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
-import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.category.exception.CategoryTypeException;
-import com.vendo.product_service.domain.category.exception.CategoryValidationException;
+import com.vendo.product_service.domain.category.exception.*;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -57,6 +54,17 @@ class CategoryExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(CategoryCacheException.class)
+    ResponseEntity<ExceptionResponse> handleCategoryCacheException(CategoryCacheException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
     }
 
 }

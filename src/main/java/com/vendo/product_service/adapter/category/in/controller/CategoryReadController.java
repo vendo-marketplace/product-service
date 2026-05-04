@@ -20,12 +20,7 @@ public class CategoryReadController {
 
     @GetMapping("/tree")
     public ResponseEntity<List<CategoryTreeResponse>> tree() {
-        List<CategoryTreeResponse> getTreeList = categoryReadService.getTree()
-                .stream()
-                .map(categoryTreeMapper::toResponse)
-                .toList();
-
-        return ResponseEntity.ok(getTreeList);
+        return ResponseEntity.ok(categoryTreeMapper.toResponseList(categoryReadService.getTree()));
     }
 
     @GetMapping("/{id}/children")

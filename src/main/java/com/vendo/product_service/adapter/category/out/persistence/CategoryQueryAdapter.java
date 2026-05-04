@@ -47,4 +47,12 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
                 .map(mapper::toCategory)
                 .toList();
     }
+
+    @Override
+    public List<Category> findAllByIds(List<String> ids) {
+        return repository.findAllById(ids)
+                .stream()
+                .map(mapper::toCategory)
+                .toList();
+    }
 }

@@ -14,4 +14,6 @@ public interface CategoryQueryPort {
     List<Category> findAll();
 
     List<Category> findByParentId(String parentId);
+
+    List<Category> findAllByIds(List<String> ids);
 }
