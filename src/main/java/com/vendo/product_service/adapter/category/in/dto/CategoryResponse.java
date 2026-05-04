@@ -9,5 +9,6 @@ public record CategoryResponse(
          String title,
          String parentId,
          CategoryType type,
-         List<String> attributes) {
+         List<String> attributes,
+         List<String> path) {
 }

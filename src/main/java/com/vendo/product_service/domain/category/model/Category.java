@@ -4,9 +4,14 @@ import com.vendo.product_service.domain.category.exception.CategoryTypeException
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
 
-import java.util.List;
-import java.util.Objects;
+import lombok.Builder;
+import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@Builder
 public class Category {
 
     private String id;
@@ -14,90 +19,18 @@ public class Category {
     private String code;
     private String parentId;
     private List<String> attributes;
-
-    public Category(String id, String title, String code, String parentId, List<String> attributes) {
-        this.id = id;
-        this.title = title;
-        this.code = code;
-        this.parentId = parentId;
-        this.attributes = attributes;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
-    public List<String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(List<String> attributes) {
-        this.attributes = attributes;
-    }
-
-    @Override
-    public String toString() {
-        return "Category{" + "id='" + id + '\'' + ", title='" + title + '\'' + ", code='" + code + '\'' + ", parentId='" + parentId + '\'' + ", attributes=" + attributes + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Category category = (Category) o;
-        return Objects.equals(id, category.id) && Objects.equals(title, category.title) && Objects.equals(code, category.code) && Objects.equals(parentId, category.parentId) && Objects.equals(attributes, category.attributes);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, title, code, parentId, attributes);
-    }
+    private List<String> path;
 
     public CategoryType getType() {
-
         if (isParent(parentId, attributes)) {
             return CategoryType.PARENT;
         }
-
         if (isSub(parentId, attributes)) {
             return CategoryType.SUB;
         }
-
         if (isChild(parentId, attributes)) {
             return CategoryType.CHILD;
         }
-
         throw new CategoryValidationException("Invalid category structure.");
     }
 
@@ -119,40 +52,16 @@ public class Category {
         return (parentId != null && !parentId.isEmpty()) && attributes != null && !attributes.isEmpty();
     }
 
-    public static class Builder {
-        private String id;
-        private String title;
-        private String code;
-        private String parentId;
-        private List<String> attributes;
+    public List<String> buildPath(List<String> parentPath) {
+        if (id == null) throw new IllegalStateException("Id is empty.");
 
-        public Builder id(String id) {
-            this.id = id;
-            return this;
+        if (parentPath.isEmpty()) {
+            return List.of(id);
         }
 
-        public Builder title(String title) {
-            this.title = title;
-            return this;
-        }
+        List<String> path = new ArrayList<>(parentPath);
+        path.add(id);
 
-        public Builder code(String code) {
-            this.code = code;
-            return this;
-        }
-
-        public Builder parentId(String parentId) {
-            this.parentId = parentId;
-            return this;
-        }
-
-        public Builder attributes(List<String> attributes) {
-            this.attributes = attributes;
-            return this;
-        }
-
-        public Category build() {
-            return new Category(id, title, code, parentId, attributes);
-        }
+        return path;
     }
 }
