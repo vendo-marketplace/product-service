@@ -117,7 +117,6 @@ public class ProductControllerIntegrationTest {
         when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
         when(attributeQueryPort.findAllByIdsIn(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
-        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
         performProductPersist(request).andExpect(status().isOk());
@@ -125,7 +124,6 @@ public class ProductControllerIntegrationTest {
         verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
         verify(attributeQueryPort).findAllByIdsIn(List.of(attributeValue.id()));
-        verify(dtoProductMapper).toEntity(request);
         verify(currentUserPort).getCurrentUserId();
         verify(productEventSenderPort).sendCreated(product, List.of(attribute));
         verify(productCommandPort).save(argumentCaptor.capture());
