@@ -7,8 +7,13 @@ import java.util.UUID;
 
 public class AttributeDataBuilder {
 
-    public static Attribute withAllFields() {
-        return new Attribute(String.valueOf(UUID.randomUUID()), "Title", AttributeType.STRING, false, null);
+    public static Attribute.AttributeBuilder withAllFields() {
+        return Attribute.builder()
+                .id(String.valueOf(UUID.randomUUID()))
+                .title("Title")
+                .type(AttributeType.STRING)
+                .required(false)
+                .allowedValues(null);
     }
 
 }

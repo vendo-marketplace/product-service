@@ -1,24 +1,33 @@
 package com.vendo.product_service.application.product;
 
-import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
-import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
+import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.in.product.ProductUseCase;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
+import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.product.ProductCommandPort;
+import com.vendo.product_service.port.out.product.ProductEventSenderPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
+import com.vendo.product_service.port.out.product.ProductValidationPort;
 import com.vendo.product_service.port.out.user.CurrentUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class ProductService implements ProductUseCase {
-    private final ProductCommandPort productCommandPort;
 
-    private final ProductQueryPort productQueryPort;
-    private final CategoryQueryPort categoryQueryPort;
     private final CurrentUserPort currentUserPort;
+
+    private final ProductValidationPort validationPort;
+    private final ProductCommandPort productCommandPort;
+    private final ProductQueryPort productQueryPort;
+    private final ProductEventSenderPort eventSenderPort;
+
+    private final AttributeQueryPort attributeQueryPort;
 
     @Override
     public Product findById(String id) {
@@ -26,32 +35,33 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
+    @Transactional
     public void save(Product product) {
+        List<Attribute> attributes = loadAttributesFor(product);
+        validationPort.validateOnSave(product, attributes);
+
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
-        productCommandPort.save(product);
+
+        String productId = productCommandPort.save(product);
+        product.setId(productId);
+        eventSenderPort.sendCreated(product, attributes);
     }
 
     @Override
+    @Transactional
     public void update(String id, Product product) {
-        Product existing = productQueryPort.findById(id);
+        product.setId(id);
 
-        throwIfNotOwnerOfProduct(existing.getOwnerId());
-        if (product.getCategoryId() != null) throwIfCategoryNotExists(product.getCategoryId());
+        validationPort.validateOnUpdate(id, product);
+        List<Attribute> attributes = loadAttributesFor(product);
 
         productCommandPort.update(id, product);
+        eventSenderPort.sendUpdated(product, attributes);
     }
 
-    private void throwIfNotOwnerOfProduct(String ownerId) {
-        if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
-            throw new NotProductOwnerException("You're not product's owner.");
-        }
+    private List<Attribute> loadAttributesFor(Product product) {
+        List<String> attributeIds = product.getAttributes().stream().map(AttributeValue::id).toList();
+        return attributeQueryPort.findAllByIdsIn(attributeIds);
     }
-
-    private void throwIfCategoryNotExists(String id) {
-        if (!categoryQueryPort.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found.");
-        }
-    }
-
 }

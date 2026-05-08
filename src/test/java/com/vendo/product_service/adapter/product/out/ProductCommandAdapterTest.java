@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -32,9 +33,10 @@ class ProductCommandAdapterTest {
     @Test
     void save_shouldMapAndSaveProductEntity() {
         Product product = Product.builder().title("Test").build();
-        MongoProduct entity = MongoProduct.builder().title("Test").build();
+        MongoProduct entity = MongoProduct.builder().id(String.valueOf(UUID.randomUUID())).title("Test").build();
 
         when(mongoProductMapper.toEntity(product)).thenReturn(entity);
+        when(productRepository.save(entity)).thenReturn(entity);
 
         productCommandAdapter.save(product);
 

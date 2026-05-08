@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record ProductDataBuilder() {
 
-    public static Product.Builder withAllFields() {
+    public static Product.ProductBuilder withAllFields() {
         return Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .title("title")
