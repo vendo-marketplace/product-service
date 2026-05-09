@@ -17,7 +17,7 @@ public interface EventAttributeMapper {
 
         for (AttributeValue requestAttribute : requestAttributes) {
             Attribute attribute = Attribute.getById(requestAttribute.id(), originAttributes);
-            events.add(new AttributeEvent(attribute.title(), attribute.type().name(), requestAttribute.values()));
+            events.add(new AttributeEvent(attribute.id(), attribute.title(), attribute.type().name(), requestAttribute.values()));
         }
 
         return events;
