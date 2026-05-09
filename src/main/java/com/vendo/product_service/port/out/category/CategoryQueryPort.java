@@ -1,6 +1,7 @@
 package com.vendo.product_service.port.out.category;
 
 import com.vendo.product_service.domain.category.model.Category;
+
 import java.util.List;
 
 public interface CategoryQueryPort {
@@ -13,7 +14,4 @@ public interface CategoryQueryPort {
 
     List<Category> findAll();
 
-    List<Category> findByParentId(String parentId);
-
-    List<Category> findAllByIds(List<String> ids);
 }

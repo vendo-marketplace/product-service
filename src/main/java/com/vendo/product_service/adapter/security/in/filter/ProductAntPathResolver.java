@@ -16,9 +16,6 @@ public class ProductAntPathResolver implements AntPathResolver {
             "/v3/api-docs/**",
             "/actuator/health",
             "/categories/tree",
-            "/categories/*/children",
-            "/categories/*/breadcrumbs",
-            "/categories/type/*"
     };
 
     @Override

@@ -12,5 +12,6 @@ public class CategoryTreeResponse {
     private String id;
     private String title;
     private String code;
-    private List<CategoryTreeResponse> children;
+    private List<String> attributes;
+    private List<String> path;
 }

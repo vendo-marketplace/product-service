@@ -7,5 +7,4 @@ public interface CategoryRepository extends MongoRepository<MongoCategory, Strin
 
     boolean existsByCode(String code);
 
-    List<MongoCategory> findByParentId(String parentId);
 }

@@ -4,10 +4,10 @@ import com.vendo.product_service.domain.category.exception.CategoryAlreadyExists
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryUseCase;
 import com.vendo.product_service.port.out.IdGenerationPort;
-import com.vendo.product_service.port.out.category.CategoryCachePort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -20,7 +20,6 @@ public class CategoryService implements CategoryUseCase {
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
     private final IdGenerationPort idGenerationPort;
-    private final CategoryCachePort categoryCachePort;
 
     @Override
     public Category findById(String id) {
@@ -28,12 +27,12 @@ public class CategoryService implements CategoryUseCase {
     }
 
     @Override
+    @CacheEvict(value = "categoryTree", allEntries = true)
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
         category.setId(idGenerationPort.generate());
         category.setPath(category.buildPath(getParentPath(category)));
         categoryCommandPort.save(category);
-        categoryCachePort.evictTree();
     }
 
     private void throwIfExistsByCode(String code) {
