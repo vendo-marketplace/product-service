@@ -1,4 +1,4 @@
-package com.vendo.product_service.infrastructure.config;
+package com.vendo.product_service.infrastructure.config.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
@@ -15,7 +15,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager manager = new CaffeineCacheManager("categoryTree");
+        CaffeineCacheManager manager = new CaffeineCacheManager("category-tree");
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(1));

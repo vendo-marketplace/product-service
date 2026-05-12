@@ -27,7 +27,7 @@ public class CategoryService implements CategoryUseCase {
     }
 
     @Override
-    @CacheEvict(value = "categoryTree", allEntries = true)
+    @CacheEvict(value = "category-tree", allEntries = true)
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
         category.setId(idGenerationPort.generate());

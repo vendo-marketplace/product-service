@@ -25,8 +25,15 @@ public class AttributeQueryAdapter implements AttributeQueryPort {
     }
 
     @Override
-    public List<Attribute> findAllByIdsIn(List<String> ids) {
+    public List<Attribute> findAllByIdsOrThrow(List<String> ids) {
         return ids.stream().map(this::findById).toList();
+    }
+
+    @Override
+    public List<Attribute> findAllByIds(List<String> ids) {
+        return attributeRepository.findAllById(ids).stream()
+                .map(mapper::toAttribute)
+                .toList();
     }
 
 }

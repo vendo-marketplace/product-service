@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.category.in.dto;
 
+import com.vendo.product_service.domain.attribute.model.Attribute;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +13,6 @@ public class CategoryTreeResponse {
     private String id;
     private String title;
     private String code;
-    private List<String> attributes;
+    private List<Attribute> attributes;
     private List<String> path;
 }

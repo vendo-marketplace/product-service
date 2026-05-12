@@ -25,13 +25,13 @@ class CategoryController {
 
     private final CategoryUseCase categoryUseCase;
     private final TypeValidationPort typeValidationPort;
-    private final DtoCategoryMapper mapper;
+    private final DtoCategoryMapper categoryMapper;
     private final CategoryTreeMapper categoryTreeMapper;
     private final CategoryReadService categoryReadService;
 
     @PostMapping
     void save(@Valid @RequestBody CreateCategoryRequest request) {
-        Category category = mapper.toCategory(request);
+        Category category = categoryMapper.toCategory(request);
         typeValidationPort.validate(category);
         categoryUseCase.save(category);
     }
@@ -39,11 +39,11 @@ class CategoryController {
     @GetMapping("/{id}")
     ResponseEntity<CategoryResponse> find(@PathVariable String id) {
         Category category = categoryUseCase.findById(id);
-        return ResponseEntity.ok(mapper.toResponse(category));
+        return ResponseEntity.ok(categoryMapper.toResponse(category));
     }
 
     @GetMapping("/tree")
-    public ResponseEntity<List<CategoryTreeResponse>> tree() {
+    ResponseEntity<List<CategoryTreeResponse>> tree() {
         return ResponseEntity.ok(categoryTreeMapper.toResponse(categoryReadService.getTree()));
     }
 

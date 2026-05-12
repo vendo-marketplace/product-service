@@ -475,7 +475,7 @@ public class CategoryControllerIntegrationTest {
                 when(dtoCategoryMapper.toCategory(request)).thenReturn(child);
                 when(queryPort.existsByCode(request.code())).thenReturn(false);
                 when(queryPort.findById(request.parentId(), "Parent category not found.")).thenReturn(sub);
-                when(attributeQueryPort.findAllByIdsIn(request.attributes())).thenReturn(List.of(attribute));
+                when(attributeQueryPort.findAllByIdsOrThrow(request.attributes())).thenReturn(List.of(attribute));
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
                 performCategoryPersist(request).andExpect(status().isOk());
@@ -491,7 +491,7 @@ public class CategoryControllerIntegrationTest {
                 verify(dtoCategoryMapper).toCategory(request);
                 verify(queryPort).existsByCode(request.code());
                 verify(queryPort, times(2)).findById(request.parentId(), "Parent category not found.");
-                verify(attributeQueryPort).findAllByIdsIn(request.attributes());
+                verify(attributeQueryPort).findAllByIdsOrThrow(request.attributes());
                 verify(commandPort).save(capturedCategory);
             }
 
@@ -559,7 +559,7 @@ public class CategoryControllerIntegrationTest {
 
                 when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(childCategory);
                 when(queryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
-                when(attributeQueryPort.findAllByIdsIn(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
+                when(attributeQueryPort.findAllByIdsOrThrow(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
 
                 String content = performCategoryPersist(categoryRequest)
                         .andExpect(status().isNotFound())
@@ -575,7 +575,7 @@ public class CategoryControllerIntegrationTest {
 
                 verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(queryPort).findById(categoryRequest.parentId(), "Parent category not found.");
-                verify(attributeQueryPort).findAllByIdsIn(childCategory.getAttributes());
+                verify(attributeQueryPort).findAllByIdsOrThrow(childCategory.getAttributes());
                 verify(queryPort, never()).existsByCode(categoryRequest.code());
                 verifyNoInteractions(commandPort);
             }

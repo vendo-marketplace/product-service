@@ -55,16 +55,4 @@ class CategoryExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
-
-    @ExceptionHandler(CategoryCacheException.class)
-    ResponseEntity<ExceptionResponse> handleCategoryCacheException(CategoryCacheException e, HttpServletRequest request) {
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
-                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
-    }
-
 }
