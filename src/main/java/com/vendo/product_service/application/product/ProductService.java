@@ -61,6 +61,7 @@ public class ProductService implements ProductUseCase {
     }
 
     private List<Attribute> loadAttributesFor(Product product) {
+        if (product.getAttributes() == null) return null;
         List<String> attributeIds = product.getAttributes().stream().map(AttributeValue::id).toList();
         return attributeQueryPort.findAllByIdsIn(attributeIds);
     }

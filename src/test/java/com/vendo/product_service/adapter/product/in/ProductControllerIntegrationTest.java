@@ -230,6 +230,27 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
+        void update_shouldUpdateProduct_whenNoAttributes() throws Exception {
+            Product product = ProductDataBuilder.withAllFields().attributes(null).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().attributes(null).build();
+
+            when(dtoProductMapper.toEntity(request)).thenReturn(product);
+            when(productQueryPort.findById(product.getId())).thenReturn(product);
+            when(currentUserPort.getCurrentUserId()).thenReturn(product.getOwnerId());
+            when(categoryQueryPort.existsById(product.getCategoryId())).thenReturn(true);
+
+            performProductUpdate(product.getId(), request).andExpect(status().isOk());
+
+            verify(dtoProductMapper).toEntity(request);
+            verify(productQueryPort).findById(product.getId());
+            verify(currentUserPort).getCurrentUserId();
+            verify(categoryQueryPort).existsById(product.getCategoryId());
+            verify(productEventSenderPort).sendUpdated(product, null);
+            verify(productCommandPort).update(product.getId(), product);
+            verifyNoInteractions(attributeQueryPort);
+        }
+
+        @Test
         void update_shouldReturnForbidden_whenAuthenticatedUserIsNotOwner() throws Exception {
             String otherUserId = "other_user_id";
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().build();
