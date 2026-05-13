@@ -1,6 +1,7 @@
 package com.vendo.product_service.application;
 
-import com.vendo.product_service.application.category.CategoryService;
+import com.vendo.product_service.application.category.CategoryCommandService;
+import com.vendo.product_service.application.category.CategoryQueryService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
@@ -30,7 +31,10 @@ class CategoryServiceTest {
     private IdGenerationPort idGenerationPort;
 
     @InjectMocks
-    private CategoryService categoryService;
+    private CategoryCommandService categoryCommandService;
+
+    @InjectMocks
+    private CategoryQueryService categoryQueryService;
 
     private Category buildCategory() {
         return Category.builder()
@@ -47,7 +51,7 @@ class CategoryServiceTest {
         when(queryPort.existsByCode(category.getCode())).thenReturn(false);
         when(idGenerationPort.generate()).thenReturn(category.getId());
 
-        categoryService.save(category);
+        categoryCommandService.save(category);
 
         verify(commandPort, times(1)).save(category);
         verify(idGenerationPort, times(1)).generate();
@@ -61,7 +65,7 @@ class CategoryServiceTest {
 
         when(queryPort.existsByCode(category.getCode())).thenReturn(true);
 
-        assertThatThrownBy(() -> categoryService.save(category))
+        assertThatThrownBy(() -> categoryCommandService.save(category))
                 .isInstanceOf(CategoryAlreadyExistsException.class)
                 .hasMessage("Category already exists by code.");
 
@@ -74,7 +78,7 @@ class CategoryServiceTest {
 
         when(queryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
 
-        Category result = categoryService.findById(category.getId());
+        Category result = categoryQueryService.findById(category.getId());
 
         assertThat(result).isEqualTo(category);
         verify(queryPort, times(1)).findById(category.getId(), "Category not found.");
@@ -87,7 +91,7 @@ class CategoryServiceTest {
         when(queryPort.findById(categoryId, "Category not found."))
                 .thenThrow(new CategoryNotFoundException("Category not found."));
 
-        assertThatThrownBy(() -> categoryService.findById(categoryId))
+        assertThatThrownBy(() -> categoryQueryService.findById(categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found.");
 

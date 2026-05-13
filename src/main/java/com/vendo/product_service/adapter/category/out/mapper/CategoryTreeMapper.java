@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.category.out.mapper;
 
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.application.category.model.CategoryView;
-import com.vendo.product_service.infrastructure.config.mapstruct.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
 import java.util.List;

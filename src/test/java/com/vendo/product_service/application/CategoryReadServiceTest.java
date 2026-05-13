@@ -1,6 +1,6 @@
 package com.vendo.product_service.application;
 
-import com.vendo.product_service.application.category.CategoryReadService;
+import com.vendo.product_service.application.category.CategoryQueryService;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class CategoryReadServiceTest {
     private CategoryQueryPort categoryQueryPort;
 
     @InjectMocks
-    private CategoryReadService categoryReadService;
+    private CategoryQueryService categoryReadService;
 
 
     private Category build(String id, String parentId) {

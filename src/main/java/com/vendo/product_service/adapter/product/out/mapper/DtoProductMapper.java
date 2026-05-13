@@ -4,7 +4,7 @@ import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.infrastructure.config.mapstruct.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
 @Mapper(config = MapStructConfig.class)

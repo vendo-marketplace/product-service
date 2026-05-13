@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.category.out.mapper;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.infrastructure.config.mapstruct.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
 @Mapper(config = MapStructConfig.class)

@@ -1,18 +1,36 @@
 package com.vendo.product_service.application.category.model;
 
 import com.vendo.product_service.domain.attribute.model.Attribute;
-import lombok.Builder;
-import lombok.Data;
+import com.vendo.product_service.domain.category.model.Category;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
-@Data
-@Builder
-public class CategoryView {
+public record CategoryView(
+        String id,
+        String title,
+        String code,
+        List<Attribute> attributes,
+        List<String> path
+) {
 
-    private String id;
-    private String title;
-    private String code;
-    private List<Attribute> attributes;
-    private List<String> path;
+    public static CategoryView from(Category category, Map<String, Attribute> attributesById) {
+        List<String> attributeIds = Optional.ofNullable(category.getAttributes())
+                .orElse(List.of());
+
+        List<Attribute> attributes = attributeIds.stream()
+                .map(attributesById::get)
+                .filter(Objects::nonNull)
+                .toList();
+
+        return new CategoryView(
+                category.getId(),
+                category.getTitle(),
+                category.getCode(),
+                attributes,
+                category.getPath()
+        );
+    }
 }
