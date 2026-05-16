@@ -1,8 +1,9 @@
 package com.vendo.product_service.adapter.security.out.config;
 
+import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
+import com.vendo.product_service.adapter.security.in.filter.JwtAuthFilter;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAccessDeniedHandler;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAuthenticationEntryPoint;
-import com.vendo.product_service.adapter.security.in.filter.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,9 +24,9 @@ import static com.vendo.product_service.adapter.security.in.filter.ProductAntPat
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final InternalGatewayFilter internalGatewayFilter;
 
     private final JwtAccessDeniedHandler accessDeniedHandler;
-
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
@@ -42,7 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(PERMITTED_PATHS).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterAfter(jwtAuthFilter, ExceptionTranslationFilter.class);
+                .addFilterAfter(jwtAuthFilter, ExceptionTranslationFilter.class)
+                .addFilterAfter(internalGatewayFilter, JwtAuthFilter.class);
 
         return http.build();
     }

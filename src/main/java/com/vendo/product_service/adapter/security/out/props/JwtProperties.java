@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.security.out.config;
+package com.vendo.product_service.adapter.security.out.props;
 
 import lombok.Getter;
 import lombok.Setter;
