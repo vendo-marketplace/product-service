@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 @Data
@@ -20,5 +21,7 @@ public class Product {
     private String categoryId;
     private List<AttributeValue> attributes;
     private Boolean active;
+    private Instant createdAt;
+    private Instant updatedAt;
 
 }
