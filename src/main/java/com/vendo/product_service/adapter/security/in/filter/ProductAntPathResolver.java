@@ -15,7 +15,7 @@ public class ProductAntPathResolver implements AntPathResolver {
             "/swagger-ui/**",
             "/v3/api-docs/**",
             "/actuator/health",
-            "/internal/products"
+            "/internal/**"
     };
 
     @Override

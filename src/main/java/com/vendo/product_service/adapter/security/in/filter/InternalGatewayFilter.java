@@ -64,10 +64,10 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
     private InternalTokenClaims validateClaims(String token) {
         InternalTokenClaims claims = tokenClaimsParser.extractInternal(token);
 
-        boolean isIndexerService = claims.audience().contains(ServiceName.INDEXER_SERVICE.toString());
+        boolean isProductService = claims.audience().contains(ServiceName.PRODUCT_SERVICE.toString());
         boolean hasInternalRole = claims.roles().contains(ServiceRole.INTERNAL.toString());
 
-        if (!isIndexerService || !hasInternalRole) {
+        if (!isProductService || !hasInternalRole) {
             log.error("Invalid token claims {}.", claims);
             throw new BadCredentialsException("Invalid token.");
         }
