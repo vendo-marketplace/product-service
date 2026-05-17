@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,20 +26,23 @@ public class CategoryCommandService implements CategoryCommandUseCase {
     @CacheEvict(value = "category-tree", allEntries = true)
     public void save(Category category) {
         throwIfExistsByCode(category.getCode());
+
         category.setId(idGenerationPort.generate());
         category.setPath(category.buildPath(getParentPath(category)));
+        category.setAttributes(new ArrayList<>());
+
         categoryCommandPort.save(category);
     }
 
     private void throwIfExistsByCode(String code) {
         if (categoryQueryPort.existsByCode(code)) {
-            throw new CategoryAlreadyExistsException("Category already exists by code.");
+            throw new CategoryAlreadyExistsException("Category already exists by code." );
         }
     }
 
     private List<String> getParentPath(Category category) {
         if (category.getParentId() == null) return Collections.emptyList();
-        Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
+        Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found." );
         return parent.getPath();
     }
 }

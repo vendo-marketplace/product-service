@@ -23,7 +23,7 @@ public class ChildTypeValidator implements TypeValidator {
             throw new CategoryTypeException("A child category cannot have another child category as its parent.");
         }
 
-        attributeQueryPort.findAllByIdsOrThrow(category.getAttributes());
+        attributeQueryPort.findAllByIds(category.getAttributes());
     }
 
     @Override

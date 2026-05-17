@@ -25,7 +25,7 @@ public class ProductValidationFacade implements ProductValidationPort {
         Category category = categoryQueryPort.findById(request.categoryId(), "Parent category not found.");
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
 
-        List<Attribute> originAttributes = attributeQueryPort.findAllByIdsOrThrow(category.getAttributes());
+        List<Attribute> originAttributes = attributeQueryPort.findAllByIds(category.getAttributes());
         attributesValidator.validate(originAttributes, request.attributes());
     }
 }

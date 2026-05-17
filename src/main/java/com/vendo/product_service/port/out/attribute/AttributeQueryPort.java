@@ -8,8 +8,5 @@ public interface AttributeQueryPort {
 
     Attribute findById(String id);
 
-    List<Attribute> findAllByIdsOrThrow(List<String> ids);
-
     List<Attribute> findAllByIds(List<String> ids);
-
 }

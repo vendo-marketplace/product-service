@@ -111,14 +111,14 @@ public class ProductControllerIntegrationTest {
         ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
         when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
-        when(attributeQueryPort.findAllByIdsOrThrow(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
+        when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
         when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
         performProductPersist(request).andExpect(status().isOk());
 
         verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
-        verify(attributeQueryPort).findAllByIdsOrThrow(List.of(attributeValue.id()));
+        verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
         verify(dtoProductMapper).toEntity(request);
         verify(currentUserPort).getCurrentUserId();
         verify(productCommandPort).save(argumentCaptor.capture());
@@ -150,7 +150,7 @@ public class ProductControllerIntegrationTest {
         String exceptionMessage = "Parent category not found.";
 
         when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
-        when(attributeQueryPort.findAllByIdsOrThrow(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
+        when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
         String content = performProductPersist(request)
@@ -314,14 +314,14 @@ public class ProductControllerIntegrationTest {
             ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
             when(categoryQueryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
-            when(attributeQueryPort.findAllByIdsOrThrow(List.of(attribute.id()))).thenReturn(List.of(attribute));
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(currentUserPort.getCurrentUserId()).thenReturn(userId);
 
             performProductPersist(request).andExpect(status().isOk());
 
             verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
-            verify(attributeQueryPort).findAllByIdsOrThrow(List.of(attribute.id()));
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
             verify(dtoProductMapper).toEntity(request);
             verify(currentUserPort).getCurrentUserId();
             verify(productCommandPort).save(argumentCaptor.capture());

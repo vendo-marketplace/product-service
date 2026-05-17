@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,6 @@ public class CategoryQueryService implements CategoryQueryUseCase {
         return categoryQueryPort.findById(id, "Category not found.");
     }
 
-
     @Override
     @Cacheable("category-tree")
     public List<CategoryView> getTree() {
@@ -41,16 +39,7 @@ public class CategoryQueryService implements CategoryQueryUseCase {
     }
 
     private Map<String, Attribute> loadAttributesById(List<Category> categories) {
-        List<String> attributeIds = categories.stream()
-                .flatMap(c -> getAttributeIds(c).stream())
-                .distinct()
-                .toList();
-
-        return attributeQueryPort.findAllByIds(attributeIds).stream()
+        return attributeQueryPort.findAllByIds(Category.extractAttributes(categories)).stream()
                 .collect(Collectors.toMap(Attribute::id, Function.identity()));
-    }
-
-    private List<String> getAttributeIds(Category category) {
-        return Optional.ofNullable(category.getAttributes()).orElse(List.of());
     }
 }
