@@ -122,6 +122,7 @@ public class InternalProductControllerIntegrationTest {
         assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
         assertThat(exceptionResponse.getErrors()).isNotNull();
         assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+        assertThat(exceptionResponse.getErrors().get("limit")).isEqualTo("Max limit is 5000.");
         assertThat(exceptionResponse.getPath()).isEqualTo("/internal/products");
     }
 
