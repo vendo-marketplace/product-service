@@ -21,15 +21,11 @@ public class InternalProductQueryAdapter implements InternalProductQueryPort {
 
     @Override
     public List<Product> getAll(String cursor, int limit) {
-        log.info("Logging input: {}, {}.", cursor, limit);
         if (Objects.isNull(cursor)) {
-            List<Product> products = mapper.toProducts(repository.findAllByOrderByIdDesc(Limit.of(limit)));
-            log.info(products.toString());
-            return products;
+            return mapper.toProducts(repository.findAllByOrderByIdDesc(Limit.of(limit)));
         }
 
         List<MongoProduct> cursorProducts = repository.findByIdLessThanOrderByIdDesc(cursor, Limit.of(limit));
-        log.info(cursorProducts.toString());
         return mapper.toProducts(cursorProducts);
     }
 }
