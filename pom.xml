@@ -175,6 +175,11 @@
             <artifactId>redis-lib</artifactId>
             <version>3.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.vendo-marketplace-be</groupId>
+            <artifactId>event-lib</artifactId>
+            <version>5.1.5</version>
+        </dependency>
 
     </dependencies>
 	<dependencyManagement>

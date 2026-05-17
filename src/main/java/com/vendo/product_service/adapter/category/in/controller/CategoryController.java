@@ -8,7 +8,6 @@ import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryCommandUseCase;
 import com.vendo.product_service.port.in.category.CategoryQueryUseCase;
-import com.vendo.product_service.port.in.category.TypeValidationPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +26,10 @@ class CategoryController {
     private final CategoryQueryUseCase categoryQueryUseCase;
     private final CategoryTreeMapper categoryTreeMapper;
     private final DtoCategoryMapper categoryMapper;
-    private final TypeValidationPort typeValidationPort;
 
     @PostMapping
     void save(@Valid @RequestBody CreateCategoryRequest request) {
-        Category category = categoryMapper.toCategory(request);
-        typeValidationPort.validate(category);
-        categoryUseCase.save(category);
+        categoryUseCase.save(categoryMapper.toCategory(request));
     }
 
     @GetMapping("/{id}")

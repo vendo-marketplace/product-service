@@ -8,12 +8,16 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.List;
+
 @Mapper(config = MapStructConfig.class)
 public interface MongoProductMapper {
 
     MongoProduct toEntity(Product product);
 
     Product toProduct(MongoProduct entity);
+
+    List<Product> toProducts(List<MongoProduct> entities);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(@MappingTarget MongoProduct entity, Product product);

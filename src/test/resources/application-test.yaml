@@ -3,9 +3,23 @@ server:
 
 security:
   jwt:
+    internal:
+      key: internalKeyinternalKeyinternalKeyinternalKey
     secret:
       key: secretKeysecretKeysecretKeysecretKeysecretKey
 
 eureka:
   client:
     enabled: false
+
+kafka:
+  events:
+    product:
+      created-event:
+        topic: "PRODUCT_CREATED_TEST_TOPIC"
+      updated-event:
+        topic: "PRODUCT_UPDATED_TEST_TOPIC"
+
+spring:
+  kafka:
+    bootstrap-servers: test

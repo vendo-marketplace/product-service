@@ -6,7 +6,6 @@ import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.in.product.ProductUseCase;
-import com.vendo.product_service.port.out.product.ProductValidationPort;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,12 +19,10 @@ import org.springframework.web.bind.annotation.*;
 class ProductController {
 
     private final ProductUseCase productUseCase;
-    private final ProductValidationPort validationPort;
     private final DtoProductMapper mapper;
 
     @PostMapping
     void save(@Valid @RequestBody CreateProductRequest request) {
-        validationPort.validateOnSave(request);
         productUseCase.save(mapper.toEntity(request));
     }
 

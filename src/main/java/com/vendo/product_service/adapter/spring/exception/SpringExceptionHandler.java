@@ -10,6 +10,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.Map;
 
@@ -18,16 +19,30 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SpringExceptionHandler {
 
-    private final FieldErrorConverter fieldErrorConverter;
+    private final ValidationErrorConverter validationErrorConverter;
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ExceptionResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        Map<String, String> errors = fieldErrorConverter.convertToMap(e.getBindingResult().getFieldErrors());
+        Map<String, String> errors = validationErrorConverter.fromField(e.getBindingResult().getFieldErrors());
 
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
                 .errors(errors)
                 .code(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.badRequest().body(exceptionResponse);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    protected ResponseEntity<ExceptionResponse> handleHandlerMethodValidationException(HandlerMethodValidationException e, HttpServletRequest request) {
+        Map<String, String> errors = validationErrorConverter.fromParameter(e.getParameterValidationResults());
+
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message("Validation failed.")
+                .code(HttpStatus.BAD_REQUEST.value())
+                .errors(errors)
                 .path(request.getRequestURI())
                 .build();
 

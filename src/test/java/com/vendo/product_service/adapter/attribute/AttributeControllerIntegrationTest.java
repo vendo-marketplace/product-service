@@ -67,7 +67,7 @@ public class AttributeControllerIntegrationTest {
         @Test
         void save_shouldSuccessfullySave() throws Exception {
             TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
-            Attribute attribute = AttributeDataBuilder.withAllFields();
+            Attribute attribute = AttributeDataBuilder.withAllFields().build();
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
 
