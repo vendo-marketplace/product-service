@@ -13,6 +13,7 @@ import com.vendo.product_service.port.out.user.CurrentUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class ProductService implements ProductUseCase {
     }
 
     private List<Attribute> loadAttributesFor(Product product) {
+        if (CollectionUtils.isEmpty(product.getAttributes())) return List.of();
         List<String> attributeIds = product.getAttributes().stream().map(AttributeValue::id).toList();
         return attributeQueryPort.findAllByIds(attributeIds);
     }
