@@ -15,7 +15,7 @@ import java.util.List;
 
 @Data
 @Builder
-@Document
+@Document("products")
 public class MongoProduct {
 
     @Id

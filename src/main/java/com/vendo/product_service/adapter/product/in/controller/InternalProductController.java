@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
 import java.util.List;
 
 import static com.vendo.product_service.adapter.product.in.constants.InternalProductConstants.MAX_LIMIT;
@@ -21,7 +20,7 @@ import static com.vendo.product_service.adapter.product.in.constants.InternalPro
 @Hidden
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/internal/products")
+@RequestMapping("/internal/products" )
 public class InternalProductController {
 
     private final DtoProductMapper mapper;
@@ -29,8 +28,8 @@ public class InternalProductController {
 
     @GetMapping
     List<ProductResponse> getAll(
-            @RequestParam(required = false, name = "cursor") Instant cursor,
-            @RequestParam("limit") @Valid @Max(value = MAX_LIMIT, message = "Max limit is " + MAX_LIMIT + ".") int limit
+            @RequestParam(required = false, name = "cursor" ) String cursor,
+            @RequestParam("limit" ) @Valid @Max(value = MAX_LIMIT, message = "Max limit is " + MAX_LIMIT + "." ) int limit
     ) {
         List<Product> products = useCase.getAll(cursor, limit);
         return mapper.toResponses(products);

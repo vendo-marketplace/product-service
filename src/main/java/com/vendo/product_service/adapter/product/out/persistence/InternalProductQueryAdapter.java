@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,15 +20,15 @@ public class InternalProductQueryAdapter implements InternalProductQueryPort {
     private final MongoProductMapper mapper;
 
     @Override
-    public List<Product> getAll(Instant cursor, int limit) {
+    public List<Product> getAll(String cursor, int limit) {
         log.info("Logging input: {}, {}.", cursor, limit);
         if (Objects.isNull(cursor)) {
-            List<Product> products = mapper.toProducts(repository.findAllByOrderByCreatedAtDesc(Limit.of(limit)));
+            List<Product> products = mapper.toProducts(repository.findAllByOrderByIdDesc(Limit.of(limit)));
             log.info(products.toString());
             return products;
         }
 
-        List<MongoProduct> cursorProducts = repository.getAllByCreatedAtOrderByCreatedAtDesc(cursor, Limit.of(limit));
+        List<MongoProduct> cursorProducts = repository.findByIdLessThanOrderByIdDesc(cursor, Limit.of(limit));
         log.info(cursorProducts.toString());
         return mapper.toProducts(cursorProducts);
     }

@@ -6,7 +6,6 @@ import com.vendo.product_service.port.out.product.InternalProductQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -16,7 +15,7 @@ public class InternalProductService implements InternalProductUseCase {
     private final InternalProductQueryPort internalProductQueryPort;
 
     @Override
-    public List<Product> getAll(Instant cursor, int limit) {
+    public List<Product> getAll(String cursor, int limit) {
         return internalProductQueryPort.getAll(cursor, limit);
     }
 
