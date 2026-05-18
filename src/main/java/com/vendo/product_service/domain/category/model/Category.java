@@ -3,9 +3,10 @@ package com.vendo.product_service.domain.category.model;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
-
+import com.vendo.utils_lib.StringUtils;
 import lombok.Builder;
 import lombok.Data;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,13 @@ public class Category {
     private String parentId;
     private List<String> attributes;
     private List<String> path;
+
+    public static List<String> extractAttributes(List<Category> categories) {
+        return categories.stream()
+                .flatMap(category -> category.getAttributes().stream())
+                .distinct()
+                .toList();
+    }
 
     public CategoryType getType() {
         if (isParent(parentId, attributes)) {
@@ -40,18 +48,6 @@ public class Category {
         }
     }
 
-    private boolean isParent(String parentId, List<String> attributes) {
-        return parentId == null && attributes == null;
-    }
-
-    private boolean isSub(String parentId, List<String> attributes) {
-        return (parentId != null && !parentId.isEmpty()) && attributes == null;
-    }
-
-    private boolean isChild(String parentId, List<String> attributes) {
-        return (parentId != null && !parentId.isEmpty()) && attributes != null && !attributes.isEmpty();
-    }
-
     public List<String> buildPath(List<String> parentPath) {
         if (id == null) throw new IllegalStateException("Id is empty.");
 
@@ -63,5 +59,17 @@ public class Category {
         path.add(id);
 
         return path;
+    }
+
+    private boolean isParent(String parentId, List<String> attributes) {
+        return StringUtils.isEmpty(parentId) && CollectionUtils.isEmpty(attributes);
+    }
+
+    private boolean isSub(String parentId, List<String> attributes) {
+        return !StringUtils.isEmpty(parentId) && CollectionUtils.isEmpty(attributes);
+    }
+
+    private boolean isChild(String parentId, List<String> attributes) {
+        return !StringUtils.isEmpty(parentId) && !CollectionUtils.isEmpty(attributes);
     }
 }

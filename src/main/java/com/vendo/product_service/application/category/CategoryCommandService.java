@@ -2,21 +2,23 @@ package com.vendo.product_service.application.category;
 
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.port.in.category.CategoryUseCase;
+import com.vendo.product_service.port.in.category.CategoryCommandUseCase;
 import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryService implements CategoryUseCase {
+public class CategoryCommandService implements CategoryCommandUseCase {
 
     private final TypeValidationPort typeValidationPort;
     private final CategoryCommandPort categoryCommandPort;
@@ -24,28 +26,23 @@ public class CategoryService implements CategoryUseCase {
     private final IdGenerationPort idGenerationPort;
 
     @Override
-    public Category findById(String id) {
-        return categoryQueryPort.findById(id, "Category not found.");
-    }
-
-    @Override
     @Transactional
+    @CacheEvict(value = "category-tree", allEntries = true)
     public void save(Category category) {
         typeValidationPort.validate(category);
         throwIfExistsByCode(category.getCode());
-        persist(category);
+
+        category.setId(idGenerationPort.generate());
+        category.setPath(category.buildPath(getParentPath(category)));
+        category.setAttributes(new ArrayList<>());
+
+        categoryCommandPort.save(category);
     }
 
     private void throwIfExistsByCode(String code) {
         if (categoryQueryPort.existsByCode(code)) {
             throw new CategoryAlreadyExistsException("Category already exists by code.");
         }
-    }
-
-    private void persist(Category category) {
-        category.setId(idGenerationPort.generate());
-        category.setPath(category.buildPath(getParentPath(category)));
-        categoryCommandPort.save(category);
     }
 
     private List<String> getParentPath(Category category) {

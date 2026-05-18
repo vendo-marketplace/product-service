@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface AttributeRepository extends MongoRepository<MongoAttribute, String> {
 
+    List<MongoAttribute> findAllByIdIsIn(Collection<String> ids);
 
 }

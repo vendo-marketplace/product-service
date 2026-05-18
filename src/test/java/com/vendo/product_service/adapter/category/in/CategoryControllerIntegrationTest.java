@@ -1,11 +1,14 @@
 package com.vendo.product_service.adapter.category.in;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
+import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.application.category.model.CategoryView;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
@@ -15,14 +18,13 @@ import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
-import com.vendo.product_service.test_utils.builder.CategoryResponseDataBuilder;
-import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
+import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import com.vendo.utils_lib.AssertionUtils;
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,11 +41,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
 import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -80,6 +86,10 @@ public class CategoryControllerIntegrationTest {
         TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.ADMIN.name()), true);
         return mockMvc.perform(get("/categories/{id}", categoryId)
                 .with(authentication(SecurityContextService.initializeAuth(claims))));
+    }
+
+    private ResultActions performCategoryGetTree() throws Exception {
+        return mockMvc.perform(get("/categories/tree"));
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
@@ -473,7 +483,7 @@ public class CategoryControllerIntegrationTest {
                 when(dtoCategoryMapper.toCategory(request)).thenReturn(child);
                 when(queryPort.existsByCode(request.code())).thenReturn(false);
                 when(queryPort.findById(request.parentId(), "Parent category not found.")).thenReturn(sub);
-                when(attributeQueryPort.findAllByIdsIn(request.attributes())).thenReturn(List.of(attribute));
+                when(attributeQueryPort.findAllByIds(request.attributes())).thenReturn(List.of(attribute));
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
                 performCategoryPersist(request).andExpect(status().isOk());
@@ -489,7 +499,7 @@ public class CategoryControllerIntegrationTest {
                 verify(dtoCategoryMapper).toCategory(request);
                 verify(queryPort).existsByCode(request.code());
                 verify(queryPort, times(2)).findById(request.parentId(), "Parent category not found.");
-                verify(attributeQueryPort).findAllByIdsIn(request.attributes());
+                verify(attributeQueryPort).findAllByIds(request.attributes());
                 verify(commandPort).save(capturedCategory);
             }
 
@@ -557,7 +567,7 @@ public class CategoryControllerIntegrationTest {
 
                 when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(childCategory);
                 when(queryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
-                when(attributeQueryPort.findAllByIdsIn(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
+                when(attributeQueryPort.findAllByIds(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
 
                 String content = performCategoryPersist(categoryRequest)
                         .andExpect(status().isNotFound())
@@ -573,7 +583,7 @@ public class CategoryControllerIntegrationTest {
 
                 verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(queryPort).findById(categoryRequest.parentId(), "Parent category not found.");
-                verify(attributeQueryPort).findAllByIdsIn(childCategory.getAttributes());
+                verify(attributeQueryPort).findAllByIds(childCategory.getAttributes());
                 verify(queryPort, never()).existsByCode(categoryRequest.code());
                 verifyNoInteractions(commandPort);
             }
@@ -630,4 +640,75 @@ public class CategoryControllerIntegrationTest {
             verify(queryPort).findById(categoryId, "Category not found.");
         }
     }
+
+    @Nested
+    class TreeCategoriesTests {
+
+        @Test
+        void tree_shouldCategoriesTree() throws Exception {
+            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
+            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
+            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
+            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
+            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
+            List<CategoryTreeResponse> bodies = List.of(
+                    CategoryTreeResponseDataBuilder.from(category, List.of(attribute1, attribute5)),
+                    CategoryTreeResponseDataBuilder.from(category1, List.of(attribute2, attribute8))
+            );
+
+            when(queryPort.findAll()).thenReturn(List.of(category, category1));
+            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
+                    .thenReturn(List.of(attribute1, attribute2, attribute5, attribute8));
+
+            String response = performCategoryGetTree()
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(response).isNotBlank();
+
+            List<CategoryTreeResponse> responseTree = objectMapper.readValue(response, new TypeReference<>() {});
+            assertThat(responseTree).isNotNull();
+            assertThat(bodies.size()).isEqualTo(responseTree.size());
+            bodies.forEach(body -> AssertionUtils.assertFrom(body, getById(body.getId(), bodies)));
+        }
+
+        @Test
+        void tree_shouldReturnNotFound_whenOneAttributeIsMissing() throws Exception {
+            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
+            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
+            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
+            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
+            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
+
+            when(queryPort.findAll()).thenReturn(List.of(category, category1));
+            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
+                    .thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attribute1.id())));
+
+            String response = performCategoryGetTree()
+                    .andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(response).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree" );
+        }
+
+        private CategoryTreeResponse getById(String id, List<CategoryTreeResponse> responses) {
+            return responses.stream()
+                    .filter(response -> response.getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Category tree element not found by id: %s.".formatted(id)));
+        }
+
+    }
+
 }

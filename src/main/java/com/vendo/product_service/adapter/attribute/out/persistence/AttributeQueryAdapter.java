@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -25,8 +27,21 @@ public class AttributeQueryAdapter implements AttributeQueryPort {
     }
 
     @Override
-    public List<Attribute> findAllByIdsIn(List<String> ids) {
-        return ids.stream().map(this::findById).toList();
+    public List<Attribute> findAllByIds(List<String> ids) {
+        List<MongoAttribute> attributes = attributeRepository.findAllByIdIsIn(ids);
+        throwIfAttributeNotFound(ids, attributes);
+        return mapper.toAttributes(attributes);
     }
+
+    private void throwIfAttributeNotFound(List<String> attributeIds, List<MongoAttribute> attributes) {
+        if (attributeIds.size() == attributes.size()) return;
+
+        Set<String> foundIds = attributes.stream().map(MongoAttribute::getId).collect(Collectors.toSet());
+        for (String attributeId : attributeIds) {
+            if (!foundIds.contains(attributeId))
+                throw new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attributeId));
+        }
+    }
+
 
 }

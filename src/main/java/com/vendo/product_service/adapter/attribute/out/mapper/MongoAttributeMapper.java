@@ -2,13 +2,17 @@ package com.vendo.product_service.adapter.attribute.out.mapper;
 
 import com.vendo.product_service.adapter.attribute.out.persistence.MongoAttribute;
 import com.vendo.product_service.domain.attribute.model.Attribute;
-import com.vendo.product_service.infrastructure.mapper.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
+
+import java.util.List;
 
 @Mapper(config = MapStructConfig.class)
 public interface MongoAttributeMapper {
 
     Attribute toAttribute(MongoAttribute entity);
+
     MongoAttribute toEntity(Attribute attribute);
 
+    List<Attribute> toAttributes(List<MongoAttribute> entities);
 }

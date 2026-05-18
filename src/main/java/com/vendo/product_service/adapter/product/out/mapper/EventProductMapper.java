@@ -4,7 +4,7 @@ import com.vendo.event_lib.product.AttributeEvent;
 import com.vendo.event_lib.product.ProductCreatedEvent;
 import com.vendo.event_lib.product.ProductUpdatedEvent;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.infrastructure.mapper.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

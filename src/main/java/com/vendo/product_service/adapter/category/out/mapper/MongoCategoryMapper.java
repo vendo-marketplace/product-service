@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.category.out.mapper;
 
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.infrastructure.mapper.MapStructConfig;
+import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
 @Mapper(config = MapStructConfig.class)
