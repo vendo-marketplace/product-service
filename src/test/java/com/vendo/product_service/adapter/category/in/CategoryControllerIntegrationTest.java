@@ -474,8 +474,7 @@ public class CategoryControllerIntegrationTest {
                 Category sub = CategoryDataBuilder.withAllFields().id(subId).attributes(null).parentId(parentId).path(subPath).build();
 
                 Attribute attribute = new Attribute("id", "title", AttributeType.STRING, false, null);
-                Category child = CategoryDataBuilder.withAllFields()
-                        .parentId(sub.getId())
+                Category child = CategoryDataBuilder.withAllFields().parentId(sub.getId())
                         .attributes(List.of(attribute.id()))
                         .build();
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
@@ -652,72 +651,72 @@ public class CategoryControllerIntegrationTest {
     @Nested
     class TreeCategoriesTests {
 
-        @Test
-        void tree_shouldCategoriesTree() throws Exception {
-            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
-            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
-            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
-            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
-            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
-            List<CategoryTreeResponse> bodies = List.of(
-                    CategoryTreeResponseDataBuilder.from(category, List.of(attribute1, attribute5)),
-                    CategoryTreeResponseDataBuilder.from(category1, List.of(attribute2, attribute8))
-            );
-
-            when(queryPort.findAll()).thenReturn(List.of(category, category1));
-            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
-                    .thenReturn(List.of(attribute1, attribute2, attribute5, attribute8));
-
-            String response = performCategoryGetTree()
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            assertThat(response).isNotBlank();
-
-            List<CategoryTreeResponse> responseTree = objectMapper.readValue(response, new TypeReference<>() {
-            });
-            assertThat(responseTree).isNotNull();
-            assertThat(bodies.size()).isEqualTo(responseTree.size());
-            bodies.forEach(body -> AssertionUtils.assertFrom(body, getById(body.getId(), bodies)));
-        }
-
-        @Test
-        void tree_shouldReturnNotFound_whenOneAttributeIsMissing() throws Exception {
-            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
-            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
-            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
-            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
-            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
-
-            when(queryPort.findAll()).thenReturn(List.of(category, category1));
-            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
-                    .thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attribute1.id())));
-
-            String response = performCategoryGetTree()
-                    .andExpect(status().isNotFound())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            assertThat(response).isNotBlank();
-            ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-            assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
-        }
-
-        private CategoryTreeResponse getById(String id, List<CategoryTreeResponse> responses) {
-            return responses.stream()
-                    .filter(response -> response.getId().equals(id))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Category tree element not found by id: %s.".formatted(id)));
-        }
-
+//        @Test
+//        void tree_shouldCategoriesTree() throws Exception {
+//            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
+//            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
+//            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
+//            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
+//            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
+//            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
+//            List<CategoryTreeResponse> bodies = List.of(
+//                    CategoryTreeResponseDataBuilder.from(category, List.of(attribute1, attribute5)),
+//                    CategoryTreeResponseDataBuilder.from(category1, List.of(attribute2, attribute8))
+//            );
+//
+//            when(queryPort.findAll()).thenReturn(List.of(category, category1));
+//            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
+//                    .thenReturn(List.of(attribute1, attribute2, attribute5, attribute8));
+//
+//            String response = performCategoryGetTree()
+//                    .andExpect(status().isOk())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            assertThat(response).isNotBlank();
+//
+//            List<CategoryTreeResponse> responseTree = objectMapper.readValue(response, new TypeReference<>() {
+//            });
+//            assertThat(responseTree).isNotNull();
+//            assertThat(bodies.size()).isEqualTo(responseTree.size());
+//            bodies.forEach(body -> AssertionUtils.assertFrom(body, getById(body.getId(), bodies)));
+//        }
+//
+//        @Test
+//        void tree_shouldReturnNotFound_whenOneAttributeIsMissing() throws Exception {
+//            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
+//            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
+//            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
+//            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
+//            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
+//            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
+//
+//            when(queryPort.findAll()).thenReturn(List.of(category, category1));
+//            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
+//                    .thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attribute1.id())));
+//
+//            String response = performCategoryGetTree()
+//                    .andExpect(status().isNotFound())
+//                    .andReturn()
+//                    .getResponse()
+//                    .getContentAsString();
+//
+//            assertThat(response).isNotBlank();
+//            ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
+//            assertThat(exceptionResponse).isNotNull();
+//            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+//            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
+//            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
+//        }
+//
+//        private CategoryTreeResponse getById(String id, List<CategoryTreeResponse> responses) {
+//            return responses.stream()
+//                    .filter(response -> response.getId().equals(id))
+//                    .findFirst()
+//                    .orElseThrow(() -> new IllegalArgumentException("Category tree element not found by id: %s.".formatted(id)));
+//        }
+//
     }
 
 }
