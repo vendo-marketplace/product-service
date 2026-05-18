@@ -8,7 +8,6 @@ import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
-import com.vendo.product_service.application.category.model.CategoryView;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
@@ -24,7 +23,6 @@ import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import com.vendo.utils_lib.AssertionUtils;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -41,19 +39,16 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
 import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
-import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -318,6 +313,8 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(1);
                 assertThat(capturedCategory.getPath().get(0)).isEqualTo(category.getId());
+                assertThat(capturedCategory.getAttributes()).isNotNull();
+                assertThat(capturedCategory.getAttributes()).isEmpty();
             }
         }
 
@@ -360,6 +357,8 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
                 assertThat(capturedCategory.getPath()).containsExactly(parentId, sub.getId());
+                assertThat(capturedCategory.getAttributes()).isNotNull();
+                assertThat(capturedCategory.getAttributes()).isEmpty();
 
                 verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(queryPort).existsByCode(categoryRequest.code());
@@ -395,6 +394,8 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
                 assertThat(capturedCategory.getPath()).containsExactly(parent.getId(), sub.getId());
+                assertThat(capturedCategory.getAttributes()).isNotNull();
+                assertThat(capturedCategory.getAttributes()).isEmpty();
 
                 verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(queryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
@@ -472,11 +473,15 @@ public class CategoryControllerIntegrationTest {
                 List<String> subPath = Stream.concat(parentPath.stream(), Stream.of(subId)).toList();
                 Category sub = CategoryDataBuilder.withAllFields().id(subId).attributes(null).parentId(parentId).path(subPath).build();
 
-                Category child = CategoryDataBuilder.withAllFields().parentId(sub.getId()).build();
+                Attribute attribute = new Attribute("id", "title", AttributeType.STRING, false, null);
+                Category child = CategoryDataBuilder.withAllFields()
+                        .parentId(sub.getId())
+                        .attributes(List.of(attribute.id()))
+                        .build();
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(sub.getId())
+                        .attributes(List.of(attribute.id()))
                         .build();
-                Attribute attribute = new Attribute("id", "title", AttributeType.STRING, false, null);
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
@@ -495,6 +500,9 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(3);
                 assertThat(capturedCategory.getPath()).containsExactly(parentId, subId, child.getId());
+                assertThat(capturedCategory.getAttributes()).isNotNull();
+                assertThat(capturedCategory.getAttributes().size()).isEqualTo(1);
+                assertThat(capturedCategory.getAttributes().get(0)).isEqualTo(attribute.id());
 
                 verify(dtoCategoryMapper).toCategory(request);
                 verify(queryPort).existsByCode(request.code());
@@ -669,7 +677,8 @@ public class CategoryControllerIntegrationTest {
 
             assertThat(response).isNotBlank();
 
-            List<CategoryTreeResponse> responseTree = objectMapper.readValue(response, new TypeReference<>() {});
+            List<CategoryTreeResponse> responseTree = objectMapper.readValue(response, new TypeReference<>() {
+            });
             assertThat(responseTree).isNotNull();
             assertThat(bodies.size()).isEqualTo(responseTree.size());
             bodies.forEach(body -> AssertionUtils.assertFrom(body, getById(body.getId(), bodies)));
@@ -699,7 +708,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree" );
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
         }
 
         private CategoryTreeResponse getById(String id, List<CategoryTreeResponse> responses) {

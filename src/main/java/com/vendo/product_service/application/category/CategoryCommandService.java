@@ -7,10 +7,12 @@ import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
+import com.vendo.utils_lib.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,7 +36,7 @@ public class CategoryCommandService implements CategoryCommandUseCase {
 
         category.setId(idGenerationPort.generate());
         category.setPath(category.buildPath(getParentPath(category)));
-        category.setAttributes(new ArrayList<>());
+        if (CollectionUtils.isEmpty(category.getAttributes())) category.setAttributes(new ArrayList<>());
 
         categoryCommandPort.save(category);
     }
@@ -46,7 +48,7 @@ public class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     private List<String> getParentPath(Category category) {
-        if (category.getParentId() == null) return Collections.emptyList();
+        if (StringUtils.isEmpty(category.getParentId())) return Collections.emptyList();
         Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
         return parent.getPath();
     }
