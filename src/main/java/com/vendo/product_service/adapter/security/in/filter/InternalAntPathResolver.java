@@ -14,7 +14,8 @@ public class InternalAntPathResolver implements AntPathResolver {
     public static final String[] INTERNAL_PATHS = new String[] {
             "/swagger-ui/**",
             "/v3/api-docs/**",
-            "/actuator/health"
+            "/actuator/health",
+            "/categories/tree",
     };
 
     @Override

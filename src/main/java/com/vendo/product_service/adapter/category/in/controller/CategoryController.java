@@ -19,7 +19,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/categories")
-@PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
 class CategoryController {
 
     private final CategoryCommandUseCase categoryUseCase;
@@ -28,11 +27,13 @@ class CategoryController {
     private final DtoCategoryMapper categoryMapper;
 
     @PostMapping
+    @PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
     void save(@Valid @RequestBody CreateCategoryRequest request) {
         categoryUseCase.save(categoryMapper.toCategory(request));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
     ResponseEntity<CategoryResponse> find(@PathVariable String id) {
         Category category = categoryQueryUseCase.findById(id);
         return ResponseEntity.ok(categoryMapper.toResponse(category));

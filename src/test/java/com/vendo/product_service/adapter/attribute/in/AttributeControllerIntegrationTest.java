@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.attribute;
+package com.vendo.product_service.adapter.attribute.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
