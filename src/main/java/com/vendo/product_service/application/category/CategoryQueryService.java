@@ -7,7 +7,6 @@ import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.port.in.category.CategoryQueryUseCase;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.utils_lib.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -43,23 +42,28 @@ public class CategoryQueryService implements CategoryQueryUseCase {
     }
 
     private List<CategoryNode> buildTree(List<Category> categories, Map<String, Attribute> attributesById) {
-        List<Category> parents = categories.stream()
-                .filter(category -> category.getType() == CategoryType.PARENT)
-                .toList();
+        List<Category> parents = Category.filterByType(categories, CategoryType.PARENT);
+        Map<String, List<Category>> childrenByParentId = Category.groupByParentId(categories);
 
-        return parents.stream().map(parent -> buildBranch(parent, attributesById, categories)).toList();
+        return parents.stream().map(parent -> buildBranch(
+                parent,
+                attributesById,
+                childrenByParentId)
+        ).toList();
     }
 
-    private CategoryNode buildBranch(Category parent, Map<String, Attribute> attributesById,List<Category> categories) {
-        List<Category> children = categories.stream()
-                .filter(category -> !StringUtils.isEmpty(category.getParentId()) && category.getParentId().equals(parent.getId()))
-                .toList();
+    private CategoryNode buildBranch(Category parent, Map<String, Attribute> attributesById, Map<String, List<Category>> childrenByParentId) {
+        List<Category> children = childrenByParentId.getOrDefault(parent.getId(), List.of());
 
         List<CategoryNode> childrenNodes = children.stream()
-                .map(category -> buildBranch(category, attributesById, categories))
+                .map(category -> buildBranch(category, attributesById, childrenByParentId))
                 .toList();
 
-        return CategoryNode.from(parent, Attribute.extractAttributes(parent.getAttributes(), attributesById), childrenNodes);
+        return CategoryNode.from(
+                parent,
+                Attribute.extractAll(parent.getAttributes(), attributesById),
+                childrenNodes
+        );
     }
 
 }

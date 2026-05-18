@@ -21,7 +21,7 @@ public record Attribute(
                 .orElseThrow(() -> new IllegalArgumentException("Attribute %s not found.".formatted(id)));
     }
 
-    public static List<Attribute> extractAttributes(List<String> ids, Map<String, Attribute> attributesById) {
+    public static List<Attribute> extractAll(List<String> ids, Map<String, Attribute> attributesById) {
         if (ids.isEmpty()) return List.of();
         return ids.stream().map(attributesById::get).toList();
     }

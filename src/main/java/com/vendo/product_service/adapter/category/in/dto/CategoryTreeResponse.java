@@ -12,6 +12,7 @@ public class CategoryTreeResponse {
 
     private List<CategoryTree> data;
 
+    @Builder
     public record CategoryTree(
             String id,
             String title,
