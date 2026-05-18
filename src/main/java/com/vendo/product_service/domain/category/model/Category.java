@@ -10,6 +10,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -29,6 +31,18 @@ public class Category {
                 .toList();
     }
 
+    public static List<Category> filterByType(List<Category> categories, CategoryType type) {
+        return categories.stream()
+                .filter(category -> category.getType() == type)
+                .toList();
+    }
+
+    public static Map<String, List<Category>> groupByParentId(List<Category> categories) {
+        return categories.stream()
+                .filter(c -> c.getParentId() != null)
+                .collect(Collectors.groupingBy(Category::getParentId));
+    }
+
     public CategoryType getType() {
         if (isParent(parentId, attributes)) {
             return CategoryType.PARENT;
@@ -39,6 +53,7 @@ public class Category {
         if (isChild(parentId, attributes)) {
             return CategoryType.CHILD;
         }
+
         throw new CategoryValidationException("Invalid category structure.");
     }
 
