@@ -1,8 +1,9 @@
 package com.vendo.product_service.application.category;
 
-import com.vendo.product_service.application.category.model.CategoryView;
+import com.vendo.product_service.application.category.model.CategoryNode;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.port.in.category.CategoryQueryUseCase;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
@@ -29,17 +30,35 @@ public class CategoryQueryService implements CategoryQueryUseCase {
 
     @Override
     @Cacheable("category-tree")
-    public List<CategoryView> getTree() {
+    public List<CategoryNode> getTree() {
         List<Category> categories = categoryQueryPort.findAll();
-
         Map<String, Attribute> attributesById = loadAttributesById(categories);
-        return categories.stream()
-                .map(category -> CategoryView.from(category, attributesById))
-                .toList();
+        return buildTree(categories, attributesById);
     }
 
     private Map<String, Attribute> loadAttributesById(List<Category> categories) {
         return attributeQueryPort.findAllByIds(Category.extractAttributes(categories)).stream()
                 .collect(Collectors.toMap(Attribute::id, Function.identity()));
     }
+
+    private List<CategoryNode> buildTree(List<Category> categories, Map<String, Attribute> attributesById) {
+        List<Category> parents = categories.stream()
+                .filter(category -> category.getType() == CategoryType.PARENT)
+                .toList();
+
+        return parents.stream().map(parent -> buildBranch(parent, attributesById, categories)).toList();
+    }
+
+    private CategoryNode buildBranch(Category parent, Map<String, Attribute> attributesById,List<Category> categories) {
+        List<Category> children = categories.stream()
+                .filter(category -> category.getParentId().equals(parent.getId()))
+                .toList();
+
+        List<CategoryNode> childrenNodes = children.stream()
+                .map(category -> buildBranch(category, attributesById, categories))
+                .toList();
+
+        return CategoryNode.from(parent, Attribute.extractAttributes(parent.getAttributes(), attributesById), childrenNodes);
+    }
+
 }

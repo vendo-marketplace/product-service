@@ -40,8 +40,9 @@ class CategoryController {
     }
 
     @GetMapping("/tree")
-    ResponseEntity<List<CategoryTreeResponse>> tree() {
-        return ResponseEntity.ok(categoryTreeMapper.toResponse(categoryQueryUseCase.getTree()));
+    ResponseEntity<CategoryTreeResponse> tree() {
+        List<CategoryTreeResponse.CategoryTree> tree = categoryTreeMapper.toResponse(categoryQueryUseCase.getTree());
+        return ResponseEntity.ok(CategoryTreeResponse.builder().data(tree).build());
     }
 
 }

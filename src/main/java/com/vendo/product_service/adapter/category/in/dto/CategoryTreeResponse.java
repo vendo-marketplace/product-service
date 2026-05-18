@@ -10,9 +10,15 @@ import java.util.List;
 @Builder
 public class CategoryTreeResponse {
 
-    private String id;
-    private String title;
-    private String code;
-    private List<Attribute> attributes;
-    private List<String> path;
+    private List<CategoryTree> data;
+
+    public record CategoryTree(
+            String id,
+            String title,
+            String code,
+            List<Attribute> attributes,
+            List<String> path,
+            List<CategoryTree> children
+    ) {
+    }
 }
