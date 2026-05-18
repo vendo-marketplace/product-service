@@ -39,7 +39,7 @@ public class Category {
         if (isChild(parentId, attributes)) {
             return CategoryType.CHILD;
         }
-        throw new CategoryValidationException("Invalid category structure." );
+        throw new CategoryValidationException("Invalid category structure.");
     }
 
     public void throwIfNotDesiredType(CategoryType desiredType, String message) {
@@ -49,7 +49,7 @@ public class Category {
     }
 
     public List<String> buildPath(List<String> parentPath) {
-        if (id == null) throw new IllegalStateException("Id is empty." );
+        if (id == null) throw new IllegalStateException("Id is empty.");
 
         if (parentPath.isEmpty()) {
             return List.of(id);

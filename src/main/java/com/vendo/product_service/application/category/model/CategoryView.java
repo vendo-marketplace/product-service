@@ -5,8 +5,6 @@ import com.vendo.product_service.domain.category.model.Category;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 public record CategoryView(
         String id,
@@ -17,12 +15,8 @@ public record CategoryView(
 ) {
 
     public static CategoryView from(Category category, Map<String, Attribute> attributesById) {
-        List<String> attributeIds = Optional.ofNullable(category.getAttributes())
-                .orElse(List.of());
-
-        List<Attribute> attributes = attributeIds.stream()
+        List<Attribute> attributes = category.getAttributes().stream()
                 .map(attributesById::get)
-                .filter(Objects::nonNull)
                 .toList();
 
         return new CategoryView(
