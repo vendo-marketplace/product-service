@@ -7,6 +7,7 @@ import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.port.in.category.CategoryQueryUseCase;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
+import com.vendo.utils_lib.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class CategoryQueryService implements CategoryQueryUseCase {
 
     private CategoryNode buildBranch(Category parent, Map<String, Attribute> attributesById,List<Category> categories) {
         List<Category> children = categories.stream()
-                .filter(category -> category.getParentId().equals(parent.getId()))
+                .filter(category -> !StringUtils.isEmpty(category.getParentId()) && category.getParentId().equals(parent.getId()))
                 .toList();
 
         List<CategoryNode> childrenNodes = children.stream()
