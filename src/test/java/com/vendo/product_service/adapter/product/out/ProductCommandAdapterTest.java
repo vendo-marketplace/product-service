@@ -37,12 +37,13 @@ class ProductCommandAdapterTest {
 
         when(mongoProductMapper.toEntity(product)).thenReturn(entity);
         when(productRepository.save(entity)).thenReturn(entity);
+        when(mongoProductMapper.toProduct(entity)).thenReturn(product);
 
         productCommandAdapter.save(product);
 
         verify(mongoProductMapper).toEntity(product);
         verify(productRepository).save(entity);
-        verifyNoMoreInteractions(mongoProductMapper, productRepository);
+        verify(mongoProductMapper).toProduct(entity);
     }
 
     @Test

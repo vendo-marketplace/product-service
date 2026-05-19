@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.product.model.Product;
 
 public interface ProductCommandPort {
 
-    String save(Product product);
+    Product save(Product product);
 
     void update(String id, Product product);
 
