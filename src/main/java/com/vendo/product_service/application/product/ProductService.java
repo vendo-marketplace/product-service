@@ -44,9 +44,8 @@ public class ProductService implements ProductUseCase {
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);
 
-        String productId = productCommandPort.save(product);
-        product.setId(productId);
-        eventSenderPort.sendCreated(product, attributes);
+        Product saved = productCommandPort.save(product);
+        eventSenderPort.sendCreated(saved, attributes);
     }
 
     @Override

@@ -119,6 +119,7 @@ public class ProductControllerIntegrationTest {
         when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
         when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(currentUserPort.getCurrentUserId()).thenReturn(userId);
+        when(productCommandPort.save(product)).thenReturn(product);
 
         performProductPersist(request).andExpect(status().isOk());
 
@@ -351,6 +352,7 @@ public class ProductControllerIntegrationTest {
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(currentUserPort.getCurrentUserId()).thenReturn(userId);
+            when(productCommandPort.save(product)).thenReturn(product);
 
             performProductPersist(request).andExpect(status().isOk());
 

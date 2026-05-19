@@ -22,6 +22,5 @@ public class Product {
     private List<AttributeValue> attributes;
     private Boolean active;
     private Instant createdAt;
-    private Instant updatedAt;
 
 }
