@@ -4,6 +4,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +19,6 @@ public record ProductResponse (
         String categoryId,
         List<AttributeValue> attributes,
         boolean active,
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
 }
