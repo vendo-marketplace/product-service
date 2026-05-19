@@ -7,6 +7,9 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Mapper(config = MapStructConfig.class)
@@ -19,5 +22,11 @@ public interface DtoProductMapper {
     ProductResponse toResponse(Product product);
 
     List<ProductResponse> toResponses(List<Product> products);
+
+    default LocalDateTime toLocalDateTime(Instant date) {
+        return date == null
+                ? null
+                : LocalDateTime.ofInstant(date, ZoneOffset.UTC);
+    }
 
 }
