@@ -178,7 +178,7 @@
         <dependency>
             <groupId>io.github.vendo-marketplace-be</groupId>
             <artifactId>event-lib</artifactId>
-            <version>5.2.5</version>
+            <version>6.2.5</version>
         </dependency>
 
     </dependencies>
