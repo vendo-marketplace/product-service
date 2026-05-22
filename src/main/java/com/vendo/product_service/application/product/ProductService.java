@@ -2,6 +2,7 @@ package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.in.product.ProductUseCase;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
@@ -38,8 +39,8 @@ public class ProductService implements ProductUseCase {
     @Override
     @Transactional
     public void save(Product product) {
-        List<Attribute> attributes = loadAttributesFor(product);
-        validationPort.validateOnSave(product, attributes);
+        Category category = validationPort.validateCategoryOnSave(product.getCategoryId());
+        List<Attribute> attributes = validationPort.validateAttributesOnSave(category.getAttributes(), product.getAttributes());
 
         product.setOwnerId(currentUserPort.getCurrentUserId());
         product.setActive(true);

@@ -376,6 +376,40 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
+        void save_shouldReturnBadRequest_whenRequiredAttributeNotPresent() throws Exception {
+            Attribute requiredAttribute = AttributeDataBuilder.withAllFields().required(true).build();
+            AttributeValue attributeValue = new AttributeValue(requiredAttribute.id(), List.of("value"));
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attributeValue.id())).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().build();
+            Product product = ProductDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .attributes(List.of())
+                    .build();
+
+            when(dtoProductMapper.toEntity(request)).thenReturn(product);
+            when(categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.")).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(requiredAttribute));
+
+            String content = performProductPersist(request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Requesting categories mismatch.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+            verify(dtoProductMapper).toEntity(request);
+            verify(categoryQueryPort).findById(product.getCategoryId(), "Parent category not found.");
+            verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
+
+            verifyNoInteractions(currentUserPort, productCommandPort, productEventSenderPort);
+        }
+
+        @Test
         void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .title(null)
@@ -488,6 +522,7 @@ public class ProductControllerIntegrationTest {
 
         @Nested
         class SaveProductWithAttributes {
+
             @Nested
             class SaveProductWithNumberAttribute {
 

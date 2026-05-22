@@ -2,6 +2,7 @@ package com.vendo.product_service.application.product.validation.product;
 
 import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
 import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
@@ -23,15 +24,25 @@ import java.util.List;
 public class ProductValidationFacade implements ProductValidationPort {
 
     private final AttributesValidator attributesValidator;
+
+    private final AttributeQueryPort attributeQueryPort;
     private final CategoryQueryPort categoryQueryPort;
     private final ProductQueryPort productQueryPort;
+
     private final CurrentUserPort currentUserPort;
 
     @Override
-    public void validateOnSave(Product product, List<Attribute> originAttributes) {
-        Category category = categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.");
+    public Category validateCategoryOnSave(String categoryId) {
+        Category category = categoryQueryPort.findById(categoryId, "Parent category not found.");
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
-        attributesValidator.validate(originAttributes, product.getAttributes());
+        return category;
+    }
+
+    @Override
+    public List<Attribute> validateAttributesOnSave(List<String> originAttributeIds, List<AttributeValue> requestAttributes) {
+        List<Attribute> originAttributes = attributeQueryPort.findAllByIds(originAttributeIds);
+        attributesValidator.validate(originAttributes, requestAttributes);
+        return originAttributes;
     }
 
     @Override
