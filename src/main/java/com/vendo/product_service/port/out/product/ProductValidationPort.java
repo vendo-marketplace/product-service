@@ -9,9 +9,10 @@ import java.util.List;
 
 public interface ProductValidationPort {
 
-    Category validateCategoryOnSave(String categoryId);
-    List<Attribute> validateAttributesOnSave(List<String> originAttributeIds, List<AttributeValue> requestAttributes);
+    List<Attribute> validateAttributes(List<String> originAttributeIds, List<AttributeValue> requestAttributes);
 
-    void validateOnUpdate(String id, Product product);
+    Category validateCategoryOnSave(String categoryId);
+
+    void validateProductOwnerOnUpdate(Product product);
 
 }

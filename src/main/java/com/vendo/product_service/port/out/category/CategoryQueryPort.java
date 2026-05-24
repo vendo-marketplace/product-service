@@ -7,6 +7,7 @@ import java.util.List;
 public interface CategoryQueryPort {
 
     Category findById(String id, String message);
+    Category findById(String id);
 
     boolean existsById(String id);
 
