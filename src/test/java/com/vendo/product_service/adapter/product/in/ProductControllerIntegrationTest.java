@@ -75,8 +75,8 @@ public class ProductControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
-    private ResultActions performProductPersist(String userId, String request) throws Exception {
-        TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+    private ResultActions performProductPersist(String request) throws Exception {
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(post("/products")
                 .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .content(request)
@@ -445,7 +445,7 @@ public class ProductControllerIntegrationTest {
                        "attributes": "invalid_attribute_value_structure"
                     """;
 
-            String content = performProductPersist("id", invalidRequestBody).andReturn()
+            String content = performProductPersist(invalidRequestBody).andReturn()
                     .getResponse()
                     .getContentAsString();
 
