@@ -19,7 +19,12 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
     @Override
     public Category findById(String id, String message) {
         return repository.findById(id).map(mapper::toCategory)
-                .orElseThrow(() -> new CategoryNotFoundException(message.isBlank() ? "Category not found." : message));
+                .orElseThrow(() -> new CategoryNotFoundException(message));
+    }
+
+    @Override
+    public Category findById(String id) {
+        return findById(id, "Product not found.");
     }
 
     @Override

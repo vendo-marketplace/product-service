@@ -70,13 +70,13 @@ class CategoryQueryAdapterTest {
     @Test
     void findById_shouldThrowExceptionWithDefaultMessage_whenEntityNotFound() {
         String id = "cat123";
-        String blankMessage = " ";
+        String blankMessage = "Category not found.";
 
         when(categoryRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> queryAdapter.findById(id, blankMessage))
                 .isInstanceOf(CategoryNotFoundException.class)
-                .hasMessage("Category not found.");
+                .hasMessage(blankMessage);
 
         verify(categoryRepository, times(1)).findById(id);
         verifyNoInteractions(categoryMapper);

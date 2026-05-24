@@ -8,7 +8,6 @@ import com.vendo.product_service.domain.category.exception.CategoryValidationExc
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,17 +20,7 @@ public class DefaultAttributesValidator implements AttributesValidator {
 
     @Override
     public void validate(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
-        boolean matches = matchAllAttributes(originAttributes, requestAttributes);
-        if (!matches) throw new CategoryValidationException("Requesting categories mismatch.");
         compareAndValidate(originAttributes, requestAttributes);
-    }
-
-    private boolean matchAllAttributes(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
-        List<String> originAttributesIds = originAttributes.stream().map(Attribute::id).toList();
-        List<String> requestAttributesIds = requestAttributes.stream().map(AttributeValue::id).toList();
-
-        if (originAttributesIds.size() != requestAttributesIds.size()) return false;
-        return new HashSet<>(requestAttributesIds).containsAll(originAttributesIds);
     }
 
     private void compareAndValidate(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
@@ -52,19 +41,19 @@ public class DefaultAttributesValidator implements AttributesValidator {
         return isAttributeValid(originAttribute, requestAttribute.values());
     }
 
-    private ValidationBody isAttributeValid(Attribute originAttribute, List<String> requestAttributesValue) {
+    private ValidationBody isAttributeValid(Attribute originAttribute, List<String> requestAttributeValue) {
         AttributeValidatorStrategy validationStrategy = attributesValidationFactory.getValidator(originAttribute.type());
 
-        ValidationBody validatedRequirement = validationStrategy.validateRequirement(originAttribute, requestAttributesValue);
+        ValidationBody validatedRequirement = validationStrategy.validateRequirement(originAttribute, requestAttributeValue);
         if (!validatedRequirement.valid()) return validatedRequirement;
 
-        return validationStrategy.validate(originAttribute, requestAttributesValue);
+        return validationStrategy.validate(originAttribute, requestAttributeValue);
     }
 
     private AttributeValue getRequestAttributeById(String originAttributeId, List<AttributeValue> requestAttributes) {
         return requestAttributes.stream()
                 .filter(requestAttribute -> requestAttribute.id().equals(originAttributeId))
                 .findAny()
-                .orElseThrow(() -> new CategoryValidationException("Not found request attribute by origin attribute id: %s.".formatted(originAttributeId)));
+                .orElse(new AttributeValue(originAttributeId, List.of()));
     }
 }
