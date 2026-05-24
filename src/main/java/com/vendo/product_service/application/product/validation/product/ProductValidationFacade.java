@@ -35,7 +35,7 @@ public class ProductValidationFacade implements ProductValidationPort {
 
     @Override
     public Category validateCategoryOnSave(String categoryId) {
-        Category category = categoryQueryPort.findById(categoryId, "Parent category not found.");
+        Category category = categoryQueryPort.findById(categoryId);
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
         return category;
     }

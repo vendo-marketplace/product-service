@@ -87,10 +87,6 @@ public class ProductControllerIntegrationTest {
         return performProductPersist("id", request);
     }
 
-    private ResultActions performProductPersist(String body) throws Exception {
-        return performProductPersist("id", body);
-    }
-
     private ResultActions performProductUpdate(String userId, String productId, UpdateProductRequest updateProductRequest) throws Exception {
         TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
         return mockMvc.perform(put("/products/{id}", productId)
@@ -124,14 +120,14 @@ public class ProductControllerIntegrationTest {
         ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
         when(dtoProductMapper.toEntity(request)).thenReturn(product);
-        when(categoryQueryPort.findById(eq(category.getId()), anyString())).thenReturn(category);
+        when(categoryQueryPort.findById(eq(category.getId()))).thenReturn(category);
         when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
         when(productCommandPort.save(product)).thenReturn(product);
 
         performProductPersist(userId, request).andExpect(status().isOk());
 
         verify(dtoProductMapper).toEntity(request);
-        verify(categoryQueryPort).findById(eq(category.getId()), anyString());
+        verify(categoryQueryPort).findById(eq(category.getId()));
         verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
         verify(productEventSenderPort).sendCreated(product, List.of(attribute));
         verify(productCommandPort).save(argumentCaptor.capture());
@@ -158,10 +154,9 @@ public class ProductControllerIntegrationTest {
                 .categoryId(category.getId())
                 .attributes(List.of(attributeValue))
                 .build();
-        String exceptionMessage = "Parent category not found.";
 
         when(dtoProductMapper.toEntity(request)).thenReturn(product);
-        when(categoryQueryPort.findById(category.getId(), exceptionMessage)).thenReturn(category);
+        when(categoryQueryPort.findById(category.getId())).thenReturn(category);
         when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
 
         String content = performProductPersist(userId, request)
@@ -180,7 +175,7 @@ public class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
         verify(dtoProductMapper).toEntity(request);
-        verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
+        verify(categoryQueryPort).findById(category.getId());
         verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
         verifyNoInteractions(productCommandPort, productEventSenderPort);
     }
@@ -350,7 +345,7 @@ public class ProductControllerIntegrationTest {
             ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(category.getId(), "Parent category not found.")).thenReturn(category);
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(productCommandPort.save(product)).thenReturn(product);
@@ -358,7 +353,7 @@ public class ProductControllerIntegrationTest {
             performProductPersist(userId, request).andExpect(status().isOk());
 
             verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(category.getId(), "Parent category not found.");
+            verify(categoryQueryPort).findById(category.getId());
             verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
             verify(productEventSenderPort).sendCreated(product, List.of(attribute));
             verify(productCommandPort).save(argumentCaptor.capture());
@@ -387,7 +382,7 @@ public class ProductControllerIntegrationTest {
                     .build();
 
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(product.getCategoryId(), "Parent category not found.")).thenReturn(category);
+            when(categoryQueryPort.findById(product.getCategoryId())).thenReturn(category);
             when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(requiredAttribute));
 
             String content = performProductPersist(userId, request)
@@ -406,7 +401,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(product.getCategoryId(), "Parent category not found.");
+            verify(categoryQueryPort).findById(product.getCategoryId());
             verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
 
             verifyNoInteractions(productCommandPort, productEventSenderPort);
@@ -450,7 +445,7 @@ public class ProductControllerIntegrationTest {
                        "attributes": "invalid_attribute_value_structure"
                     """;
 
-            String content = performProductPersist(invalidRequestBody).andReturn()
+            String content = performProductPersist("id", invalidRequestBody).andReturn()
                     .getResponse()
                     .getContentAsString();
 
@@ -467,14 +462,13 @@ public class ProductControllerIntegrationTest {
         void save_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
             String categoryId = "category_id", attributeId = "attribute_id";
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(categoryId).build();
-            String exceptionMessage = "Parent category not found.";
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(categoryId)
                     .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
                     .build();
 
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(categoryId, exceptionMessage)).thenThrow(new ProductNotFoundException(exceptionMessage));
+            when(categoryQueryPort.findById(categoryId)).thenThrow(new ProductNotFoundException("Category not found."));
 
             String content = performProductPersist(request).andExpect(status().isNotFound())
                     .andReturn()
@@ -484,11 +478,11 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(categoryId, exceptionMessage);
+            verify(categoryQueryPort).findById(categoryId);
             verifyNoInteractions(productCommandPort, productEventSenderPort);
         }
 
@@ -497,14 +491,13 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withAllFields().attributes(null).parentId(null).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
             String attributeId = "attribute_id";
-            String exceptionMessage = "Parent category not found.";
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
                     .build();
 
             when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(request.categoryId(), exceptionMessage)).thenReturn(category);
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
 
             String content = performProductPersist(request)
                     .andExpect(status().isBadRequest())
@@ -519,7 +512,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(category.getId(), exceptionMessage);
+            verify(categoryQueryPort).findById(category.getId());
             verifyNoInteractions(productCommandPort, productEventSenderPort);
         }
 
