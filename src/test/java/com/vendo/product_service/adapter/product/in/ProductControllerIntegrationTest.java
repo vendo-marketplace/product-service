@@ -445,12 +445,8 @@ public class ProductControllerIntegrationTest {
 
         @Test
         void save_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
-            String categoryId = "category_id", attributeId = "attribute_id";
+            String categoryId = "category_id";
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(categoryId).build();
-            Product product = ProductDataBuilder.withAllFields()
-                    .categoryId(categoryId)
-                    .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
-                    .build();
 
             when(categoryQueryPort.findById(categoryId)).thenThrow(new ProductNotFoundException("Category not found."));
 
@@ -473,11 +469,6 @@ public class ProductControllerIntegrationTest {
         void save_shouldReturnBadRequest_whenCategoryIsNotChild() throws Exception {
             Category category = CategoryDataBuilder.withAllFields().attributes(null).parentId(null).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
-            String attributeId = "attribute_id";
-            Product product = ProductDataBuilder.withAllFields()
-                    .categoryId(category.getId())
-                    .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
-                    .build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
 
@@ -495,6 +486,105 @@ public class ProductControllerIntegrationTest {
 
             verify(categoryQueryPort).findById(category.getId());
             verifyNoInteractions(productCommandPort, productEventSenderPort);
+        }
+
+        @Test
+        void save_shouldSaveProduct_andShouldNotValidateAttribute_whenNotRequired() throws Exception {
+            String userId = "user_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(false).build();
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .build();
+            Product product = ProductDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .ownerId(userId)
+                    .build();
+            ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
+            when(productCommandPort.save(any())).thenReturn(product);
+
+            performProductPersist(userId, request).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+            verify(productEventSenderPort).sendCreated(any(), eq(List.of(attribute)));
+            verify(productCommandPort).save(argumentCaptor.capture());
+
+            Product captorValue = argumentCaptor.getValue();
+            assertThat(captorValue.getOwnerId()).isEqualTo(userId);
+            assertThat(captorValue.getActive()).isEqualTo(true);
+        }
+
+        @Test
+        void save_shouldSaveProduct_andShouldValidateAttribute_whenNotRequired_butNotEmpty() throws Exception {
+            String userId = "user_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(false).build();
+            List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("Text")));
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .attributes(attributeValues)
+                    .build();
+            Product product = ProductDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .ownerId(userId)
+                    .attributes(attributeValues)
+                    .build();
+            ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
+            when(productCommandPort.save(any())).thenReturn(product);
+
+            performProductPersist(userId, request).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+            verify(productEventSenderPort).sendCreated(any(), eq(List.of(attribute)));
+            verify(productCommandPort).save(argumentCaptor.capture());
+
+            Product captorValue = argumentCaptor.getValue();
+            assertThat(captorValue.getOwnerId()).isEqualTo(userId);
+            assertThat(captorValue.getActive()).isEqualTo(true);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenAttributeNotRequired_butNotEmpty_andNotValid() throws Exception {
+            String userId = "user_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(false).type(AttributeType.NUMBER).build();
+            List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("not_number_value")));
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .attributes(attributeValues)
+                    .build();
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
+
+            String content = performProductPersist(userId, request).andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo("Invalid number value.");
+
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+            verifyNoInteractions(productEventSenderPort, productCommandPort);
         }
 
         @Nested

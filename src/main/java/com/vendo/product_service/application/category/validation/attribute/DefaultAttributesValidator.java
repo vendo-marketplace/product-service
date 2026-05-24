@@ -7,6 +7,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,12 @@ public class DefaultAttributesValidator implements AttributesValidator {
     private ValidationBody isAttributeValid(Attribute originAttribute, List<String> requestAttributeValue) {
         AttributeValidatorStrategy validationStrategy = attributesValidationFactory.getValidator(originAttribute.type());
 
-        ValidationBody validatedRequirement = validationStrategy.validateRequirement(originAttribute, requestAttributeValue);
-        if (!validatedRequirement.valid()) return validatedRequirement;
+        boolean required = originAttribute.required(), empty = CollectionUtils.isEmpty(requestAttributeValue);
+        if (required && empty) {
+            return ValidationBody.from(originAttribute.title(), "%s is required.".formatted(originAttribute.title()));
+        } else if (!required && empty) {
+            return ValidationBody.builder().valid(true).build();
+        }
 
         return validationStrategy.validate(originAttribute, requestAttributeValue);
     }
