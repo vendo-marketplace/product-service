@@ -36,28 +36,29 @@ public class ProductService implements ProductUseCase {
 
     @Override
     @Transactional
-    public void save(Product product) {
-        Category category = validationPort.validateCategoryOnSave(product.getCategoryId());
-        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), product.getAttributes());
+    public void save(Product request) {
+        Category category = validationPort.validateCategoryOnSave(request.getCategoryId());
+        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
 
-        product.setOwnerId(currentUserPort.getCurrentUserId());
-        product.setActive(true);
+        request.setOwnerId(currentUserPort.getCurrentUserId());
+        request.setActive(true);
 
-        Product saved = productCommandPort.save(product);
+        Product saved = productCommandPort.save(request);
         eventSenderPort.sendCreated(saved, attributes);
     }
 
     @Override
     @Transactional
-    public void update(String id, Product product) {
-        product.setId(id);
+    public void update(String id, Product request) {
+        request.setId(id);
 
         Product existing = productQueryPort.findById(id);
         validationPort.validateProductOwnerOnUpdate(existing);
-        Category category = categoryQueryPort.findById(product.getCategoryId());
-        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), product.getAttributes());
 
-        productCommandPort.update(id, product);
-        eventSenderPort.sendUpdated(product, attributes);
+        Category category = categoryQueryPort.findById(existing.getCategoryId());
+        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
+
+        productCommandPort.update(id, request);
+        eventSenderPort.sendUpdated(request, attributes);
     }
 }

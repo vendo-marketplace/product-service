@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
-import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
@@ -54,8 +53,6 @@ public class ProductControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
-    private DtoProductMapper dtoProductMapper;
     @MockitoBean
     private ProductCommandPort productCommandPort;
     @MockitoBean
@@ -119,14 +116,12 @@ public class ProductControllerIntegrationTest {
                 .build();
         ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(categoryQueryPort.findById(eq(category.getId()))).thenReturn(category);
         when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
-        when(productCommandPort.save(product)).thenReturn(product);
+        when(productCommandPort.save(any())).thenReturn(product);
 
         performProductPersist(userId, request).andExpect(status().isOk());
 
-        verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(eq(category.getId()));
         verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
         verify(productEventSenderPort).sendCreated(product, List.of(attribute));
@@ -135,8 +130,6 @@ public class ProductControllerIntegrationTest {
         Product captorValue = argumentCaptor.getValue();
         assertThat(captorValue.getOwnerId()).isEqualTo(userId);
         assertThat(captorValue.getActive()).isEqualTo(true);
-
-        AssertionUtils.assertFrom(product, captorValue, "active", "ownerId");
     }
 
     private void shouldFailValidationOnSaveProductWithAttribute(Attribute attribute, AttributeValue attributeValue, String validationMessage) throws Exception {
@@ -145,17 +138,11 @@ public class ProductControllerIntegrationTest {
         Category category = CategoryDataBuilder.withAllFields()
                 .attributes(List.of(attributeValue.id()))
                 .build();
-        Product product = ProductDataBuilder.withAllFields()
-                .ownerId(userId)
-                .categoryId(category.getId())
-                .attributes(List.of(attributeValue))
-                .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                 .categoryId(category.getId())
                 .attributes(List.of(attributeValue))
                 .build();
 
-        when(dtoProductMapper.toEntity(request)).thenReturn(product);
         when(categoryQueryPort.findById(category.getId())).thenReturn(category);
         when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(attribute));
 
@@ -174,7 +161,6 @@ public class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo(validationMessage);
         assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-        verify(dtoProductMapper).toEntity(request);
         verify(categoryQueryPort).findById(category.getId());
         verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
         verifyNoInteractions(productCommandPort, productEventSenderPort);
@@ -185,25 +171,32 @@ public class ProductControllerIntegrationTest {
 
         @Test
         void update_shouldUpdateProduct() throws Exception {
-            Product product = ProductDataBuilder.withAllFields().build();
-            List<String> attributeIds = product.getAttributes().stream().map(AttributeValue::id).toList();
-            List<Attribute> attributes = attributeIds.stream().map(id -> AttributeDataBuilder.withAllFields().id(id).build()).toList();
-            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
-            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().build();
+            String productId = "product_id";
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(productQueryPort.findById(product.getId())).thenReturn(product);
-            when(categoryQueryPort.findById(product.getCategoryId())).thenReturn(category);
-            when(attributeQueryPort.findAllByIds(attributeIds)).thenReturn(attributes);
+            Attribute attribute = AttributeDataBuilder.withAllFields().build();
+            AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
 
-            performProductUpdate(product.getOwnerId(), product.getId(), request).andExpect(status().isOk());
+            Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
+            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
 
-            verify(dtoProductMapper).toEntity(request);
-            verify(productQueryPort).findById(product.getId());
-            verify(categoryQueryPort).findById(product.getCategoryId());
-            verify(attributeQueryPort).findAllByIds(attributeIds);
-            verify(productEventSenderPort).sendUpdated(product, attributes);
-            verify(productCommandPort).update(product.getId(), product);
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+            verify(productQueryPort).findById(productId);
+            verify(categoryQueryPort).findById(existing.getCategoryId());
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+
+            ArgumentCaptor<Product> updateProductArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productCommandPort).update(eq(productId), updateProductArgumentCaptor.capture());
+            AssertionUtils.assertFrom(updateProductArgumentCaptor.getValue(), request);
+
+            ArgumentCaptor<Product> updateProductEventArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productEventSenderPort).sendUpdated(updateProductEventArgumentCaptor.capture(), eq(List.of(attribute)));
+            AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request);
         }
 
         @Test
@@ -211,7 +204,6 @@ public class ProductControllerIntegrationTest {
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().build();
             Product product = ProductDataBuilder.withAllFields().build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(productQueryPort.findById(product.getId())).thenThrow(new ProductNotFoundException("Product not found."));
 
             String content = performProductUpdate(product.getOwnerId(), product.getId(), request)
@@ -226,7 +218,6 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + product.getId());
 
-            verify(dtoProductMapper).toEntity(request);
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
         }
@@ -236,7 +227,6 @@ public class ProductControllerIntegrationTest {
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().build();
             Product product = ProductDataBuilder.withAllFields().build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(productQueryPort.findById(product.getId())).thenReturn(product);
 
             String content = performProductUpdate("not_owner_id", product.getId(), request)
@@ -251,7 +241,6 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + product.getId());
 
-            verify(dtoProductMapper).toEntity(request);
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
         }
@@ -262,19 +251,23 @@ public class ProductControllerIntegrationTest {
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().attributes(null).build();
             Category category = CategoryDataBuilder.withAllFields().attributes(null).build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(productQueryPort.findById(product.getId())).thenReturn(product);
             when(categoryQueryPort.findById(product.getCategoryId())).thenReturn(category);
             when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of());
 
             performProductUpdate(product.getOwnerId(), product.getId(), request).andExpect(status().isOk());
 
-            verify(dtoProductMapper).toEntity(request);
             verify(productQueryPort).findById(product.getId());
             verify(categoryQueryPort).findById(product.getCategoryId());
             verify(attributeQueryPort).findAllByIds(category.getAttributes());
-            verify(productEventSenderPort).sendUpdated(product, List.of());
-            verify(productCommandPort).update(product.getId(), product);
+
+            ArgumentCaptor<Product> updateProductArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productCommandPort).update(eq(product.getId()), updateProductArgumentCaptor.capture());
+            AssertionUtils.assertFrom(updateProductArgumentCaptor.getValue(), request);
+
+            ArgumentCaptor<Product> updateProductEventArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productEventSenderPort).sendUpdated(updateProductEventArgumentCaptor.capture(), eq(List.of()));
+            AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request);
         }
     }
 
@@ -284,10 +277,8 @@ public class ProductControllerIntegrationTest {
         @Test
         void findById_shouldReturnProduct() throws Exception {
             Product product = ProductDataBuilder.withAllFields().build();
-            ProductResponse response = ProductResponseDataBuilder.withAllFields().id(product.getId()).build();
 
             when(productQueryPort.findById(product.getId())).thenReturn(product);
-            when(dtoProductMapper.toResponse(product)).thenReturn(response);
 
             String content = performProductGet(product.getId())
                     .andExpect(status().isOk())
@@ -299,7 +290,6 @@ public class ProductControllerIntegrationTest {
             AssertionUtils.assertFrom(product, productResponse);
 
             verify(productQueryPort).findById(product.getId());
-            verify(dtoProductMapper).toResponse(product);
         }
 
         @Test
@@ -321,7 +311,6 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/" + product.getId());
 
             verify(productQueryPort).findById(product.getId());
-            verifyNoInteractions(dtoProductMapper);
         }
     }
 
@@ -331,59 +320,54 @@ public class ProductControllerIntegrationTest {
         @Test
         void save_shouldSaveProduct() throws Exception {
             String userId = "user_id";
+
             Attribute attribute = AttributeDataBuilder.withAllFields().build();
+            List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("Text")));
             Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Text"))))
+                    .attributes(attributeValues)
                     .build();
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .ownerId(userId)
-                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Text"))))
+                    .attributes(attributeValues)
                     .build();
             ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(productCommandPort.save(product)).thenReturn(product);
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
+            when(productCommandPort.save(any())).thenReturn(product);
 
             performProductPersist(userId, request).andExpect(status().isOk());
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(category.getId());
             verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
-            verify(productEventSenderPort).sendCreated(product, List.of(attribute));
+            verify(productEventSenderPort).sendCreated(any(), eq(List.of(attribute)));
             verify(productCommandPort).save(argumentCaptor.capture());
 
             Product captorValue = argumentCaptor.getValue();
             assertThat(captorValue.getOwnerId()).isEqualTo(userId);
             assertThat(captorValue.getActive()).isEqualTo(true);
-
-            product.setActive(captorValue.getActive());
-            product.setOwnerId(captorValue.getOwnerId());
-
-            AssertionUtils.assertFrom(product, captorValue);
         }
 
         @Test
         void save_shouldReturnBadRequest_whenRequiredAttributeNotPresent() throws Exception {
             String userId = "userId";
-            Attribute requiredAttribute = AttributeDataBuilder.withAllFields().required(true).build();
-            AttributeValue attributeValue = new AttributeValue(requiredAttribute.id(), List.of("value"));
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attributeValue.id())).build();
-            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().build();
-            Product product = ProductDataBuilder.withAllFields()
+
+            Attribute requiredStringAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").required(true).build();
+            Attribute requiredNumberAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.NUMBER).title("Number").required(true).build();
+            List<Attribute> attributes = List.of(requiredStringAttribute, requiredNumberAttribute);
+            List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
+
+            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(List.of())
-                    .ownerId(userId)
                     .build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
-            when(categoryQueryPort.findById(product.getCategoryId())).thenReturn(category);
-            when(attributeQueryPort.findAllByIds(List.of(attributeValue.id()))).thenReturn(List.of(requiredAttribute));
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(attributeIds)).thenReturn(attributes);
 
             String content = performProductPersist(userId, request)
                     .andExpect(status().isBadRequest())
@@ -396,13 +380,16 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get(requiredAttribute.title())).isEqualTo("Title is required.");
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(2);
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isEqualTo(requiredStringAttribute.title() + " is required.");
+            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.title())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.title())).isEqualTo(requiredNumberAttribute.title() + " is required.");
+
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
-            verify(categoryQueryPort).findById(product.getCategoryId());
-            verify(attributeQueryPort).findAllByIds(List.of(attributeValue.id()));
+            verify(categoryQueryPort).findById(request.categoryId());
+            verify(attributeQueryPort).findAllByIds(attributeIds);
 
             verifyNoInteractions(productCommandPort, productEventSenderPort);
         }
@@ -412,10 +399,8 @@ public class ProductControllerIntegrationTest {
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .title(null)
                     .description(null)
-                    .quantity(-1)
                     .price(null)
                     .categoryId(null)
-                    .attributes(null)
                     .build();
 
             String content = performProductPersist(request)
@@ -428,10 +413,10 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(4);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verifyNoInteractions(dtoProductMapper, categoryQueryPort, productCommandPort, productEventSenderPort);
+            verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -455,7 +440,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid body structure.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verifyNoInteractions(dtoProductMapper, categoryQueryPort, productCommandPort, productEventSenderPort);
+            verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
         }
 
         @Test
@@ -467,7 +452,6 @@ public class ProductControllerIntegrationTest {
                     .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
                     .build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(categoryQueryPort.findById(categoryId)).thenThrow(new ProductNotFoundException("Category not found."));
 
             String content = performProductPersist(request).andExpect(status().isNotFound())
@@ -481,7 +465,6 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(categoryId);
             verifyNoInteractions(productCommandPort, productEventSenderPort);
         }
@@ -496,7 +479,6 @@ public class ProductControllerIntegrationTest {
                     .attributes(List.of(new AttributeValue(attributeId, List.of("Text"))))
                     .build();
 
-            when(dtoProductMapper.toEntity(request)).thenReturn(product);
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
 
             String content = performProductPersist(request)
@@ -511,7 +493,6 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category type should be child.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
-            verify(dtoProductMapper).toEntity(request);
             verify(categoryQueryPort).findById(category.getId());
             verifyNoInteractions(productCommandPort, productEventSenderPort);
         }

@@ -28,6 +28,5 @@ public record CreateProductRequest(
         @NotNull(message = "Id is required.")
         String categoryId,
 
-        @NotEmpty(message = "Minimum 1 attribute is required.")
         List<AttributeValue> attributes) {
 }
