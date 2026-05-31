@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/test")
-@PreAuthorize("@userSecurity.validateActivation(authentication)")
+@PreAuthorize("@userSecurity.validateAccess()")
 public class UserTestController {
 
     @GetMapping("/user/ping")

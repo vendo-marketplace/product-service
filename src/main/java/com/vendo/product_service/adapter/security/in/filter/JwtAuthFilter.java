@@ -38,9 +38,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            String jwtToken = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
+            String jwtToken = FilterUtils.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
             TokenClaims claims = claimsParser.extract(jwtToken);
-            FilterHelper.addAuthToContext(claims, claims.roles());
+            FilterUtils.addAuthToContext(claims, claims.roles());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;

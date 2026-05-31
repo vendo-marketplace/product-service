@@ -609,7 +609,7 @@ public class CategoryControllerIntegrationTest {
                     .path(response.path())
                     .build();
 
-            when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
             when(dtoCategoryMapper.toResponse(category)).thenReturn(response);
 
             String content = performCategoryGet(category.getId())
@@ -622,7 +622,7 @@ public class CategoryControllerIntegrationTest {
 
             AssertionUtils.assertFrom(category, categoryResponse, "type");
 
-            verify(categoryQueryPort).findById(category.getId(), "Category not found.");
+            verify(categoryQueryPort).findById(category.getId());
             verify(dtoCategoryMapper).toResponse(category);
         }
 
@@ -630,7 +630,7 @@ public class CategoryControllerIntegrationTest {
         void findById_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
             String categoryId = String.valueOf(UUID.randomUUID());
 
-            when(categoryQueryPort.findById(categoryId, "Category not found.")).thenThrow(new CategoryNotFoundException("Category not found."));
+            when(categoryQueryPort.findById(categoryId)).thenThrow(new CategoryNotFoundException("Category not found."));
 
             String content = performCategoryGet(categoryId).andExpect(status().isNotFound())
                     .andReturn()
@@ -643,7 +643,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/%s".formatted(categoryId));
 
-            verify(categoryQueryPort).findById(categoryId, "Category not found.");
+            verify(categoryQueryPort).findById(categoryId);
         }
     }
 

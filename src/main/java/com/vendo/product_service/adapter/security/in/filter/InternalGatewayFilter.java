@@ -41,9 +41,9 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
+            String token = FilterUtils.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
             InternalTokenClaims claims = validateClaims(token);
-            FilterHelper.addAuthToContext(claims, claims.roles());
+            FilterUtils.addAuthToContext(claims, claims.roles());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;

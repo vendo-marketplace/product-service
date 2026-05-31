@@ -10,7 +10,7 @@ import java.util.List;
 
 import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 
-final class FilterHelper {
+final class FilterUtils {
 
     static void addAuthToContext(Object principal, List<String> roles) {
         UsernamePasswordAuthenticationToken authToken =

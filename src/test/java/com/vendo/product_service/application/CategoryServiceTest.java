@@ -76,25 +76,25 @@ class CategoryServiceTest {
     void findById_shouldReturnCategory_whenExists() {
         Category category = buildCategory();
 
-        when(queryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
+        when(queryPort.findById(category.getId())).thenReturn(category);
 
         Category result = categoryQueryService.findById(category.getId());
 
         assertThat(result).isEqualTo(category);
-        verify(queryPort, times(1)).findById(category.getId(), "Category not found.");
+        verify(queryPort, times(1)).findById(category.getId());
     }
 
     @Test
     void findById_shouldThrowCategoryNotFoundException_whenDoesNotExist() {
         String categoryId = "nonexistent";
 
-        when(queryPort.findById(categoryId, "Category not found."))
+        when(queryPort.findById(categoryId))
                 .thenThrow(new CategoryNotFoundException("Category not found."));
 
         assertThatThrownBy(() -> categoryQueryService.findById(categoryId))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Category not found.");
 
-        verify(queryPort, times(1)).findById(categoryId, "Category not found.");
+        verify(queryPort, times(1)).findById(categoryId);
     }
 }

@@ -25,7 +25,7 @@ public class CategoryQueryService implements CategoryQueryUseCase {
 
     @Override
     public Category findById(String id) {
-        return categoryQueryPort.findById(id, "Category not found.");
+        return categoryQueryPort.findById(id);
     }
 
     @Override
