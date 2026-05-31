@@ -3,6 +3,7 @@ package com.vendo.product_service.adapter.security.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.test_utils.dto.PingRequest;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +28,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -75,6 +78,35 @@ public class JwtAuthFilterIntegrationTest {
         assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo("/test/user/ping");
+
+        verifyNoInteractions(tokenClaimsParser);
+    }
+
+    @Test
+    void doFilterInternal_shouldReturnUnsupportedMediaType_whenTextType() throws Exception {
+        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                claims,
+                null,
+                null);
+        PingRequest request = new PingRequest("content");
+
+        MockHttpServletResponse response = mockMvc.perform(post("/test/ping")
+                        .with(authentication(authToken))
+                        .content(objectMapper.writeValueAsString(request))
+                        .contentType(MediaType.TEXT_PLAIN)
+                )
+                .andExpect(status().isUnsupportedMediaType())
+                .andReturn()
+                .getResponse();
+
+        String responseContent = response.getContentAsString();
+        assertThat(responseContent).isNotBlank();
+        ExceptionResponse exceptionResponse = objectMapper.readValue(responseContent, ExceptionResponse.class);
+
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unsupported media type.");
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
+        assertThat(exceptionResponse.getPath()).isEqualTo("/test/ping");
 
         verifyNoInteractions(tokenClaimsParser);
     }
