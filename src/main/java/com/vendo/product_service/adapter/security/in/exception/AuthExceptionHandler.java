@@ -17,7 +17,7 @@ class AuthExceptionHandler {
     @ExceptionHandler(UserBlockedException.class)
     ResponseEntity<ExceptionResponse> handleUserBlockedException(UserBlockedException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
+                .message("Resource is unreachable.")
                 .code(HttpStatus.FORBIDDEN.value())
                 .path(request.getRequestURI())
                 .build();

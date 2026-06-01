@@ -8,7 +8,7 @@ public class CurrentUserAdapter implements CurrentUserPort {
 
     @Override
     public String getCurrentUserId() {
-        return SecurityContextHelper.getAuthClaims().userId();
+        return SecurityContextHelper.getAuthUser().id();
     }
 
 }

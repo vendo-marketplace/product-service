@@ -5,14 +5,14 @@ import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.adapter.security.out.jwt.parser.AuthenticationParser;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
@@ -65,7 +65,7 @@ public class CategoryControllerIntegrationTest {
     @MockitoBean
     private CategoryQueryPort categoryQueryPort;
     @MockitoBean
-    private TokenClaimsParser claimsParser;
+    private AuthenticationParser claimsParser;
     @MockitoBean
     private AttributeQueryPort attributeQueryPort;
     @MockitoBean
@@ -77,9 +77,9 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryGet(String categoryId) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.ADMIN.name()), true);
+        User authUser = new User("id", UserStatus.ACTIVE, List.of(UserRole.ADMIN), true);
         return mockMvc.perform(get("/categories/{id}", categoryId)
-                .with(authentication(SecurityContextService.initializeAuth(claims))));
+                .with(authentication(SecurityContextService.initializeAuth(authUser))));
     }
 
     private ResultActions performCategoryGetTree() throws Exception {
@@ -91,9 +91,9 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(role.name()), true);
+        User authUser = new User("id", UserStatus.ACTIVE, List.of(role), true);
         return mockMvc.perform(post("/categories")
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(authUser)))
                 .content(objectMapper.writeValueAsString(categoryRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -238,9 +238,9 @@ public class CategoryControllerIntegrationTest {
                     .attributes(null)
                     .build();
             String token = "token_with_user_role";
-            TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+            User authUser = new User("id", UserStatus.ACTIVE, List.of(UserRole.USER), true);
 
-            when(claimsParser.extract(token)).thenReturn(claims);
+            when(claimsParser.extract(token)).thenReturn(authUser);
 
             String content = performCategoryPersist(request, token)
                     .andExpect(status().isForbidden())

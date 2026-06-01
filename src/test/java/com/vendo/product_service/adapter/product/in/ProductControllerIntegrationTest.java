@@ -11,6 +11,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.port.out.product.ProductCommandPort;
@@ -65,17 +66,17 @@ public class ProductControllerIntegrationTest {
     private ProductEventSenderPort productEventSenderPort;
 
     private ResultActions performProductPersist(String userId, CreateProductRequest request) throws Exception {
-        TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User authUser = new User(userId, UserStatus.ACTIVE, List.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(authUser)))
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductPersist(String request) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User authUser = new User("id", UserStatus.ACTIVE, List.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(authUser)))
                 .content(request)
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -85,17 +86,17 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductUpdate(String userId, String productId, UpdateProductRequest updateProductRequest) throws Exception {
-        TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User authUser = new User(userId, UserStatus.ACTIVE, List.of(UserRole.USER), true);
         return mockMvc.perform(put("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(authUser)))
                 .content(objectMapper.writeValueAsString(updateProductRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductGet(String productId) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User authUser = new User("id", UserStatus.ACTIVE, List.of(UserRole.USER), true);
         return mockMvc.perform(get("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(authUser)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

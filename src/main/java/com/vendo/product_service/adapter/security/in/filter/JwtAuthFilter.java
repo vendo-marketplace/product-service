@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.adapter.security.out.jwt.parser.AuthenticationParser;
+import com.vendo.product_service.domain.user.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +24,7 @@ import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADE
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final TokenClaimsParser claimsParser;
+    private final AuthenticationParser claimsParser;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -39,8 +39,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             String jwtToken = FilterUtils.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
-            TokenClaims claims = claimsParser.extract(jwtToken);
-            FilterUtils.addAuthToContext(claims, claims.roles());
+            User authUser = claimsParser.extract(jwtToken);
+            FilterUtils.addAuthToContext(authUser, User.toNames(authUser.roles()));
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;
