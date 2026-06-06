@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.security.in.filter.header;
 
 import com.vendo.product_service.domain.user.User;
+import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import com.vendo.utils_lib.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,12 +44,13 @@ public class UserHeadersExtractor {
         }
     }
 
-    private List<String> extractRoles(String roles) {
+    private List<UserRole> extractRoles(String roles) {
         if (StringUtils.isEmpty(roles)) return List.of();
 
         return Arrays.stream(roles.split(COMMA_DELIMITER))
                 .map(String::trim)
                 .filter(role -> !role.isBlank())
+                .map(UserRole::valueOf)
                 .toList();
     }
 }

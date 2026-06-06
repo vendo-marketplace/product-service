@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.spring.exception;
 
-import com.vendo.core_lib.exception.InternalServerException;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +61,7 @@ public class SpringExceptionHandler {
         return ResponseEntity.badRequest().body(exceptionResponse);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, NullPointerException.class, InternalServerException.class})
+    @ExceptionHandler({IllegalArgumentException.class, NullPointerException.class})
     protected ResponseEntity<ExceptionResponse> handleCommonExceptions(Exception e, HttpServletRequest request) {
         log.error(e.getMessage());
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()

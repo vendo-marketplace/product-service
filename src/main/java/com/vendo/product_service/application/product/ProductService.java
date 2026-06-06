@@ -9,7 +9,7 @@ import com.vendo.product_service.port.out.product.ProductCommandPort;
 import com.vendo.product_service.port.out.product.ProductEventSenderPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
 import com.vendo.product_service.port.out.product.ProductValidationPort;
-import com.vendo.product_service.port.out.user.CurrentUserPort;
+import com.vendo.product_service.port.out.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductService implements ProductUseCase {
 
-    private final CurrentUserPort currentUserPort;
+    private final AuthUserPort authUserPort;
 
     private final CategoryQueryPort categoryQueryPort;
 
@@ -40,7 +40,7 @@ public class ProductService implements ProductUseCase {
         Category category = validationPort.validateCategoryOnSave(request.getCategoryId());
         List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
 
-        request.setOwnerId(currentUserPort.getCurrentUserId());
+        request.setOwnerId(authUserPort.getAuthUser().id());
         request.setActive(true);
 
         Product saved = productCommandPort.save(request);

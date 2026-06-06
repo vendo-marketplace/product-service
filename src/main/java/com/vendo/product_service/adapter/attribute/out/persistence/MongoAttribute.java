@@ -20,4 +20,5 @@ public class MongoAttribute {
     private AttributeType type;
     private boolean required;
     private List<String> allowedValues;
+
 }

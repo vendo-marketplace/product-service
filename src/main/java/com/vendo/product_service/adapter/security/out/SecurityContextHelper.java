@@ -7,13 +7,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityContextHelper {
 
-    public static String getUserIdFromContext() {
+    public static User getAuthUserFromContext() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof User user)) {
             throw new AuthenticationCredentialsNotFoundException("Unauthorized.");
         }
 
-        return user.id();
+        return user;
     }
 }

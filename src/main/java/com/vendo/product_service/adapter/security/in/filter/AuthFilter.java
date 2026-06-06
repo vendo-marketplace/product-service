@@ -20,7 +20,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UserContextFilter extends OncePerRequestFilter {
+public class AuthFilter extends OncePerRequestFilter {
 
     private final UserHeadersExtractor headersExtractor;
 
@@ -37,7 +37,7 @@ public class UserContextFilter extends OncePerRequestFilter {
 
         try {
             User user = headersExtractor.extract(request);
-            FilterHelper.addAuthToContext(user, user.roles());
+            FilterHelper.addAuthToContext(user, user.toRoleNames());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;

@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.out.config;
 
 import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
-import com.vendo.product_service.adapter.security.in.filter.UserContextFilter;
+import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAccessDeniedHandler;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAuthenticationEntryPoint;
 import com.vendo.product_service.infrastructure.props.PathProps;
@@ -22,7 +22,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final UserContextFilter userContextFilter;
+    private final AuthFilter authFilter;
     private final InternalGatewayFilter internalGatewayFilter;
 
     private final JwtAccessDeniedHandler accessDeniedHandler;
@@ -44,8 +44,8 @@ public class SecurityConfig {
                         .requestMatchers(pathProps.getAllPaths()).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterAfter(userContextFilter, ExceptionTranslationFilter.class)
-                .addFilterAfter(internalGatewayFilter, UserContextFilter.class);
+                .addFilterAfter(authFilter, ExceptionTranslationFilter.class)
+                .addFilterAfter(internalGatewayFilter, AuthFilter.class);
 
         return http.build();
     }
