@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.core_lib.type.ServiceName;
 import com.vendo.core_lib.type.ServiceRole;
-import com.vendo.product_service.adapter.security.out.jwt.parser.InternalTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -42,7 +42,7 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
 
         try {
             String token = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
-            InternalTokenClaims claims = validateClaims(token);
+            TokenClaims claims = validateClaims(token);
             FilterHelper.addAuthToContext(claims, claims.roles());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
@@ -61,8 +61,8 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
         return antPathResolver.isPermittedPath(requestURI);
     }
 
-    private InternalTokenClaims validateClaims(String token) {
-        InternalTokenClaims claims = tokenClaimsParser.extractInternal(token);
+    private TokenClaims validateClaims(String token) {
+        TokenClaims claims = tokenClaimsParser.extract(token);
 
         boolean isProductService = claims.audience().contains(ServiceName.PRODUCT_SERVICE.toString());
         boolean hasInternalRole = claims.roles().contains(ServiceRole.INTERNAL.toString());

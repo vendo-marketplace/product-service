@@ -23,3 +23,13 @@ kafka:
 spring:
   kafka:
     bootstrap-servers: test
+
+gateway:
+  protected:
+    paths:
+      general:
+        - /actuator/health
+      internal:
+        - /internal/**
+      product:
+        - /categories/tree

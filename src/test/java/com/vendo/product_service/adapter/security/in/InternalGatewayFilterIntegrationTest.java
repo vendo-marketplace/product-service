@@ -2,10 +2,10 @@ package com.vendo.product_service.adapter.security.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.type.ServiceName;
-import com.vendo.product_service.adapter.security.out.jwt.parser.InternalTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
-import com.vendo.product_service.test_utils.builder.InternalTokenClaimsDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
+import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +46,9 @@ public class InternalGatewayFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldSuccessfullyFilter() throws Exception {
         String token = "valid_token";
-        InternalTokenClaims claims = InternalTokenClaimsDataBuilder.buildWithAllFields().build();
+        TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
 
-        when(tokenClaimsParser.extractInternal(token)).thenReturn(claims);
+        when(tokenClaimsParser.extract(token)).thenReturn(claims);
 
         String content = mockMvc.perform(get("/internal/test/ping")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
@@ -61,8 +61,8 @@ public class InternalGatewayFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldSuccessfullyFilter_whenAlreadyAuthorized() throws Exception {
-        InternalTokenClaims claims = InternalTokenClaimsDataBuilder.buildWithAllFields().build();
-        Authentication auth = SecurityContextService.initializeAuth(claims);
+        TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
+        Authentication auth = SecurityContextTestService.initializeAuth(claims);
 
         String content = mockMvc.perform(get("/internal/test/ping").with(authentication(auth)))
                 .andExpect(status().isOk())
@@ -112,7 +112,7 @@ public class InternalGatewayFilterIntegrationTest {
         String requestPath = "/internal/test/ping";
         String invalidToken = "invalid_token";
 
-        when(tokenClaimsParser.extractInternal(invalidToken)).thenThrow(new BadCredentialsException("Invalid token."));
+        when(tokenClaimsParser.extract(invalidToken)).thenThrow(new BadCredentialsException("Invalid token."));
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + invalidToken))
                 .andExpect(status().isUnauthorized())
@@ -129,13 +129,13 @@ public class InternalGatewayFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenAudienceClaimIsNotProductService() throws Exception {
-        InternalTokenClaims payload = InternalTokenClaimsDataBuilder.buildWithAllFields()
+        TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
                 .audience(Set.of(ServiceName.AUTH_SERVICE.toString()))
                 .build();
         String requestPath = "/internal/test/ping";
         String token = "valid_token";
 
-        when(tokenClaimsParser.extractInternal(token)).thenReturn(payload);
+        when(tokenClaimsParser.extract(token)).thenReturn(payload);
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isUnauthorized())
@@ -152,13 +152,13 @@ public class InternalGatewayFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenRoleIsNotInternal() throws Exception {
-        InternalTokenClaims payload = InternalTokenClaimsDataBuilder.buildWithAllFields()
+        TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
                 .roles(List.of("NOT_INTERNAL"))
                 .build();
         String requestPath = "/internal/test/ping";
         String token = "valid_token";
 
-        when(tokenClaimsParser.extractInternal(token)).thenReturn(payload);
+        when(tokenClaimsParser.extract(token)).thenReturn(payload);
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isUnauthorized())

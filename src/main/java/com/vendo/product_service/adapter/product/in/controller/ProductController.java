@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
-@PreAuthorize("@userSecurity.validateActivation(authentication)")
+@PreAuthorize("hasAuthority('ADMIN')")
 class ProductController {
 
     private final ProductUseCase productUseCase;

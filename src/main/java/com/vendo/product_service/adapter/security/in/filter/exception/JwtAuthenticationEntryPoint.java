@@ -30,7 +30,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .code(HttpServletResponse.SC_UNAUTHORIZED)
                 .path(request.getRequestURI())
-                .message(exception.getMessage())
+                .message("Unauthorized.")
                 .build();
 
         response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));

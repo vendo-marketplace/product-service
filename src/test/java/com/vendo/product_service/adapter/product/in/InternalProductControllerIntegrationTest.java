@@ -2,12 +2,12 @@ package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.InternalTokenClaims;
+import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.product.InternalProductQueryPort;
-import com.vendo.product_service.test_utils.builder.InternalTokenClaimsDataBuilder;
+import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.Test;
@@ -47,19 +47,19 @@ public class InternalProductControllerIntegrationTest {
     private InternalProductQueryPort internalProductQueryPort;
 
     private ResultActions performGetAll(String cursor, int limit) throws Exception {
-        InternalTokenClaims claims = InternalTokenClaimsDataBuilder.buildWithAllFields().build();
+        TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
         Map<String, String> params = Map.of("cursor", cursor, "limit", String.valueOf(limit));
 
         return mockMvc.perform(get("/internal/products" ).params(MultiValueMap.fromSingleValue(params))
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performGetAll(int limit) throws Exception {
-        InternalTokenClaims claims = InternalTokenClaimsDataBuilder.buildWithAllFields().build();
+        TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
 
         return mockMvc.perform(get("/internal/products" ).param("limit", String.valueOf(limit))
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

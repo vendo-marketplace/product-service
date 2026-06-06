@@ -28,7 +28,6 @@ final class FilterHelper {
         return authorization.substring(BEARER_PREFIX.length());
     }
 
-
     private static List<SimpleGrantedAuthority> toAuthorities(List<String> roles) {
         return roles.stream()
                 .map(SimpleGrantedAuthority::new)

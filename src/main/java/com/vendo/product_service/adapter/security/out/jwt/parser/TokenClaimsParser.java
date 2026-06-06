@@ -4,5 +4,4 @@ public interface TokenClaimsParser {
 
     TokenClaims extract(String token);
 
-    InternalTokenClaims extractInternal(String token);
 }

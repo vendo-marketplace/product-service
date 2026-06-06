@@ -2,17 +2,19 @@ package com.vendo.product_service.adapter.security.out.props;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-@Setter
 @Getter
+@Setter
 @Component
+@Accessors(fluent = true)
 @ConfigurationProperties(prefix = "security.jwt")
 public class JwtProperties {
 
-    private Secret secret;
+    private Internal internal;
 
-    public record Secret(String key) { }
+    public record Internal(String key) { }
 
 }

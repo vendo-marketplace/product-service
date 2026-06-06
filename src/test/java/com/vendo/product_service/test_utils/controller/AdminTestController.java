@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
 @RequestMapping("/test")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class AdminTestController {
 
     @GetMapping("/admin/ping")

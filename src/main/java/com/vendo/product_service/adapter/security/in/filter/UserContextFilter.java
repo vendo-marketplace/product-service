@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.adapter.security.in.filter.header.UserHeadersExtractor;
+import com.vendo.product_service.domain.user.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,14 +17,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class UserContextFilter extends OncePerRequestFilter {
 
-    private final TokenClaimsParser claimsParser;
+    private final UserHeadersExtractor headersExtractor;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -38,9 +36,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            String jwtToken = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
-            TokenClaims claims = claimsParser.extract(jwtToken);
-            FilterHelper.addAuthToContext(claims, claims.roles());
+            User user = headersExtractor.extract(request);
+            FilterHelper.addAuthToContext(user, user.roles());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;
@@ -54,7 +51,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return productAntPathResolver.isPermittedPath(requestURI);
+        return productAntPathResolver.isPermittedPath(request.getRequestURI());
     }
 }

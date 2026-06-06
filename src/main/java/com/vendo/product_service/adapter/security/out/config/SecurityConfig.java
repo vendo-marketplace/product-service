@@ -1,9 +1,10 @@
 package com.vendo.product_service.adapter.security.out.config;
 
 import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
-import com.vendo.product_service.adapter.security.in.filter.JwtAuthFilter;
+import com.vendo.product_service.adapter.security.in.filter.UserContextFilter;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAccessDeniedHandler;
 import com.vendo.product_service.adapter.security.in.filter.exception.JwtAuthenticationEntryPoint;
+import com.vendo.product_service.infrastructure.props.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,19 +16,19 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 
-import static com.vendo.product_service.adapter.security.in.filter.ProductAntPathResolver.PERMITTED_PATHS;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final UserContextFilter userContextFilter;
     private final InternalGatewayFilter internalGatewayFilter;
 
     private final JwtAccessDeniedHandler accessDeniedHandler;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+
+    private final PathProps pathProps;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,11 +41,11 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PERMITTED_PATHS).permitAll()
+                        .requestMatchers(pathProps.getAllPaths()).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterAfter(jwtAuthFilter, ExceptionTranslationFilter.class)
-                .addFilterAfter(internalGatewayFilter, JwtAuthFilter.class);
+                .addFilterAfter(userContextFilter, ExceptionTranslationFilter.class)
+                .addFilterAfter(internalGatewayFilter, UserContextFilter.class);
 
         return http.build();
     }

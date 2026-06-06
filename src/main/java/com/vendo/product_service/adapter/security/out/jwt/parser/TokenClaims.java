@@ -1,14 +1,16 @@
 package com.vendo.product_service.adapter.security.out.jwt.parser;
 
-import com.vendo.user_lib.type.UserStatus;
+
+import lombok.Builder;
 
 import java.util.List;
+import java.util.Set;
 
+@Builder
 public record TokenClaims(
-        String userId,
-        UserStatus status,
+        String subject,
         List<String> roles,
-        boolean emailVerified
+        Set<String> audience
 ) {
 
 }
