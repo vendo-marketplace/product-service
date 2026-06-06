@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +37,7 @@ public class FavoriteService implements FavoriteUseCase {
             throw new ProductNotFoundException("Product with id: " + productId + " not found");
         }
 
-        favoriteQueryPort.findByUserIdAndProductId(userId, productId)
+        favoriteQueryPort.findBy(userId, productId)
                 .ifPresent(f -> {
             throw new FavoriteAlreadyExistsException(
                     "Product with id: " + productId + " is already in favorites."
@@ -59,12 +61,33 @@ public class FavoriteService implements FavoriteUseCase {
     }
 
     @Override
-    public List<FavoriteResponse> getFavorites() {
-        List<String> productIds = favoriteQueryPort.findAllByUserId(currentUserPort.getCurrentUserId())
-                .stream().map(Favorite::getProductId).toList();
+    public List<FavoriteResponse> getAll() {
 
-        List<Product> allById = productQueryPort.findAllById(productIds);
+        String userId = currentUserPort.getCurrentUserId();
 
-        return favoriteMapper.toFavoriteResponse(allById);
+        List<Favorite> favorites = favoriteQueryPort.findAllBy(userId);
+
+        if (favorites.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> productIds = favorites.stream()
+                .map(Favorite::getProductId)
+                .toList();
+
+        List<Product> products = productQueryPort.findAllById(productIds);
+
+        Map<String, Favorite> favoriteByProductId = favorites.stream()
+                .collect(Collectors.toMap(
+                        Favorite::getProductId,
+                        f -> f
+                ));
+
+        return products.stream()
+                .map(product -> favoriteMapper.toResponse(
+                        product,
+                        favoriteByProductId.get(product.getId())
+                ))
+                .toList();
     }
 }

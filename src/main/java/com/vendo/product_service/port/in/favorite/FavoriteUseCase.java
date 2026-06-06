@@ -10,6 +10,6 @@ public interface FavoriteUseCase {
 
     void remove(String productId);
 
-    List<FavoriteResponse> getFavorites();
+    List<FavoriteResponse> getAll();
 
 }

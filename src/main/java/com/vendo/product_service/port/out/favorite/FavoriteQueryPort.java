@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface FavoriteQueryPort {
 
-    Optional<Favorite> findByUserIdAndProductId(String userId, String productId);
+    Optional<Favorite> findBy(String userId, String productId);
 
-    List<Favorite> findAllByUserId(String userId);
+    List<Favorite> findAllBy(String userId);
 }

@@ -16,7 +16,7 @@ public class FavoriteCommandAdapter implements FavoriteCommandPort {
 
     @Override
     public void save(Favorite favorite) {
-        MongoFavorite saved = favoriteRepository.save(favoriteMapper.toMongoFavorite(favorite));
+        MongoFavorite saved = favoriteRepository.save(favoriteMapper.toEntity(favorite));
         favoriteMapper.toFavorite(saved);
     }
 
