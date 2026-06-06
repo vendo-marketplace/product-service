@@ -7,6 +7,8 @@ import com.vendo.product_service.domain.product.model.Product;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class ProductQueryAdapter implements ProductQueryPort {
@@ -24,5 +26,12 @@ public class ProductQueryAdapter implements ProductQueryPort {
     @Override
     public boolean existsById(String productId) {
         return repository.existsById(productId);
+    }
+
+    @Override
+    public List<Product> findAllById(List<String> productIds) {
+        List<MongoProduct> allById = repository.findAllById(productIds);
+
+        return mapper.toProducts(allById);
     }
 }
