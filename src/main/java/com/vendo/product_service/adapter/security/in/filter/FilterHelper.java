@@ -7,12 +7,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
+import java.util.Set;
 
 import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
 
 final class FilterHelper {
 
-    static void addAuthToContext(Object principal, List<String> roles) {
+    static void addAuthToContext(Object principal, Set<String> roles) {
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(principal, null, toAuthorities(roles));
         SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -28,7 +29,7 @@ final class FilterHelper {
         return authorization.substring(BEARER_PREFIX.length());
     }
 
-    private static List<SimpleGrantedAuthority> toAuthorities(List<String> roles) {
+    private static List<SimpleGrantedAuthority> toAuthorities(Set<String> roles) {
         return roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .toList();

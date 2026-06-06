@@ -27,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -58,7 +58,7 @@ public class AttributeControllerIntegrationTest {
     }
 
     private User buildUser(UserRole role) {
-        return new User("id", "email", UserStatus.ACTIVE, List.of(role.name()), true);
+        return new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
     }
 
     @Nested

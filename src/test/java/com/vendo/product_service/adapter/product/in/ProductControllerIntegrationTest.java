@@ -36,6 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -65,7 +66,7 @@ public class ProductControllerIntegrationTest {
     private ProductEventSenderPort productEventSenderPort;
 
     private ResultActions performProductPersist(String userId, CreateProductRequest request) throws Exception {
-        User user = new User(userId, "email", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
                 .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(request))
@@ -73,7 +74,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductPersist(String request) throws Exception {
-        User user = new User("id", "user", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User("id", "user", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
                 .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(request)
@@ -85,7 +86,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductUpdate(String userId, String productId, UpdateProductRequest updateProductRequest) throws Exception {
-        User user = new User(userId, "email", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(put("/products/{id}", productId)
                 .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(updateProductRequest))
@@ -93,7 +94,7 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductGet(String productId) throws Exception {
-        User user = new User("id", "email", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(get("/products/{id}", productId)
                 .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .contentType(MediaType.APPLICATION_JSON));

@@ -9,31 +9,31 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collections;
+import java.util.Set;
 
 import static com.vendo.core_lib.constants.Delimiters.COMMA_DELIMITER;
 
 public class SecurityContextTestService {
 
     public static Authentication initializeAuth(TokenClaims claims) {
-        String role = claims.roles().get(0);
-        if (role == null || role.isBlank()) role = UserRole.USER.name();
+        Set<String> roles = claims.roles();
+        if (roles == null || roles.isEmpty()) roles = Set.of(UserRole.USER.name());
 
         return new UsernamePasswordAuthenticationToken(
                 claims,
                 null,
-                Collections.singletonList(new SimpleGrantedAuthority(role))
+                roles.stream().map(SimpleGrantedAuthority::new).toList()
         );
     }
 
     public static Authentication initializeAuth(User user) {
-        String role = user.roles().get(0);
-        if (role == null || role.isBlank()) role = UserRole.USER.name();
+        Set<UserRole> roles = user.roles();
+        if (roles == null || roles.isEmpty()) roles = Set.of(UserRole.USER);
 
         return new UsernamePasswordAuthenticationToken(
                 user,
                 null,
-                Collections.singletonList(new SimpleGrantedAuthority(role))
+                roles.stream().map(role -> new SimpleGrantedAuthority(role.name())).toList()
         );
     }
 
@@ -42,7 +42,7 @@ public class SecurityContextTestService {
 
         httpHeaders.add(UserHeaders.ID.getHeader(), user.id());
         httpHeaders.add(UserHeaders.EMAIL.getHeader(), user.email());
-        httpHeaders.add(UserHeaders.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.roles()));
+        httpHeaders.add(UserHeaders.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames()));
         httpHeaders.add(UserHeaders.EMAIL_VERIFIED.getHeader(), String.valueOf(user.emailVerified()));
         httpHeaders.add(UserHeaders.STATUS.getHeader(), String.valueOf(user.status()));
 

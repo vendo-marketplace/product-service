@@ -37,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -74,7 +75,7 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryGet(String categoryId) throws Exception {
-        User user = new User("id", "email", UserStatus.ACTIVE, List.of(UserRole.ADMIN.name()), true);
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.ADMIN), true);
         return mockMvc.perform(get("/categories/{id}", categoryId)
                 .with(authentication(SecurityContextTestService.initializeAuth(user))));
     }
@@ -88,7 +89,7 @@ public class CategoryControllerIntegrationTest {
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
-        User user = new User("id", "email", UserStatus.ACTIVE, List.of(UserRole.ADMIN.name()), true);
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
         return mockMvc.perform(post("/categories")
                 .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(categoryRequest))
@@ -234,10 +235,8 @@ public class CategoryControllerIntegrationTest {
                     .parentId(null)
                     .attributes(null)
                     .build();
-            String token = "token_with_user_role";
-            User user = new User("id", "email", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
 
-            String content = performCategoryPersist(request, token)
+            String content = performCategoryPersist(request, UserRole.USER)
                     .andExpect(status().isForbidden())
                     .andReturn()
                     .getResponse()

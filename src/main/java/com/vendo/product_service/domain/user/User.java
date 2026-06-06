@@ -4,21 +4,22 @@ import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import lombok.Builder;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Builder
 public record User(
         String id,
         String email,
         UserStatus status,
-        List<UserRole> roles,
+        Set<UserRole> roles,
         boolean emailVerified
 ) {
 
-    public List<String> toRoleNames() {
+    public Set<String> toRoleNames() {
         return roles.stream()
                 .map(Enum::name)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
 }

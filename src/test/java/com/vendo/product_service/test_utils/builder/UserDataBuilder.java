@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.user.User;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 
-import java.util.List;
+import java.util.Set;
 
 public record UserDataBuilder() {
 
@@ -13,7 +13,7 @@ public record UserDataBuilder() {
                 .id("id")
                 .email("email")
                 .status(UserStatus.ACTIVE)
-                .roles(List.of(UserRole.USER.name()))
+                .roles(Set.of(UserRole.USER))
                 .emailVerified(true);
     }
 

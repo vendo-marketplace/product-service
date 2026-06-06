@@ -18,7 +18,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
 import java.util.Set;
 
 import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
@@ -50,7 +49,7 @@ public class InternalGatewayFilterIntegrationTest {
 
         when(tokenClaimsParser.extract(token)).thenReturn(claims);
 
-        String content = mockMvc.perform(get("/internal/test/ping")
+        String content = mockMvc.perform(get("/internal/ping")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -64,7 +63,7 @@ public class InternalGatewayFilterIntegrationTest {
         TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
         Authentication auth = SecurityContextTestService.initializeAuth(claims);
 
-        String content = mockMvc.perform(get("/internal/test/ping").with(authentication(auth)))
+        String content = mockMvc.perform(get("/internal/ping").with(authentication(auth)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
 
@@ -74,7 +73,7 @@ public class InternalGatewayFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenNoToken() throws Exception {
-        String requestPath = "/internal/test/ping";
+        String requestPath = "/internal/ping";
 
         String content = mockMvc.perform(get(requestPath))
                 .andExpect(status().isUnauthorized())
@@ -91,7 +90,7 @@ public class InternalGatewayFilterIntegrationTest {
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenTokenWithoutBearerPrefix() throws Exception {
-        String requestPath = "/internal/test/ping";
+        String requestPath = "/ping/pong";
         String token = "valid_token";
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, token))
@@ -102,14 +101,14 @@ public class InternalGatewayFilterIntegrationTest {
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
     }
 
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenInvalidToken() throws Exception {
-        String requestPath = "/internal/test/ping";
+        String requestPath = "/internal/ping";
         String invalidToken = "invalid_token";
 
         when(tokenClaimsParser.extract(invalidToken)).thenThrow(new BadCredentialsException("Invalid token."));
@@ -122,7 +121,7 @@ public class InternalGatewayFilterIntegrationTest {
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
     }
@@ -132,7 +131,7 @@ public class InternalGatewayFilterIntegrationTest {
         TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
                 .audience(Set.of(ServiceName.AUTH_SERVICE.toString()))
                 .build();
-        String requestPath = "/internal/test/ping";
+        String requestPath = "/internal/ping";
         String token = "valid_token";
 
         when(tokenClaimsParser.extract(token)).thenReturn(payload);
@@ -145,7 +144,7 @@ public class InternalGatewayFilterIntegrationTest {
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
     }
@@ -153,9 +152,9 @@ public class InternalGatewayFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenRoleIsNotInternal() throws Exception {
         TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
-                .roles(List.of("NOT_INTERNAL"))
+                .roles(Set.of("NOT_INTERNAL"))
                 .build();
-        String requestPath = "/internal/test/ping";
+        String requestPath = "/internal/ping";
         String token = "valid_token";
 
         when(tokenClaimsParser.extract(token)).thenReturn(payload);
@@ -168,7 +167,7 @@ public class InternalGatewayFilterIntegrationTest {
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid token.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
     }

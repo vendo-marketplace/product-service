@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -49,6 +50,17 @@ public class SpringExceptionHandler {
         return ResponseEntity.badRequest().body(exceptionResponse);
     }
 
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    protected ResponseEntity<ExceptionResponse> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message("Unsupported media type.")
+                .code(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(exceptionResponse);
+    }
+
     @ExceptionHandler(HttpMessageNotReadableException.class)
     protected ResponseEntity<ExceptionResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest request) {
         log.error(e.getMessage());
@@ -70,6 +82,6 @@ public class SpringExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity.badRequest().body(exceptionResponse);
+        return ResponseEntity.internalServerError().body(exceptionResponse);
     }
 }

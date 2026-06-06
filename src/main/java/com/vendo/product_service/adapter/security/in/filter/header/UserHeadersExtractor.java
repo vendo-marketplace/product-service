@@ -10,7 +10,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.vendo.core_lib.constants.Delimiters.COMMA_DELIMITER;
 import static com.vendo.security_lib.type.UserHeaders.*;
@@ -31,7 +32,7 @@ public class UserHeadersExtractor {
     private String require(HttpServletRequest request, String header) {
         String value = request.getHeader(header);
         if (StringUtils.isEmpty(value)) {
-            throw new AuthenticationCredentialsNotFoundException("Required user header %s is missing.".formatted(header));
+            throw new AuthenticationCredentialsNotFoundException("Required header %s is missing.".formatted(header));
         }
         return value;
     }
@@ -44,13 +45,13 @@ public class UserHeadersExtractor {
         }
     }
 
-    private List<UserRole> extractRoles(String roles) {
-        if (StringUtils.isEmpty(roles)) return List.of();
+    private Set<UserRole> extractRoles(String roles) {
+        if (StringUtils.isEmpty(roles)) return Set.of();
 
         return Arrays.stream(roles.split(COMMA_DELIMITER))
                 .map(String::trim)
                 .filter(role -> !role.isBlank())
                 .map(UserRole::valueOf)
-                .toList();
+                .collect(Collectors.toSet());
     }
 }

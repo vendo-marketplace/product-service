@@ -14,6 +14,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,7 +30,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         try {
             Claims claims = jwtService.extractAllClaims(token, jwtProperties.internal().key());
 
-            List<String> roles = extractRoles(claims, InternalClaims.ROLES.getClaim());
+            Set<String> roles = extractRoles(claims, InternalClaims.ROLES.getClaim());
             Set<String> audience = extractAudience(claims);
 
             return new TokenClaims(claims.getSubject(), roles, audience);
@@ -42,7 +43,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
         }
     }
 
-    private List<String> extractRoles(Claims claims, String rolesClaim) {
+    private Set<String> extractRoles(Claims claims, String rolesClaim) {
         Object rawRoles = claims.get(rolesClaim);
         AuthenticationException e = new BadCredentialsException("Invalid token.");
 
@@ -51,7 +52,7 @@ public class JwtClaimsParser implements TokenClaimsParser {
 
                 return list.stream()
                         .map(String.class::cast)
-                        .toList();
+                        .collect(Collectors.toSet());
             }
         }
 

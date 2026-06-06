@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.spring.exception;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.FieldError;

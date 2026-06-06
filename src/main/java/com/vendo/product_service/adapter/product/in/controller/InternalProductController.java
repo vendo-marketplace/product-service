@@ -4,7 +4,6 @@ import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.in.product.InternalProductUseCase;
-import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import java.util.List;
 
 import static com.vendo.product_service.adapter.product.in.constants.InternalProductConstants.MAX_LIMIT;
 
-@Hidden
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/products")
