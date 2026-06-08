@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -16,12 +15,6 @@ public class FavoriteQueryAdapter implements FavoriteQueryPort {
     private final FavoriteRepository favoriteRepository;
     private final FavoriteMapper favoriteMapper;
 
-
-    @Override
-    public Optional<Favorite> findBy(String userId, String productId) {
-        return favoriteRepository.findByUserIdAndProductId(userId, productId)
-                .map(favoriteMapper::toFavorite);
-    }
 
     @Override
     public List<Favorite> findAllBy(String userId) {

@@ -29,7 +29,7 @@ public class ProductQueryAdapter implements ProductQueryPort {
     }
 
     @Override
-    public List<Product> findAllById(List<String> productIds) {
+    public List<Product> findAllByIds(List<String> productIds) {
         List<MongoProduct> allById = repository.findAllById(productIds);
 
         return mapper.toProducts(allById);

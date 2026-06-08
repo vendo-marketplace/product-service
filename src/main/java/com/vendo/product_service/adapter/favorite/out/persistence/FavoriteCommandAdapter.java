@@ -1,6 +1,8 @@
 package com.vendo.product_service.adapter.favorite.out.persistence;
 
+import com.mongodb.DuplicateKeyException;
 import com.vendo.product_service.adapter.favorite.out.mapper.FavoriteMapper;
+import com.vendo.product_service.domain.favorite.exception.FavoriteAlreadyExistsException;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.port.out.favorite.FavoriteCommandPort;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,11 @@ public class FavoriteCommandAdapter implements FavoriteCommandPort {
 
     @Override
     public void save(Favorite favorite) {
-        MongoFavorite saved = favoriteRepository.save(favoriteMapper.toEntity(favorite));
-        favoriteMapper.toFavorite(saved);
+        try {
+           favoriteRepository.save(favoriteMapper.toEntity(favorite));
+        } catch (DuplicateKeyException e) {
+            throw new FavoriteAlreadyExistsException("Product is already in favorites");
+        }
     }
 
     @Override

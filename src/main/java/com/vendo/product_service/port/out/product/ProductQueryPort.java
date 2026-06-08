@@ -8,6 +8,6 @@ public interface ProductQueryPort {
 
     Product findById(String id);
     boolean existsById(String id);
-    List<Product> findAllById(List<String> productIds);
+    List<Product> findAllByIds(List<String> productIds);
 
 }

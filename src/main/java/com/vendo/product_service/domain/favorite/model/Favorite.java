@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 
 @Data
 @Builder
@@ -16,6 +15,5 @@ public class Favorite {
     private String id;
     private String userId;
     private String productId;
-    private Instant createdAt;
 
 }

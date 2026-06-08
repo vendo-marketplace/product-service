@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.favorite.in;
 
 import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
+import com.vendo.product_service.adapter.favorite.out.mapper.FavoriteMapper;
 import com.vendo.product_service.port.in.favorite.FavoriteUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,7 @@ import java.util.List;
 public class FavoriteController {
 
     private final FavoriteUseCase favoriteUseCase;
+    private final FavoriteMapper favoriteMapper;
 
     @PostMapping("/{productId}")
     public void addFavorite(@PathVariable String productId) {
@@ -26,7 +28,7 @@ public class FavoriteController {
 
     @GetMapping
     public List<FavoriteResponse> getFavorites() {
-        return favoriteUseCase.getAll();
+        return favoriteUseCase.getAll().stream().map(favoriteMapper::toResponse).toList();
     }
 
 }
