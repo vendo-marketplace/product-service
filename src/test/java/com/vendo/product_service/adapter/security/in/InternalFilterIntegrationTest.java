@@ -5,9 +5,9 @@ import com.vendo.core_lib.type.ServiceName;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
-import com.vendo.security_starter.response.ExceptionResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,8 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
 
-import static com.vendo.security_starter.filter.utils.FilterUtils.AUTHORIZATION_HEADER;
-import static com.vendo.security_starter.filter.utils.FilterUtils.BEARER_PREFIX;
+import static com.vendo.security_lib.http.HttpUtils.AUTHORIZATION_HEADER;
+import static com.vendo.security_lib.http.HttpUtils.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;

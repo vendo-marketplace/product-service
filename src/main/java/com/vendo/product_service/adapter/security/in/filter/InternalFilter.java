@@ -4,6 +4,7 @@ import com.vendo.core_lib.type.ServiceName;
 import com.vendo.core_lib.type.ServiceRole;
 import com.vendo.product_service.adapter.security.in.filter.path.InternalAntPathResolver;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
+import com.vendo.security_lib.http.HttpUtils;
 import com.vendo.security_starter.filter.utils.FilterUtils;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
@@ -24,7 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.vendo.security_starter.filter.utils.FilterUtils.AUTHORIZATION_HEADER;
+import static com.vendo.security_lib.http.HttpUtils.AUTHORIZATION_HEADER;
 
 @Slf4j
 @Component
@@ -47,7 +48,7 @@ public class InternalFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = FilterUtils.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
+            String token = HttpUtils.getTokenFrom(request.getHeader(AUTHORIZATION_HEADER));
             TokenClaims claims = validateClaims(token);
             FilterUtils.addAuthToContext(claims, claims.roles());
         } catch (AuthenticationException e) {

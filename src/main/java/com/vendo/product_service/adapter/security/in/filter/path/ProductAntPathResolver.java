@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.filter.path;
 
 import com.vendo.product_service.infrastructure.props.PathProps;
-import com.vendo.security_starter.resolver.AntPathResolver;
+import com.vendo.security_lib.resolver.AntPathResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;

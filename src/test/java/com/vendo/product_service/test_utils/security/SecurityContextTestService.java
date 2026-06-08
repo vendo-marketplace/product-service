@@ -1,8 +1,8 @@
 package com.vendo.product_service.test_utils.security;
 
 import com.vendo.product_service.domain.user.User;
+import com.vendo.security_lib.type.UserHeader;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
-import com.vendo.security_starter.type.UserHeader;
 import com.vendo.user_lib.type.UserRole;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

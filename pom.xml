@@ -127,7 +127,7 @@
         <dependency>
             <groupId>io.github.vendo-marketplace-be</groupId>
             <artifactId>security-starter</artifactId>
-            <version>3.1.0</version>
+            <version>4.1.1</version>
         </dependency>
 
         <!-- vendo libs-->
@@ -137,6 +137,11 @@
             <artifactId>event-lib</artifactId>
             <version>5.2.5</version>
         </dependency>
+		<dependency>
+			<groupId>io.github.vendo-marketplace-be</groupId>
+			<artifactId>security-lib</artifactId>
+			<version>7.3.2</version>
+		</dependency>
 
     </dependencies>
 	<dependencyManagement>
