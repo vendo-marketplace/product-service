@@ -41,7 +41,7 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            User user = from(request);
+            User user = parseUserFrom(request);
             FilterUtils.addAuthToContext(user, user.toRoleNames());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
@@ -54,17 +54,17 @@ public class AuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private User from(HttpServletRequest request) {
+    private User parseUserFrom(HttpServletRequest request) {
         String id = headerExtractor.require(UserHeader.ID.getHeader(), request);
         String email = request.getHeader(UserHeader.EMAIL.getHeader());
-        boolean emailVerified = Boolean.parseBoolean(request.getHeader(UserHeader.EMAIL_VERIFIED.getHeader()));
+        String emailVerified = request.getHeader(UserHeader.EMAIL_VERIFIED.getHeader());
 
         return User.builder()
                 .id(id)
                 .email(email)
                 .status(userHeaderExtractor.extractStatus(request))
                 .roles(userHeaderExtractor.extractRoles(request))
-                .emailVerified(emailVerified)
+                .emailVerified(Boolean.parseBoolean(emailVerified))
                 .build();
     }
 
