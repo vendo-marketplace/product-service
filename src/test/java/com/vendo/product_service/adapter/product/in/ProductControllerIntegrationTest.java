@@ -18,7 +18,7 @@ import com.vendo.product_service.port.out.product.ProductEventSenderPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import com.vendo.utils_lib.AssertionUtils;

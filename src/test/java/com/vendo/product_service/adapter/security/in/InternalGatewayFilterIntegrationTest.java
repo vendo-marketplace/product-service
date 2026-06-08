@@ -2,11 +2,12 @@ package com.vendo.product_service.adapter.security.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.type.ServiceName;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.jwt.parser.TokenClaims;
+import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
+import com.vendo.security_starter.response.ExceptionResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,8 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Set;
 
-import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
-import static com.vendo.security_lib.constants.AuthConstants.BEARER_PREFIX;
+import static com.vendo.security_starter.filter.utils.FilterUtils.AUTHORIZATION_HEADER;
+import static com.vendo.security_starter.filter.utils.FilterUtils.BEARER_PREFIX;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -39,6 +40,9 @@ public class InternalGatewayFilterIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private JwtProperties properties;
+
     @MockitoBean
     private TokenClaimsParser tokenClaimsParser;
 
@@ -47,7 +51,7 @@ public class InternalGatewayFilterIntegrationTest {
         String token = "valid_token";
         TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
 
-        when(tokenClaimsParser.extract(token)).thenReturn(claims);
+        when(tokenClaimsParser.extract(token, properties.getInternal().key())).thenReturn(claims);
 
         String content = mockMvc.perform(get("/internal/ping")
                         .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
@@ -111,7 +115,7 @@ public class InternalGatewayFilterIntegrationTest {
         String requestPath = "/internal/ping";
         String invalidToken = "invalid_token";
 
-        when(tokenClaimsParser.extract(invalidToken)).thenThrow(new BadCredentialsException("Invalid token."));
+        when(tokenClaimsParser.extract(invalidToken, properties.getInternal().key())).thenThrow(new BadCredentialsException("Invalid token."));
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + invalidToken))
                 .andExpect(status().isUnauthorized())
@@ -134,7 +138,7 @@ public class InternalGatewayFilterIntegrationTest {
         String requestPath = "/internal/ping";
         String token = "valid_token";
 
-        when(tokenClaimsParser.extract(token)).thenReturn(payload);
+        when(tokenClaimsParser.extract(token, properties.getInternal().key())).thenReturn(payload);
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isUnauthorized())
@@ -157,7 +161,7 @@ public class InternalGatewayFilterIntegrationTest {
         String requestPath = "/internal/ping";
         String token = "valid_token";
 
-        when(tokenClaimsParser.extract(token)).thenReturn(payload);
+        when(tokenClaimsParser.extract(token, properties.getInternal().key())).thenReturn(payload);
 
         String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
                 .andExpect(status().isUnauthorized())

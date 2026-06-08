@@ -2,13 +2,13 @@ package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.product.InternalProductQueryPort;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.jwt.parser.TokenClaims;
+import com.vendo.security_starter.response.ExceptionResponse;
 import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

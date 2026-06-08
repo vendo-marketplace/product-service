@@ -5,8 +5,6 @@ security:
   jwt:
     internal:
       key: internalKeyinternalKeyinternalKeyinternalKey
-    secret:
-      key: secretKeysecretKeysecretKeysecretKeysecretKey
 
 eureka:
   client:

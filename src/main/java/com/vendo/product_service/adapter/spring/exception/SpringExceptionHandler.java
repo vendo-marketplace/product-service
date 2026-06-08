@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.spring.exception;
 
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -1,8 +1,8 @@
 package com.vendo.product_service.test_utils.security;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.security_lib.type.UserHeaders;
+import com.vendo.security_starter.jwt.parser.TokenClaims;
+import com.vendo.security_starter.type.UserHeader;
 import com.vendo.user_lib.type.UserRole;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,11 +40,11 @@ public class SecurityContextTestService {
     public static HttpHeaders extractHeaders(User user) {
         HttpHeaders httpHeaders = new HttpHeaders();
 
-        httpHeaders.add(UserHeaders.ID.getHeader(), user.id());
-        httpHeaders.add(UserHeaders.EMAIL.getHeader(), user.email());
-        httpHeaders.add(UserHeaders.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames()));
-        httpHeaders.add(UserHeaders.EMAIL_VERIFIED.getHeader(), String.valueOf(user.emailVerified()));
-        httpHeaders.add(UserHeaders.STATUS.getHeader(), String.valueOf(user.status()));
+        httpHeaders.add(UserHeader.ID.getHeader(), user.id());
+        httpHeaders.add(UserHeader.EMAIL.getHeader(), user.email());
+        httpHeaders.add(UserHeader.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames()));
+        httpHeaders.add(UserHeader.EMAIL_VERIFIED.getHeader(), String.valueOf(user.emailVerified()));
+        httpHeaders.add(UserHeader.STATUS.getHeader(), String.valueOf(user.status()));
 
         return httpHeaders;
     }

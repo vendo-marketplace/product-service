@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.attribute.in.exception;
 
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

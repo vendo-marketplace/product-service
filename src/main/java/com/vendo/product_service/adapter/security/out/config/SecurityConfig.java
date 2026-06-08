@@ -2,8 +2,6 @@ package com.vendo.product_service.adapter.security.out.config;
 
 import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
 import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
-import com.vendo.product_service.adapter.security.in.filter.exception.JwtAccessDeniedHandler;
-import com.vendo.product_service.adapter.security.in.filter.exception.JwtAuthenticationEntryPoint;
 import com.vendo.product_service.infrastructure.props.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +11,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 
 @Configuration
@@ -25,8 +25,8 @@ public class SecurityConfig {
     private final AuthFilter authFilter;
     private final InternalGatewayFilter internalGatewayFilter;
 
-    private final JwtAccessDeniedHandler accessDeniedHandler;
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final AccessDeniedHandler accessDeniedHandler;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
 
     private final PathProps pathProps;
 

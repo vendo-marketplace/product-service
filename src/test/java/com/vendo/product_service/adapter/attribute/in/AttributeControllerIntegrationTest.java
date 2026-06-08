@@ -9,7 +9,7 @@ import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_starter.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import com.vendo.utils_lib.AssertionUtils;

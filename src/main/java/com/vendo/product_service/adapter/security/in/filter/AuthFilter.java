@@ -1,7 +1,10 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.in.filter.header.UserHeadersExtractor;
 import com.vendo.product_service.domain.user.User;
+import com.vendo.security_starter.filter.header.HeaderExtractor;
+import com.vendo.security_starter.filter.header.UserHeaderExtractor;
+import com.vendo.security_starter.filter.utils.FilterUtils;
+import com.vendo.security_starter.type.UserHeader;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +25,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthFilter extends OncePerRequestFilter {
 
-    private final UserHeadersExtractor headersExtractor;
+    private final UserHeaderExtractor userHeaderExtractor;
+    private final HeaderExtractor headerExtractor;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -36,8 +40,8 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            User user = headersExtractor.extract(request);
-            FilterHelper.addAuthToContext(user, user.toRoleNames());
+            User user = extractAll(request);
+            FilterUtils.addAuthToContext(user, user.toRoleNames());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;
@@ -47,6 +51,16 @@ public class AuthFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private User extractAll(HttpServletRequest request) {
+        return User.builder()
+                .id(headerExtractor.require(UserHeader.ID.getHeader(), request))
+                .email(request.getHeader(UserHeader.EMAIL.getHeader()))
+                .status(userHeaderExtractor.extractStatus(request))
+                .roles(userHeaderExtractor.extractRoles(request))
+                .emailVerified(Boolean.parseBoolean(request.getHeader(UserHeader.EMAIL_VERIFIED.getHeader())))
+                .build();
     }
 
     @Override
