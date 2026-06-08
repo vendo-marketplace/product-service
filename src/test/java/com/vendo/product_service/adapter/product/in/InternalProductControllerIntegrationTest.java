@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.product.InternalProductQueryPort;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
@@ -9,7 +10,6 @@ import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
-import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

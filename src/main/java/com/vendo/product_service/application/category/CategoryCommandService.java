@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.category;
 
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryCommandUseCase;
@@ -7,7 +8,6 @@ import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.utils_lib.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;

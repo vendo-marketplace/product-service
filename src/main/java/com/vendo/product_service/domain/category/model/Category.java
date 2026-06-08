@@ -1,9 +1,9 @@
 package com.vendo.product_service.domain.category.model;
 
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.utils_lib.StringUtils;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
