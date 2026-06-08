@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.security.out.config;
 
-import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
+import com.vendo.product_service.adapter.security.in.filter.InternalFilter;
 import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
 import com.vendo.product_service.infrastructure.props.PathProps;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 public class SecurityConfig {
 
     private final AuthFilter authFilter;
-    private final InternalGatewayFilter internalGatewayFilter;
+    private final InternalFilter internalFilter;
 
     private final AccessDeniedHandler accessDeniedHandler;
     private final AuthenticationEntryPoint authenticationEntryPoint;
@@ -45,7 +45,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterAfter(authFilter, ExceptionTranslationFilter.class)
-                .addFilterAfter(internalGatewayFilter, AuthFilter.class);
+                .addFilterAfter(internalFilter, AuthFilter.class);
 
         return http.build();
     }

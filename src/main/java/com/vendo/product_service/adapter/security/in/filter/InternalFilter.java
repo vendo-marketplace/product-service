@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.core_lib.type.ServiceName;
 import com.vendo.core_lib.type.ServiceRole;
+import com.vendo.product_service.adapter.security.in.filter.path.InternalAntPathResolver;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.security_starter.filter.utils.FilterUtils;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
@@ -28,7 +29,7 @@ import static com.vendo.security_starter.filter.utils.FilterUtils.AUTHORIZATION_
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InternalGatewayFilter extends OncePerRequestFilter {
+public class InternalFilter extends OncePerRequestFilter {
 
     private final JwtProperties props;
 

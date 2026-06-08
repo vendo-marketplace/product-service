@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
+import com.vendo.product_service.adapter.security.in.filter.path.ProductAntPathResolver;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.security_starter.filter.header.HeaderExtractor;
 import com.vendo.security_starter.filter.header.UserHeaderExtractor;
