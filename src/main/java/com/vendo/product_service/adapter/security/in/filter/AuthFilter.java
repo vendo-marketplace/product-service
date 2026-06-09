@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.product_service.adapter.security.in.filter.path.ProductAntPathResolver;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.security_lib.type.UserHeader;
+import com.vendo.security_lib.type.AuthHeader;
 import com.vendo.security_starter.filter.header.HeaderExtractor;
 import com.vendo.security_starter.filter.header.UserHeaderExtractor;
 import com.vendo.security_starter.filter.utils.FilterUtils;
@@ -55,9 +55,9 @@ public class AuthFilter extends OncePerRequestFilter {
     }
 
     private User parseUserFrom(HttpServletRequest request) {
-        String id = headerExtractor.require(UserHeader.ID.getHeader(), request);
-        String email = request.getHeader(UserHeader.EMAIL.getHeader());
-        String emailVerified = request.getHeader(UserHeader.EMAIL_VERIFIED.getHeader());
+        String id = headerExtractor.require(AuthHeader.ID.getHeader(), request);
+        String email = request.getHeader(AuthHeader.EMAIL.getHeader());
+        String emailVerified = request.getHeader(AuthHeader.EMAIL_VERIFIED.getHeader());
 
         return User.builder()
                 .id(id)

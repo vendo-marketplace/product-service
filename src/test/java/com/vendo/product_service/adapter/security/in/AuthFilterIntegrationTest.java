@@ -6,7 +6,7 @@ import com.vendo.product_service.test_utils.builder.UserDataBuilder;
 import com.vendo.product_service.test_utils.controller.RequestPing;
 import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
-import com.vendo.security_lib.type.UserHeader;
+import com.vendo.security_lib.type.AuthHeader;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -107,8 +107,8 @@ public class AuthFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenIdHeaderIsMissing() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(get("/ping")
-                        .header(UserHeader.STATUS.getHeader(), user.status().name())
-                        .header(UserHeader.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames())))
+                        .header(AuthHeader.STATUS.getHeader(), user.status().name())
+                        .header(AuthHeader.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames())))
                 .andExpect(status().isUnauthorized())
                 .andReturn()
                 .getResponse();
@@ -125,9 +125,9 @@ public class AuthFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenStatusIsInvalidValue() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(get("/ping")
-                        .header(UserHeader.ID.getHeader(), user.id())
-                        .header(UserHeader.STATUS.getHeader(), "invalid_value")
-                        .header(UserHeader.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames())))
+                        .header(AuthHeader.ID.getHeader(), user.id())
+                        .header(AuthHeader.STATUS.getHeader(), "invalid_value")
+                        .header(AuthHeader.ROLES.getHeader(), String.join(COMMA_DELIMITER, user.toRoleNames())))
                 .andExpect(status().isUnauthorized())
                 .andReturn()
                 .getResponse();
@@ -144,9 +144,9 @@ public class AuthFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldReturnUnauthorized_whenRoleIsInvalidValue() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(get("/ping")
-                        .header(UserHeader.ID.getHeader(), user.id())
-                        .header(UserHeader.STATUS.getHeader(), user.status().name())
-                        .header(UserHeader.ROLES.getHeader(), "invalid_role"))
+                        .header(AuthHeader.ID.getHeader(), user.id())
+                        .header(AuthHeader.STATUS.getHeader(), user.status().name())
+                        .header(AuthHeader.ROLES.getHeader(), "invalid_role"))
                 .andExpect(status().isUnauthorized())
                 .andReturn()
                 .getResponse();
