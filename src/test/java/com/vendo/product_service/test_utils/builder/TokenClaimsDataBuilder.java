@@ -10,7 +10,7 @@ public class TokenClaimsDataBuilder {
 
     public static TokenClaims.Builder buildWithAllFields() {
         return TokenClaims.builder()
-                .subject(ServiceName.INDEXER_SERVICE.toString())
+                .subject(ServiceName.AUTH_SERVICE.getServiceName())
                 .audience(Set.of(ServiceName.PRODUCT_SERVICE.toString()))
                 .roles(Set.of(ServiceRole.INTERNAL.toString()));
     }

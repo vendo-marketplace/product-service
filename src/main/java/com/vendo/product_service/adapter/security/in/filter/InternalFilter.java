@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.core_lib.type.ServiceName;
 import com.vendo.core_lib.type.ServiceRole;
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.adapter.security.in.filter.path.InternalAntPathResolver;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.security_lib.http.HttpUtils;
@@ -70,6 +71,10 @@ public class InternalFilter extends OncePerRequestFilter {
 
     private TokenClaims validateClaims(String token) {
         TokenClaims claims = tokenClaimsParser.extract(token, props.getInternal().key());
+
+        if (StringUtils.isEmpty(claims.subject()) || !claims.subject().equals(ServiceName.AUTH_SERVICE.getServiceName())) {
+            throw new BadCredentialsException("Invalid subject %s.".formatted(claims.subject()));
+        }
 
         if (CollectionUtils.isEmpty(claims.roles()) || !claims.roles().contains(ServiceRole.INTERNAL.toString())) {
             throw new BadCredentialsException("Invalid roles %s.".formatted(claims.roles()));

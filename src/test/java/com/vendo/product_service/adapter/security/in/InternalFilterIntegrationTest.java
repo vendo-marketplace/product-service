@@ -175,4 +175,27 @@ public class InternalFilterIntegrationTest {
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
         assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
     }
+
+    @Test
+    void doFilterInternal_shouldReturnUnauthorized_whenSubjectIsNotAuthService() throws Exception {
+        TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
+                .subject(ServiceName.INDEXER_SERVICE.getServiceName())
+                .build();
+        String requestPath = "/internal/ping";
+        String token = "valid_token";
+
+        when(tokenClaimsParser.extract(token, properties.getInternal().key())).thenReturn(payload);
+
+        String content = mockMvc.perform(get(requestPath).header(AUTHORIZATION_HEADER, BEARER_PREFIX + token))
+                .andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(content).isNotBlank();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(exceptionResponse.getPath()).isEqualTo(requestPath);
+    }
 }
