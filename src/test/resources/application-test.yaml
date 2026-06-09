@@ -23,7 +23,7 @@ spring:
     bootstrap-servers: test
 
 endpoints:
-  protected:
+  unauthenticated:
     general:
       - /actuator/health
     internal:

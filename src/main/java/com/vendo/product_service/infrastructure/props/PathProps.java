@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "endpoints.protected")
+@ConfigurationProperties(prefix = "endpoints.unauthenticated")
 public class PathProps {
 
     private Set<String> general;
