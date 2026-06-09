@@ -22,12 +22,11 @@ spring:
   kafka:
     bootstrap-servers: test
 
-gateway:
+endpoints:
   protected:
-    paths:
-      general:
-        - /actuator/health
-      internal:
-        - /internal/**
-      product:
-        - /categories/tree
+    general:
+      - /actuator/health
+    internal:
+      - /internal/**
+    product:
+      - /categories/tree
