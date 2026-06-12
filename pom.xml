@@ -122,7 +122,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- vendo starters-->
+        <!--vendo starters-->
 
         <dependency>
             <groupId>io.github.vendo-marketplace-be</groupId>
@@ -135,7 +135,7 @@
 			<version>1.1.2</version>
 		</dependency>
 
-        <!-- vendo libs-->
+        <!--vendo libs-->
 
         <dependency>
             <groupId>io.github.vendo-marketplace-be</groupId>
