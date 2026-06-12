@@ -10,7 +10,7 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.port.out.product.ProductValidationPort;
-import com.vendo.product_service.port.out.user.CurrentUserPort;
+import com.vendo.product_service.port.out.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +24,7 @@ public class ProductValidationFacade implements ProductValidationPort {
 
     private final AttributeQueryPort attributeQueryPort;
     private final CategoryQueryPort categoryQueryPort;
-    private final CurrentUserPort currentUserPort;
+    private final AuthUserPort authUserPort;
 
     @Override
     public List<Attribute> validateAttributes(List<String> originAttributeIds, List<AttributeValue> requestAttributes) {
@@ -43,7 +43,7 @@ public class ProductValidationFacade implements ProductValidationPort {
     @Override
     public void validateProductOwnerOnUpdate(Product product) {
         String ownerId = product.getOwnerId();
-        if (!ownerId.equals(currentUserPort.getCurrentUserId())) {
+        if (!ownerId.equals(authUserPort.getAuthUser().id())) {
             throw new NotProductOwnerException("You're not product's owner.");
         }
     }

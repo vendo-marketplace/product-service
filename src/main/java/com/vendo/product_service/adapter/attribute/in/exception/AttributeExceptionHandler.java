@@ -22,5 +22,4 @@ public class AttributeExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 
-
 }

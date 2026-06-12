@@ -1,9 +1,8 @@
 package com.vendo.product_service.adapter.security.out.config;
 
-import com.vendo.product_service.adapter.security.in.filter.InternalGatewayFilter;
-import com.vendo.product_service.adapter.security.in.filter.JwtAuthFilter;
-import com.vendo.product_service.adapter.security.in.filter.exception.JwtAccessDeniedHandler;
-import com.vendo.product_service.adapter.security.in.filter.exception.JwtAuthenticationEntryPoint;
+import com.vendo.product_service.adapter.security.in.filter.InternalFilter;
+import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
+import com.vendo.product_service.infrastructure.props.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +11,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
-
-import static com.vendo.product_service.adapter.security.in.filter.ProductAntPathResolver.PERMITTED_PATHS;
 
 @Configuration
 @EnableWebSecurity
@@ -23,11 +22,13 @@ import static com.vendo.product_service.adapter.security.in.filter.ProductAntPat
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
-    private final InternalGatewayFilter internalGatewayFilter;
+    private final AuthFilter authFilter;
+    private final InternalFilter internalFilter;
 
-    private final JwtAccessDeniedHandler accessDeniedHandler;
-    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final AccessDeniedHandler accessDeniedHandler;
+    private final AuthenticationEntryPoint authenticationEntryPoint;
+
+    private final PathProps pathProps;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,11 +41,11 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PERMITTED_PATHS).permitAll()
+                        .requestMatchers(pathProps.getAllPaths()).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterAfter(jwtAuthFilter, ExceptionTranslationFilter.class)
-                .addFilterAfter(internalGatewayFilter, JwtAuthFilter.class);
+                .addFilterAfter(authFilter, ExceptionTranslationFilter.class)
+                .addFilterAfter(internalFilter, AuthFilter.class);
 
         return http.build();
     }

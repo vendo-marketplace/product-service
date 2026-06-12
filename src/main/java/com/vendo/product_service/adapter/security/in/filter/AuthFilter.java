@@ -1,7 +1,11 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.product_service.adapter.security.in.filter.path.ProductAntPathResolver;
+import com.vendo.product_service.domain.user.User;
+import com.vendo.security_lib.type.AuthHeader;
+import com.vendo.security_starter.filter.header.HeaderExtractor;
+import com.vendo.security_starter.filter.header.UserHeaderExtractor;
+import com.vendo.security_starter.filter.utils.FilterUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,14 +21,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtAuthFilter extends OncePerRequestFilter {
+public class AuthFilter extends OncePerRequestFilter {
 
-    private final TokenClaimsParser claimsParser;
+    private final UserHeaderExtractor userHeaderExtractor;
+    private final HeaderExtractor headerExtractor;
 
     private final ProductAntPathResolver productAntPathResolver;
 
@@ -38,9 +41,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            String jwtToken = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
-            TokenClaims claims = claimsParser.extract(jwtToken);
-            FilterHelper.addAuthToContext(claims, claims.roles());
+            User user = parseUserFrom(request);
+            FilterUtils.addAuthToContext(user, user.toRoleNames());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;
@@ -52,9 +54,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private User parseUserFrom(HttpServletRequest request) {
+        String id = headerExtractor.require(AuthHeader.ID.getHeader(), request);
+        String email = request.getHeader(AuthHeader.EMAIL.getHeader());
+        String emailVerified = request.getHeader(AuthHeader.EMAIL_VERIFIED.getHeader());
+
+        return User.builder()
+                .id(id)
+                .email(email)
+                .status(userHeaderExtractor.extractStatus(request))
+                .roles(userHeaderExtractor.extractRoles(request))
+                .emailVerified(Boolean.parseBoolean(emailVerified))
+                .build();
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return productAntPathResolver.isPermittedPath(requestURI);
+        return productAntPathResolver.isPermittedPath(request.getRequestURI());
     }
 }

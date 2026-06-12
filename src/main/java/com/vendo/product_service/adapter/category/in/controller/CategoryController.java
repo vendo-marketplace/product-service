@@ -27,13 +27,13 @@ class CategoryController {
     private final DtoCategoryMapper categoryMapper;
 
     @PostMapping
-    @PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
+    @PreAuthorize("hasAuthority('ADMIN')")
     void save(@Valid @RequestBody CreateCategoryRequest request) {
         categoryUseCase.save(categoryMapper.toCategory(request));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@userSecurity.validateActivatedAdmin(authentication)")
+    @PreAuthorize("hasAuthority('ADMIN')")
     ResponseEntity<CategoryResponse> find(@PathVariable String id) {
         Category category = categoryQueryUseCase.findById(id);
         return ResponseEntity.ok(categoryMapper.toResponse(category));

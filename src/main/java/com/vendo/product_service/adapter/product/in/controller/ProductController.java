@@ -9,13 +9,11 @@ import com.vendo.product_service.port.in.product.ProductUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/products")
-@PreAuthorize("@userSecurity.validateActivation(authentication)")
 class ProductController {
 
     private final ProductUseCase productUseCase;

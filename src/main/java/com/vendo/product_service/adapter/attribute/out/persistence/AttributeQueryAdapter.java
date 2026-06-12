@@ -38,10 +38,10 @@ public class AttributeQueryAdapter implements AttributeQueryPort {
 
         Set<String> foundIds = attributes.stream().map(MongoAttribute::getId).collect(Collectors.toSet());
         for (String attributeId : attributeIds) {
-            if (!foundIds.contains(attributeId))
+            if (!foundIds.contains(attributeId)) {
                 throw new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attributeId));
+            }
         }
     }
-
 
 }

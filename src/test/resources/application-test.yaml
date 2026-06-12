@@ -5,8 +5,6 @@ security:
   jwt:
     internal:
       key: internalKeyinternalKeyinternalKeyinternalKey
-    secret:
-      key: secretKeysecretKeysecretKeysecretKeysecretKey
 
 eureka:
   client:
@@ -23,3 +21,12 @@ kafka:
 spring:
   kafka:
     bootstrap-servers: test
+
+endpoints:
+  unauthenticated:
+    general:
+      - /actuator/health
+    internal:
+      - /internal/**
+    product:
+      - /categories/tree
