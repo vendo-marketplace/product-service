@@ -1,7 +1,5 @@
-package com.vendo.product_service.application;
+package com.vendo.product_service.application.category;
 
-import com.vendo.product_service.application.category.CategoryCommandService;
-import com.vendo.product_service.application.category.CategoryQueryService;
 import com.vendo.product_service.application.category.validation.type.TypeValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;

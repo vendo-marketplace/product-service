@@ -7,7 +7,6 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
-
 @Mapper(config = MapStructConfig.class)
 public interface FavoriteMapper {
 

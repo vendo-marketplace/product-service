@@ -15,7 +15,6 @@ public class FavoriteQueryAdapter implements FavoriteQueryPort {
     private final FavoriteRepository favoriteRepository;
     private final FavoriteMapper favoriteMapper;
 
-
     @Override
     public List<Favorite> findAllBy(String userId) {
         return favoriteRepository.findAllByUserId(userId)

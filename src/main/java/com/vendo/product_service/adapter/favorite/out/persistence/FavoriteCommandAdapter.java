@@ -1,11 +1,11 @@
 package com.vendo.product_service.adapter.favorite.out.persistence;
 
-import com.mongodb.DuplicateKeyException;
 import com.vendo.product_service.adapter.favorite.out.mapper.FavoriteMapper;
 import com.vendo.product_service.domain.favorite.exception.FavoriteAlreadyExistsException;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.port.out.favorite.FavoriteCommandPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 @Component
