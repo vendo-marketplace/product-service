@@ -17,10 +17,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductEventSenderAdapter implements ProductEventSenderPort {
 
-    private final ProductCreatedEventProducer createdEventProducer;
-    private final ProductUpdatedEventProducer updatedEventProducer;
     private final EventProductMapper productMapper;
     private final EventAttributeMapper attributeMapper;
+    private final ProductCreatedEventProducer createdEventProducer;
+    private final ProductUpdatedEventProducer updatedEventProducer;
 
     @Override
     public void sendCreated(Product product, List<Attribute> attributes) {

@@ -1,18 +1,18 @@
 package com.vendo.product_service.adapter.attribute.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
 import com.vendo.product_service.adapter.attribute.out.mapper.DtoAttributeMapper;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
-import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -57,8 +57,8 @@ public class AttributeControllerIntegrationTest {
         SecurityContextHolder.clearContext();
     }
 
-    private TokenClaims buildTokenClaims(UserRole role) {
-        return new TokenClaims("id", UserStatus.ACTIVE, List.of(role.name()), true);
+    private User buildUser(UserRole role) {
+        return new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
     }
 
     @Nested
@@ -66,7 +66,7 @@ public class AttributeControllerIntegrationTest {
 
         @Test
         void save_shouldSuccessfullySave() throws Exception {
-            TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
+            User user = buildUser(UserRole.ADMIN);
             Attribute attribute = AttributeDataBuilder.withAllFields().build();
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
@@ -75,7 +75,7 @@ public class AttributeControllerIntegrationTest {
             doNothing().when(attributeCommandPort).save(captor.capture());
 
             mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextService.initializeAuth(claims)))
+                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -89,11 +89,11 @@ public class AttributeControllerIntegrationTest {
 
         @Test
         void save_shouldReturnBadRequest_whenTitleIsNotValid() throws Exception {
-            TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
+            User user = buildUser(UserRole.ADMIN);
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().title("invalid_title").build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextService.initializeAuth(claims)))
+                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -113,11 +113,11 @@ public class AttributeControllerIntegrationTest {
 
         @Test
         void save_shouldReturnBadRequest_whenTypeIsNotPresent() throws Exception {
-            TokenClaims claims = buildTokenClaims(UserRole.ADMIN);
+            User user = buildUser(UserRole.ADMIN);
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().type(null).build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextService.initializeAuth(claims)))
+                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -137,11 +137,11 @@ public class AttributeControllerIntegrationTest {
 
         @Test
         void save_shouldReturnUnauthorized_whenNotAdmin() throws Exception {
-            TokenClaims claims = buildTokenClaims(UserRole.USER);
+            User user = buildUser(UserRole.USER);
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextService.initializeAuth(claims)))
+                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden())

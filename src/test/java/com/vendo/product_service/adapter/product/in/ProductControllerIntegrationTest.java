@@ -1,27 +1,27 @@
 package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaims;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.port.out.product.ProductCommandPort;
 import com.vendo.product_service.port.out.product.ProductEventSenderPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.*;
-import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.product_service.test_utils.security.SecurityContextTestService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
-import com.vendo.utils_lib.AssertionUtils;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,6 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
@@ -65,17 +66,17 @@ public class ProductControllerIntegrationTest {
     private ProductEventSenderPort productEventSenderPort;
 
     private ResultActions performProductPersist(String userId, CreateProductRequest request) throws Exception {
-        TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(request))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductPersist(String request) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User("id", "user", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(request)
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -85,17 +86,17 @@ public class ProductControllerIntegrationTest {
     }
 
     private ResultActions performProductUpdate(String userId, String productId, UpdateProductRequest updateProductRequest) throws Exception {
-        TokenClaims claims = new TokenClaims(userId, UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(put("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(updateProductRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performProductGet(String productId) throws Exception {
-        TokenClaims claims = new TokenClaims("id", UserStatus.ACTIVE, List.of(UserRole.USER.name()), true);
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
         return mockMvc.perform(get("/products/{id}", productId)
-                .with(authentication(SecurityContextService.initializeAuth(claims)))
+                .with(authentication(SecurityContextTestService.initializeAuth(user)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

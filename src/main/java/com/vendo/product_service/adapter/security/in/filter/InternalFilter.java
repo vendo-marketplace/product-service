@@ -2,8 +2,13 @@ package com.vendo.product_service.adapter.security.in.filter;
 
 import com.vendo.core_lib.type.ServiceName;
 import com.vendo.core_lib.type.ServiceRole;
-import com.vendo.product_service.adapter.security.out.jwt.parser.InternalTokenClaims;
-import com.vendo.product_service.adapter.security.out.jwt.parser.TokenClaimsParser;
+import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.product_service.adapter.security.in.filter.path.InternalAntPathResolver;
+import com.vendo.product_service.adapter.security.out.props.JwtProperties;
+import com.vendo.security_lib.http.HttpUtils;
+import com.vendo.security_starter.filter.utils.FilterUtils;
+import com.vendo.security_starter.jwt.parser.TokenClaims;
+import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,16 +21,19 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-import static com.vendo.security_lib.constants.AuthConstants.AUTHORIZATION_HEADER;
+import static com.vendo.security_lib.http.HttpUtils.AUTHORIZATION_HEADER;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InternalGatewayFilter extends OncePerRequestFilter {
+public class InternalFilter extends OncePerRequestFilter {
+
+    private final JwtProperties props;
 
     private final TokenClaimsParser tokenClaimsParser;
 
@@ -41,9 +49,9 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = FilterHelper.getTokenFromRequest(request.getHeader(AUTHORIZATION_HEADER));
-            InternalTokenClaims claims = validateClaims(token);
-            FilterHelper.addAuthToContext(claims, claims.roles());
+            String token = HttpUtils.getTokenFrom(request.getHeader(AUTHORIZATION_HEADER));
+            TokenClaims claims = validateClaims(token);
+            FilterUtils.addAuthToContext(claims, claims.roles());
         } catch (AuthenticationException e) {
             SecurityContextHolder.clearContext();
             throw e;
@@ -61,15 +69,19 @@ public class InternalGatewayFilter extends OncePerRequestFilter {
         return antPathResolver.isPermittedPath(requestURI);
     }
 
-    private InternalTokenClaims validateClaims(String token) {
-        InternalTokenClaims claims = tokenClaimsParser.extractInternal(token);
+    private TokenClaims validateClaims(String token) {
+        TokenClaims claims = tokenClaimsParser.extract(token, props.getInternal().key());
 
-        boolean isProductService = claims.audience().contains(ServiceName.PRODUCT_SERVICE.toString());
-        boolean hasInternalRole = claims.roles().contains(ServiceRole.INTERNAL.toString());
+        if (StringUtils.isEmpty(claims.subject()) || !claims.subject().equals(ServiceName.AUTH_SERVICE.getServiceName())) {
+            throw new BadCredentialsException("Invalid subject %s.".formatted(claims.subject()));
+        }
 
-        if (!isProductService || !hasInternalRole) {
-            log.error("Invalid token claims {}.", claims);
-            throw new BadCredentialsException("Invalid token.");
+        if (CollectionUtils.isEmpty(claims.roles()) || !claims.roles().contains(ServiceRole.INTERNAL.toString())) {
+            throw new BadCredentialsException("Invalid roles %s.".formatted(claims.roles()));
+        }
+
+        if (CollectionUtils.isEmpty(claims.audience()) || !claims.audience().contains(ServiceName.PRODUCT_SERVICE.toString())) {
+            throw new BadCredentialsException("Invalid audience %s.".formatted(claims.audience()));
         }
 
         return claims;

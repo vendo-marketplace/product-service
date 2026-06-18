@@ -18,15 +18,12 @@ public class MongoCategory {
     @Id
     private String id;
 
-    private String title;
-
     @Indexed(unique = true)
     private String code;
 
+    private String title;
     private String parentId;
-
     private List<String> attributes;
-
     private List<String> path;
 
     @CreatedDate
