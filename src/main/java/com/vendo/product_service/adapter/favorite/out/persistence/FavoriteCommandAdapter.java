@@ -15,13 +15,12 @@ public class FavoriteCommandAdapter implements FavoriteCommandPort {
     private final FavoriteRepository favoriteRepository;
     private final FavoriteMapper favoriteMapper;
 
-
     @Override
     public void save(Favorite favorite) {
         try {
            favoriteRepository.save(favoriteMapper.toEntity(favorite));
         } catch (DuplicateKeyException e) {
-            throw new FavoriteAlreadyExistsException("Product is already in favorites");
+            throw new FavoriteAlreadyExistsException("Product is already in favorites.");
         }
     }
 

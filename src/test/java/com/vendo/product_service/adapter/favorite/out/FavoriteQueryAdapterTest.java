@@ -36,7 +36,6 @@ class FavoriteQueryAdapterTest {
                 .userId(userId)
                 .productId("product-1")
                 .build();
-
         MongoFavorite favoriteEntity2 = MongoFavorite.builder()
                 .userId(userId)
                 .productId("product-2")
@@ -46,7 +45,6 @@ class FavoriteQueryAdapterTest {
                 .userId(userId)
                 .productId("product-1")
                 .build();
-
         Favorite favorite2 = Favorite.builder()
                 .userId(userId)
                 .productId("product-2")

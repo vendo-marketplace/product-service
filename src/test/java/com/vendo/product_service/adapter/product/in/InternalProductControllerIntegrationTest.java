@@ -7,7 +7,7 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.out.product.InternalProductQueryPort;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ public class InternalProductControllerIntegrationTest {
         Map<String, String> params = Map.of("cursor", cursor, "limit", String.valueOf(limit));
 
         return mockMvc.perform(get("/internal/products" ).params(MultiValueMap.fromSingleValue(params))
-                .with(authentication(SecurityContextTestService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 
@@ -59,7 +59,7 @@ public class InternalProductControllerIntegrationTest {
         TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
 
         return mockMvc.perform(get("/internal/products" ).param("limit", String.valueOf(limit))
-                .with(authentication(SecurityContextTestService.initializeAuth(claims)))
+                .with(authentication(SecurityContextService.initializeAuth(claims)))
                 .contentType(MediaType.APPLICATION_JSON));
     }
 

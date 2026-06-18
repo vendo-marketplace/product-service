@@ -68,7 +68,7 @@ class FavoriteCommandAdapterTest {
 
         assertThatThrownBy(() -> favoriteCommandAdapter.save(favorite))
                 .isInstanceOf(FavoriteAlreadyExistsException.class)
-                .hasMessage("Product is already in favorites");
+                .hasMessage("Product is already in favorites.");
 
         verify(favoriteMapper).toEntity(favorite);
         verify(favoriteRepository).save(entity);

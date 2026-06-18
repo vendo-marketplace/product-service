@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.type.ServiceName;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
@@ -65,7 +65,7 @@ public class InternalFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldSuccessfullyFilter_whenAlreadyAuthorized() throws Exception {
         TokenClaims claims = TokenClaimsDataBuilder.buildWithAllFields().build();
-        Authentication auth = SecurityContextTestService.initializeAuth(claims);
+        Authentication auth = SecurityContextService.initializeAuth(claims);
 
         String content = mockMvc.perform(get("/internal/ping").with(authentication(auth)))
                 .andExpect(status().isOk())

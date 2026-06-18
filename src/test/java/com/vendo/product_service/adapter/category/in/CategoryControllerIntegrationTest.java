@@ -17,7 +17,7 @@ import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.test_utils.builder.*;
-import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
@@ -77,7 +77,7 @@ public class CategoryControllerIntegrationTest {
     private ResultActions performCategoryGet(String categoryId) throws Exception {
         User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.ADMIN), true);
         return mockMvc.perform(get("/categories/{id}", categoryId)
-                .with(authentication(SecurityContextTestService.initializeAuth(user))));
+                .with(authentication(SecurityContextService.initializeAuth(user))));
     }
 
     private ResultActions performCategoryGetTree() throws Exception {
@@ -91,7 +91,7 @@ public class CategoryControllerIntegrationTest {
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
         User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
         return mockMvc.perform(post("/categories")
-                .with(authentication(SecurityContextTestService.initializeAuth(user)))
+                .with(authentication(SecurityContextService.initializeAuth(user)))
                 .content(objectMapper.writeValueAsString(categoryRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
