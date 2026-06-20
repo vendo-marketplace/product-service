@@ -76,11 +76,11 @@ public class InternalFilter extends OncePerRequestFilter {
             throw new BadCredentialsException("Invalid subject %s.".formatted(claims.subject()));
         }
 
-        if (CollectionUtils.isEmpty(claims.roles()) || !claims.roles().contains(ServiceRole.INTERNAL.toString())) {
+        if (CollectionUtils.isEmpty(claims.roles()) || !claims.roles().contains(ServiceRole.INTERNAL.name())) {
             throw new BadCredentialsException("Invalid roles %s.".formatted(claims.roles()));
         }
 
-        if (CollectionUtils.isEmpty(claims.audience()) || !claims.audience().contains(ServiceName.PRODUCT_SERVICE.toString())) {
+        if (CollectionUtils.isEmpty(claims.audience()) || !claims.audience().contains(ServiceName.PRODUCT_SERVICE.getServiceName())) {
             throw new BadCredentialsException("Invalid audience %s.".formatted(claims.audience()));
         }
 
