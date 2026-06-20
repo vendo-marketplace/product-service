@@ -72,7 +72,7 @@ public class InternalFilter extends OncePerRequestFilter {
     private TokenClaims validateClaims(String token) {
         TokenClaims claims = tokenClaimsParser.extract(token, props.getInternal().key());
 
-        if (StringUtils.isEmpty(claims.subject()) || !claims.subject().equals(ServiceName.AUTH_SERVICE.getServiceName())) {
+        if (StringUtils.isEmpty(claims.subject()) || !ServiceName.getAllNames().contains(claims.subject())) {
             throw new BadCredentialsException("Invalid subject %s.".formatted(claims.subject()));
         }
 

@@ -177,9 +177,9 @@ public class InternalFilterIntegrationTest {
     }
 
     @Test
-    void doFilterInternal_shouldReturnUnauthorized_whenSubjectIsNotAuthService() throws Exception {
+    void doFilterInternal_shouldReturnUnauthorized_whenSubjectIsNotAllowed() throws Exception {
         TokenClaims payload = TokenClaimsDataBuilder.buildWithAllFields()
-                .subject(ServiceName.INDEXER_SERVICE.getServiceName())
+                .subject("not_allowed_subject")
                 .build();
         String requestPath = "/internal/ping";
         String token = "valid_token";
