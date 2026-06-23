@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static com.vendo.core_lib.constants.Delimiters.COMMA_DELIMITER;
 
-public class SecurityContextTestService {
+public class SecurityContextService {
 
     public static Authentication initializeAuth(TokenClaims claims) {
         Set<String> roles = claims.roles();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.test_utils.builder.UserDataBuilder;
 import com.vendo.product_service.test_utils.controller.RequestPing;
-import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.security_lib.type.AuthHeader;
 import org.junit.jupiter.api.Test;
@@ -95,7 +95,7 @@ public class AuthFilterIntegrationTest {
     @Test
     void doFilterInternal_shouldSuccessfullyFilter_whenCorrectHeaders() throws Exception {
         MockHttpServletResponse response = mockMvc.perform(get("/ping")
-                        .headers(SecurityContextTestService.extractHeaders(user)))
+                        .headers(SecurityContextService.extractHeaders(user)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 

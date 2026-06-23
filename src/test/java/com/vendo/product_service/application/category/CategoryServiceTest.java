@@ -1,11 +1,9 @@
-package com.vendo.product_service.application;
+package com.vendo.product_service.application.category;
 
-import com.vendo.product_service.application.category.CategoryCommandService;
-import com.vendo.product_service.application.category.CategoryQueryService;
-import com.vendo.product_service.application.category.validation.type.TypeValidationService;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.port.in.category.TypeValidationPort;
 import com.vendo.product_service.port.out.IdGenerationPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,8 +27,8 @@ class CategoryServiceTest {
     private CategoryQueryPort queryPort;
     @Mock
     private IdGenerationPort idGenerationPort;
-    @Mock
-    private TypeValidationService typeValidationService;
+    @Spy
+    private TypeValidationPort typeValidationPort;
 
     @InjectMocks
     private CategoryCommandService categoryCommandService;

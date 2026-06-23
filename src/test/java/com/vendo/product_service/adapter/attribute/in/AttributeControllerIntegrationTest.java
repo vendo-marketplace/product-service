@@ -9,7 +9,7 @@ import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
-import com.vendo.product_service.test_utils.security.SecurityContextTestService;
+import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
@@ -75,7 +75,7 @@ public class AttributeControllerIntegrationTest {
             doNothing().when(attributeCommandPort).save(captor.capture());
 
             mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -93,7 +93,7 @@ public class AttributeControllerIntegrationTest {
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().title("invalid_title").build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -117,7 +117,7 @@ public class AttributeControllerIntegrationTest {
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().type(null).build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -141,7 +141,7 @@ public class AttributeControllerIntegrationTest {
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
 
             String content = mockMvc.perform(post("/attributes")
-                            .with(authentication(SecurityContextTestService.initializeAuth(user)))
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isForbidden())
