@@ -44,26 +44,21 @@ public class CategoryQueryService implements CategoryQueryUseCase {
     private List<CategoryNode> buildTree(List<Category> categories, Map<String, Attribute> attributesById) {
         List<Category> parents = Category.filterByType(categories, CategoryType.PARENT);
         Map<String, List<Category>> childrenByParentId = Category.groupByParentId(categories);
-
-        return parents.stream().map(parent -> buildBranch(
-                parent,
-                attributesById,
-                childrenByParentId)
-        ).toList();
+        return parents.stream().map(parent -> buildBranch(parent, attributesById, childrenByParentId)).toList();
     }
 
-    private CategoryNode buildBranch(Category parent, Map<String, Attribute> attributesById, Map<String, List<Category>> childrenByParentId) {
+    private CategoryNode buildBranch(
+            Category parent,
+            Map<String, Attribute> attributesById,
+            Map<String, List<Category>> childrenByParentId
+    ) {
         List<Category> children = childrenByParentId.getOrDefault(parent.getId(), List.of());
 
         List<CategoryNode> childrenNodes = children.stream()
                 .map(category -> buildBranch(category, attributesById, childrenByParentId))
                 .toList();
 
-        return CategoryNode.from(
-                parent,
-                Attribute.extractAll(parent.getAttributes(), attributesById),
-                childrenNodes
-        );
+        return CategoryNode.from(parent, Attribute.extractAll(parent.getAttributes(), attributesById), childrenNodes);
     }
 
 }

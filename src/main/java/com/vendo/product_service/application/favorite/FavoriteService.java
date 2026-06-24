@@ -19,6 +19,7 @@ public class FavoriteService implements FavoriteUseCase {
 
     private final FavoriteCommandPort favoriteCommandPort;
     private final FavoriteQueryPort favoriteQueryPort;
+
     private final ProductQueryPort productQueryPort;
     private final AuthUserPort authUserPort;
 
