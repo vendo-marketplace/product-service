@@ -125,9 +125,33 @@ public class FavoriteControllerIntegrationTest {
         void remove_shouldRemoveFavorite() throws Exception {
             String productId = "product_id";
 
+            when(favoriteQueryPort.existsBy(user.id(), productId)).thenReturn(true);
+
             performRemove(productId).andExpect(status().isOk());
 
+            verify(favoriteQueryPort).existsBy(user.id(), productId);
             verify(favoriteCommandPort).delete(user.id(), productId);
+        }
+
+        @Test
+        void remove_shouldReturnNotFound_whenFavoriteNotFound() throws Exception {
+            String productId = "product_id";
+
+            when(favoriteQueryPort.existsBy(user.id(), productId)).thenReturn(false);
+
+            String content = performRemove(productId).andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Favorite not found.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/favorites/" + productId);
+
+            verify(favoriteQueryPort).existsBy(user.id(), productId);
+            verifyNoInteractions(favoriteCommandPort);
         }
 
         @Test
@@ -136,7 +160,7 @@ public class FavoriteControllerIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isUnauthorized());
 
-            verifyNoInteractions(favoriteCommandPort);
+            verifyNoInteractions(favoriteCommandPort, favoriteQueryPort);
         }
     }
 

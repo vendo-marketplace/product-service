@@ -84,4 +84,34 @@ class FavoriteQueryAdapterTest {
         verify(favoriteRepository).findAllByUserId(userId);
         verifyNoInteractions(favoriteMapper);
     }
+
+    @Test
+    void existsBy_shouldReturnTrue_whenFavoriteExists() {
+        String userId = "user-id";
+        String productId = "product-1";
+
+        when(favoriteRepository.existsByUserIdAndProductId(userId, productId)).thenReturn(true);
+
+        boolean result = favoriteQueryAdapter.existsBy(userId, productId);
+
+        assertThat(result).isTrue();
+
+        verify(favoriteRepository).existsByUserIdAndProductId(userId, productId);
+        verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
+    }
+
+    @Test
+    void existsBy_shouldReturnFalse_whenFavoriteDoesNotExist() {
+        String userId = "user-id";
+        String productId = "product-1";
+
+        when(favoriteRepository.existsByUserIdAndProductId(userId, productId)).thenReturn(false);
+
+        boolean result = favoriteQueryAdapter.existsBy(userId, productId);
+
+        assertThat(result).isFalse();
+
+        verify(favoriteRepository).existsByUserIdAndProductId(userId, productId);
+        verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
+    }
 }
