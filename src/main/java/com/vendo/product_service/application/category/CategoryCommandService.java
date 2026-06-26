@@ -23,9 +23,10 @@ import java.util.List;
 public class CategoryCommandService implements CategoryCommandUseCase {
 
     private final TypeValidationPort typeValidationPort;
+    private final IdGenerationPort idGenerationPort;
+
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
-    private final IdGenerationPort idGenerationPort;
 
     @Override
     @Transactional
@@ -36,7 +37,10 @@ public class CategoryCommandService implements CategoryCommandUseCase {
 
         category.setId(idGenerationPort.generate());
         category.setPath(category.buildPath(getParentPath(category)));
-        if (CollectionUtils.isEmpty(category.getAttributes())) category.setAttributes(new ArrayList<>());
+
+        if (CollectionUtils.isEmpty(category.getAttributes())) {
+            category.setAttributes(new ArrayList<>());
+        }
 
         categoryCommandPort.save(category);
     }
@@ -48,7 +52,10 @@ public class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     private List<String> getParentPath(Category category) {
-        if (StringUtils.isEmpty(category.getParentId())) return Collections.emptyList();
+        if (StringUtils.isEmpty(category.getParentId())) {
+            return Collections.emptyList();
+        }
+
         Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
         return parent.getPath();
     }
