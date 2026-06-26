@@ -85,6 +85,10 @@ public class FavoriteControllerIntegrationTest {
 
             verify(productQueryPort).existsById(productId);
             verify(favoriteCommandPort).save(argumentCaptor.capture());
+
+            Favorite savedFavorite = argumentCaptor.getValue();
+            assertThat(savedFavorite.getUserId()).isEqualTo(user.id());
+            assertThat(savedFavorite.getProductId()).isEqualTo(productId);
         }
 
         @Test
@@ -110,9 +114,20 @@ public class FavoriteControllerIntegrationTest {
 
         @Test
         void add_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
-            mockMvc.perform(post("/favorites/{productId}", "product_id")
+            String productId = "product_id";
+
+            String content = mockMvc.perform(post("/favorites/{productId}", productId)
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/favorites/" + productId);
 
             verifyNoInteractions(productQueryPort, favoriteCommandPort);
         }
@@ -156,9 +171,20 @@ public class FavoriteControllerIntegrationTest {
 
         @Test
         void remove_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
-            mockMvc.perform(delete("/favorites/{productId}", "product_id")
+            String productId = "product_id";
+
+            String content = mockMvc.perform(delete("/favorites/{productId}", productId)
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/favorites/" + productId);
 
             verifyNoInteractions(favoriteCommandPort, favoriteQueryPort);
         }
