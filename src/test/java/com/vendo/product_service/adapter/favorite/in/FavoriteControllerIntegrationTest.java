@@ -125,7 +125,7 @@ public class FavoriteControllerIntegrationTest {
 
             assertThat(content).isNotBlank();
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/favorites/" + productId);
 
@@ -182,7 +182,7 @@ public class FavoriteControllerIntegrationTest {
 
             assertThat(content).isNotBlank();
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/favorites/" + productId);
 
@@ -245,11 +245,18 @@ public class FavoriteControllerIntegrationTest {
 
         @Test
         void getAll_shouldReturnUnauthorized_whenNotAuthenticated() throws Exception {
-            mockMvc.perform(get("/favorites")
+            String content = mockMvc.perform(get("/favorites")
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isUnauthorized());
+                    .andExpect(status().isUnauthorized())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
 
-            verifyNoInteractions(favoriteQueryPort);
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unauthorized.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/favorites");
         }
     }
 }
