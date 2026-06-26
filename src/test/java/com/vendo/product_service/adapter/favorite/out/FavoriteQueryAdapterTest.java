@@ -53,11 +53,8 @@ class FavoriteQueryAdapterTest {
         when(favoriteRepository.findAllByUserId(userId))
                 .thenReturn(List.of(favoriteEntity1, favoriteEntity2));
 
-        when(favoriteMapper.toFavorite(favoriteEntity1))
-                .thenReturn(favorite1);
-
-        when(favoriteMapper.toFavorite(favoriteEntity2))
-                .thenReturn(favorite2);
+        when(favoriteMapper.toFavorites(List.of(favoriteEntity1, favoriteEntity2)))
+                .thenReturn(List.of(favorite1, favorite2));
 
         List<Favorite> result = favoriteQueryAdapter.findAllBy(userId);
 
@@ -65,8 +62,7 @@ class FavoriteQueryAdapterTest {
                 .containsExactly(favorite1, favorite2);
 
         verify(favoriteRepository).findAllByUserId(userId);
-        verify(favoriteMapper).toFavorite(favoriteEntity1);
-        verify(favoriteMapper).toFavorite(favoriteEntity2);
+        verify(favoriteMapper).toFavorites(List.of(favoriteEntity1, favoriteEntity2));
 
         verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
     }
@@ -76,12 +72,44 @@ class FavoriteQueryAdapterTest {
         String userId = "user-id";
 
         when(favoriteRepository.findAllByUserId(userId)).thenReturn(List.of());
+        when(favoriteMapper.toFavorites(List.of())).thenReturn(List.of());
 
         List<Favorite> result = favoriteQueryAdapter.findAllBy(userId);
 
         assertThat(result).isEmpty();
 
         verify(favoriteRepository).findAllByUserId(userId);
-        verifyNoInteractions(favoriteMapper);
+        verify(favoriteMapper).toFavorites(List.of());
+        verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
+    }
+
+    @Test
+    void existsBy_shouldReturnTrue_whenFavoriteExists() {
+        String userId = "user-id";
+        String productId = "product-1";
+
+        when(favoriteRepository.existsByUserIdAndProductId(userId, productId)).thenReturn(true);
+
+        boolean result = favoriteQueryAdapter.existsBy(userId, productId);
+
+        assertThat(result).isTrue();
+
+        verify(favoriteRepository).existsByUserIdAndProductId(userId, productId);
+        verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
+    }
+
+    @Test
+    void existsBy_shouldReturnFalse_whenFavoriteDoesNotExist() {
+        String userId = "user-id";
+        String productId = "product-1";
+
+        when(favoriteRepository.existsByUserIdAndProductId(userId, productId)).thenReturn(false);
+
+        boolean result = favoriteQueryAdapter.existsBy(userId, productId);
+
+        assertThat(result).isFalse();
+
+        verify(favoriteRepository).existsByUserIdAndProductId(userId, productId);
+        verifyNoMoreInteractions(favoriteRepository, favoriteMapper);
     }
 }

@@ -7,10 +7,14 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
 
+import java.util.List;
+
 @Mapper(config = MapStructConfig.class)
 public interface FavoriteMapper {
 
     Favorite toFavorite(MongoFavorite favorite);
+
+    List<Favorite> toFavorites(List<MongoFavorite> favorites);
 
     MongoFavorite toEntity(Favorite favorite);
 

@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.favorite.in.exception;
 
 import com.vendo.product_service.domain.favorite.exception.FavoriteAlreadyExistsException;
+import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundException;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,16 @@ class FavoriteExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(FavoriteNotFoundException.class)
+    ResponseEntity<ExceptionResponse> handleFavoriteNotFoundException(FavoriteNotFoundException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 
 }

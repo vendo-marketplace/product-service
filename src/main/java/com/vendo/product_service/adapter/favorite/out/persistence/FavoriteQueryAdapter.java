@@ -17,9 +17,11 @@ public class FavoriteQueryAdapter implements FavoriteQueryPort {
 
     @Override
     public List<Favorite> findAllBy(String userId) {
-        return favoriteRepository.findAllByUserId(userId)
-                .stream()
-                .map(favoriteMapper::toFavorite)
-                .toList();
+        return favoriteMapper.toFavorites(favoriteRepository.findAllByUserId(userId));
+    }
+
+    @Override
+    public boolean existsBy(String userId, String productId) {
+        return favoriteRepository.existsByUserIdAndProductId(userId,productId);
     }
 }
