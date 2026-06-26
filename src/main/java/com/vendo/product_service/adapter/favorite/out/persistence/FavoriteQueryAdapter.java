@@ -24,7 +24,7 @@ public class FavoriteQueryAdapter implements FavoriteQueryPort {
     }
 
     @Override
-    public boolean existsByUserIdAndProductId(String userId, String productId) {
+    public boolean existsBy(String userId, String productId) {
         return favoriteRepository.existsByUserIdAndProductId(userId,productId);
     }
 }

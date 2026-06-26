@@ -38,8 +38,8 @@ public class FavoriteService implements FavoriteUseCase {
     public void remove(String productId) {
         String userId = authUserPort.getAuthUser().id();
 
-        if (!favoriteQueryPort.existsByUserIdAndProductId(userId, productId)) {
-            throw new FavoriteNotFoundException("Favorite not found");
+        if (!favoriteQueryPort.existsBy(userId, productId)) {
+            throw new FavoriteNotFoundException("Favorite not found.");
         }
 
         favoriteCommandPort.delete(userId, productId);
