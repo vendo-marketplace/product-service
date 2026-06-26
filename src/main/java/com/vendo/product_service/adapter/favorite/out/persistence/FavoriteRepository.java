@@ -12,4 +12,6 @@ public interface FavoriteRepository extends MongoRepository<MongoFavorite, Strin
             String userId,
             String productId
     );
+
+    boolean existsByUserIdAndProductId(String userId, String productId);
 }

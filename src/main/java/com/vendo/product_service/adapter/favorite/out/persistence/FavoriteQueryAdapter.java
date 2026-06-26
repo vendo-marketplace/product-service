@@ -22,4 +22,9 @@ public class FavoriteQueryAdapter implements FavoriteQueryPort {
                 .map(favoriteMapper::toFavorite)
                 .toList();
     }
+
+    @Override
+    public boolean existsByUserIdAndProductId(String userId, String productId) {
+        return favoriteRepository.existsByUserIdAndProductId(userId,productId);
+    }
 }

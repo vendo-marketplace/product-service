@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface FavoriteQueryPort {
     List<Favorite> findAllBy(String userId);
+
+    boolean existsByUserIdAndProductId(String userId, String productId);
 }

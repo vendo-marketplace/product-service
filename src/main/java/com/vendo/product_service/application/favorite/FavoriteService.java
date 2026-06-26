@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.favorite;
 
+import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundException;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
@@ -35,7 +36,13 @@ public class FavoriteService implements FavoriteUseCase {
 
     @Override
     public void remove(String productId) {
-        favoriteCommandPort.delete(authUserPort.getAuthUser().id(), productId);
+        String userId = authUserPort.getAuthUser().id();
+
+        if (!favoriteQueryPort.existsByUserIdAndProductId(userId, productId)) {
+            throw new FavoriteNotFoundException("Favorite not found");
+        }
+
+        favoriteCommandPort.delete(userId, productId);
     }
 
     @Override
