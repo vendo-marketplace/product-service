@@ -30,7 +30,10 @@ public class FavoriteService implements FavoriteUseCase {
             throw new ProductNotFoundException("Product not found.");
         }
 
-        Favorite favorite = Favorite.builder().userId(authUserPort.getAuthUser().id()).productId(productId).build();
+        Favorite favorite = Favorite.builder()
+                .userId(authUserPort.getAuthUser().id())
+                .productId(productId)
+                .build();
         favoriteCommandPort.save(favorite);
     }
 
