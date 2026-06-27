@@ -11,8 +11,6 @@ public interface CategoryQueryPort {
 
     boolean existsById(String id);
 
-    boolean existsByCode(String code);
-
     List<Category> findAll();
 
 }

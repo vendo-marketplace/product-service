@@ -35,10 +35,10 @@ class CategoryQueryAdapterTest {
         String id = "cat123";
         MongoCategory categoryEntity = MongoCategory.builder()
                 .id("cat123")
-                .code("CODE")
+                .slug("SLUG")
                 .title("Title")
                 .build();
-        Category category = Category.builder().id(id).code("CODE").title("Title").build();
+        Category category = Category.builder().id(id).slug("SLUG").title("Title").build();
 
         when(categoryRepository.findById(id)).thenReturn(Optional.of(categoryEntity));
         when(categoryMapper.toCategory(categoryEntity)).thenReturn(category);
@@ -104,30 +104,6 @@ class CategoryQueryAdapterTest {
 
         assertThat(exists).isFalse();
         verify(categoryRepository, times(1)).existsById(id);
-        verifyNoMoreInteractions(categoryRepository);
-    }
-
-    @Test
-    void existsByCode_shouldReturnTrue_whenExists() {
-        String code = "CODE123";
-        when(categoryRepository.existsByCode(code)).thenReturn(true);
-
-        boolean exists = queryAdapter.existsByCode(code);
-
-        assertThat(exists).isTrue();
-        verify(categoryRepository, times(1)).existsByCode(code);
-        verifyNoMoreInteractions(categoryRepository);
-    }
-
-    @Test
-    void existsByCode_shouldReturnFalse_whenNotExists() {
-        String code = "CODE123";
-        when(categoryRepository.existsByCode(code)).thenReturn(false);
-
-        boolean exists = queryAdapter.existsByCode(code);
-
-        assertThat(exists).isFalse();
-        verify(categoryRepository, times(1)).existsByCode(code);
         verifyNoMoreInteractions(categoryRepository);
     }
 }

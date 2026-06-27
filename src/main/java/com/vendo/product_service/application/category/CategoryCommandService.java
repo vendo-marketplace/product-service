@@ -1,7 +1,6 @@
 package com.vendo.product_service.application.category;
 
 import com.vendo.core_lib.utils.StringUtils;
-import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryCommandUseCase;
 import com.vendo.product_service.port.in.category.TypeValidationPort;
@@ -11,7 +10,6 @@ import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
@@ -29,11 +27,9 @@ public class CategoryCommandService implements CategoryCommandUseCase {
     private final CategoryQueryPort categoryQueryPort;
 
     @Override
-    @Transactional
     @CacheEvict(value = "category-tree", allEntries = true)
     public void save(Category category) {
         typeValidationPort.validate(category);
-        throwIfExistsByCode(category.getCode());
 
         category.setId(idGenerationPort.generate());
         category.setPath(category.buildPath(getParentPath(category)));
@@ -43,12 +39,6 @@ public class CategoryCommandService implements CategoryCommandUseCase {
         }
 
         categoryCommandPort.save(category);
-    }
-
-    private void throwIfExistsByCode(String code) {
-        if (categoryQueryPort.existsByCode(code)) {
-            throw new CategoryAlreadyExistsException("Category already exists by code.");
-        }
     }
 
     private List<String> getParentPath(Category category) {

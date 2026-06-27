@@ -1,9 +1,11 @@
 package com.vendo.product_service.adapter.attribute.in;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
 import com.vendo.product_service.adapter.attribute.out.mapper.DtoAttributeMapper;
+import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
@@ -42,13 +44,11 @@ public class AttributeControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
     private DtoAttributeMapper mapper;
-
     @MockitoBean
     private AttributeCommandPort attributeCommandPort;
 
@@ -133,6 +133,59 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort, mapper);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenSlugIsNotPresent() throws Exception {
+            User user = buildUser(UserRole.ADMIN);
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().slug(null).build();
+
+            String content = mockMvc.perform(post("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get("slug")).isEqualTo("Slug is required.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeCommandPort, mapper);
+        }
+
+        @Test
+        void save_shouldReturnConflict_whenAttributeAlreadyExistsBySlug() throws Exception {
+            User user = buildUser(UserRole.ADMIN);
+            Attribute attribute = AttributeDataBuilder.withAllFields().build();
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
+            ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
+
+            when(mapper.toAttribute(request)).thenReturn(attribute);
+            doThrow(new AttributeAlreadyExistsException("Attribute already exists by slug.")).when(attributeCommandPort).save(captor.capture());
+
+            String content = mockMvc.perform(post("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isConflict()).andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute already exists by slug.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verify(mapper).toAttribute(request);
+            verify(attributeCommandPort).save(attribute);
+
+            Attribute captorValue = captor.getValue();
+            AssertionUtils.assertFrom(attribute, captorValue);
         }
 
         @Test

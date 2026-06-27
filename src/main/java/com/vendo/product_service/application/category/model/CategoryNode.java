@@ -8,7 +8,7 @@ import java.util.List;
 public record CategoryNode(
         String id,
         String title,
-        String code,
+        String slug,
         List<Attribute> attributes,
         List<String> path,
         List<CategoryNode> children
@@ -18,7 +18,7 @@ public record CategoryNode(
         return new CategoryNode(
                 category.getId(),
                 category.getTitle(),
-                category.getCode(),
+                category.getSlug(),
                 attributes,
                 category.getPath(),
                 children

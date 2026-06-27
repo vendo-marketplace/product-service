@@ -596,35 +596,35 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithNumberAttribute() throws Exception {
-                    Attribute attribute = new Attribute("id", "Title", AttributeType.NUMBER, false, null);
+                    Attribute attribute = new Attribute("id", "Title", "slug", AttributeType.NUMBER, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1"));
                     shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsMoreThanOne() throws Exception {
-                    Attribute attribute = new Attribute("id", "Title", AttributeType.NUMBER, false, null);
+                    Attribute attribute = new Attribute("id", "Title", "slug", AttributeType.NUMBER, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1", "2"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsNegative() throws Exception {
-                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    Attribute attribute = new Attribute("id", "Number", "slug", AttributeType.NUMBER, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("-1"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must be equal or greater than zero.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsNotNumeric() throws Exception {
-                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    Attribute attribute = new Attribute("id", "Number", "slug", AttributeType.NUMBER, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_numeric"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid number value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenNumberAttributeIsHigherThanIntegerMaxValue() throws Exception {
-                    Attribute attribute = new Attribute("id", "Number", AttributeType.NUMBER, false, null);
+                    Attribute attribute = new Attribute("id", "Number", "slug", AttributeType.NUMBER, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("1_000_000_000_000"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid number value.");
                 }
@@ -635,21 +635,21 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithBooleanAttribute() throws Exception {
-                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    Attribute attribute = new Attribute("id", "Boolean", "slug", AttributeType.BOOLEAN, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("true"));
                     shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenBooleanAttributeIsMoreThanOne() throws Exception {
-                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    Attribute attribute = new Attribute("id", "Boolean", "slug", AttributeType.BOOLEAN, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("true", "false"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenInvalidBooleanAttributeValue() throws Exception {
-                    Attribute attribute = new Attribute("id", "Boolean", AttributeType.BOOLEAN, false, null);
+                    Attribute attribute = new Attribute("id", "Boolean", "slug", AttributeType.BOOLEAN, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_boolean_value"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid boolean value. Allowed values: true, false.");
                 }
@@ -660,21 +660,21 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithEnumAttribute() throws Exception {
-                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    Attribute attribute = new Attribute("id", "Enum", "slug", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE1"));
                     shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeIsMoreThanOne() throws Exception {
-                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    Attribute attribute = new Attribute("id", "Enum", "slug", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE1", "TYPE2"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly one value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeValueIsNotAllowed() throws Exception {
-                    Attribute attribute = new Attribute("id", "Enum", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
+                    Attribute attribute = new Attribute("id", "Enum", "slug", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE3"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid value. Allowed values: " + String.join(", ", attribute.allowedValues()));
                 }
@@ -685,35 +685,35 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithRangeAttribute() throws Exception {
-                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    Attribute attribute = new Attribute("id", "Range", "slug", AttributeType.RANGE, false, List.of("0", "100"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "70"));
                     shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributesAreMoreThanTwo() throws Exception {
-                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    Attribute attribute = new Attribute("id", "Range", "slug", AttributeType.RANGE, false, List.of("0", "100"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "70", "90"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must contain exactly two values.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenFirstAttributeValueIsLowerThanZero() throws Exception {
-                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    Attribute attribute = new Attribute("id", "Range", "slug", AttributeType.RANGE, false, List.of("0", "100"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("-1", "100"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "The first value must be equal or greater than to zero.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenFirstAttributeValueIsGreaterThanSecond() throws Exception {
-                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    Attribute attribute = new Attribute("id", "Range", "slug", AttributeType.RANGE, false, List.of("0", "100"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("50", "10"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "The first value must be less than the second value.");
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributesAreNotNumericType() throws Exception {
-                    Attribute attribute = new Attribute("id", "Range", AttributeType.RANGE, false, List.of("0", "100"));
+                    Attribute attribute = new Attribute("id", "Range", "slug", AttributeType.RANGE, false, List.of("0", "100"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_numeric", "not_numeric"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid range value format.");
                 }
@@ -724,14 +724,14 @@ public class ProductControllerIntegrationTest {
 
                 @Test
                 void save_shouldSaveProductWithStringAttribute() throws Exception {
-                    Attribute attribute = new Attribute("id", "String", AttributeType.STRING, false, null);
+                    Attribute attribute = new Attribute("id", "String", "slug", AttributeType.STRING, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
                     shouldSaveProductWithAttribute(attribute, attributeValue);
                 }
 
                 @Test
                 void save_shouldReturnBadRequest_whenAttributeIsBlank() throws Exception {
-                    Attribute attribute = new Attribute("id", "String", AttributeType.STRING, false, null);
+                    Attribute attribute = new Attribute("id", "String", "slug", AttributeType.STRING, false, null);
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of(""));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Must not be blank.");
                 }

@@ -1,9 +1,11 @@
 package com.vendo.product_service.adapter.attribute.out.persistence;
 
 import com.vendo.product_service.adapter.attribute.out.mapper.MongoAttributeMapper;
+import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,8 +17,11 @@ public class AttributeCommandAdapter implements AttributeCommandPort {
 
     @Override
     public void save(Attribute attribute) {
-        MongoAttribute entity = mapper.toEntity(attribute);
-        repository.save(entity);
+        try {
+            repository.save(mapper.toEntity(attribute));
+        } catch (DuplicateKeyException e) {
+            throw new AttributeAlreadyExistsException("Attribute already exists by slug.");
+        }
     }
 
 }

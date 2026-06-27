@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.attribute.in.exception;
 
+import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,5 +22,17 @@ public class AttributeExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
+
+    @ExceptionHandler(AttributeAlreadyExistsException.class)
+    ResponseEntity<ExceptionResponse> handleAttributeAlreadyExistsException(AttributeAlreadyExistsException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.CONFLICT.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
+    }
+
 
 }

@@ -16,7 +16,7 @@ public class CategoryTreeResponse {
     public record CategoryTree(
             String id,
             String title,
-            String code,
+            String slug,
             List<Attribute> attributes,
             List<String> path,
             List<CategoryTree> children

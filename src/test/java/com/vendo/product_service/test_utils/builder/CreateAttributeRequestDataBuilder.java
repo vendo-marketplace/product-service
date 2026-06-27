@@ -8,6 +8,7 @@ public class CreateAttributeRequestDataBuilder {
     public static CreateAttributeRequest.CreateAttributeRequestBuilder withAllFields() {
         return CreateAttributeRequest.builder()
                 .title("Title")
+                .slug("slug")
                 .type(AttributeType.STRING)
                 .required(false)
                 .allowedValues(null);

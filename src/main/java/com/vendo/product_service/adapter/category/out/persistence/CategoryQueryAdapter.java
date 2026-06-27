@@ -34,11 +34,6 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
     }
 
     @Override
-    public boolean existsByCode(String code) {
-        return repository.existsByCode(code);
-    }
-
-    @Override
     public List<Category> findAll() {
         return repository.findAll()
                 .stream()

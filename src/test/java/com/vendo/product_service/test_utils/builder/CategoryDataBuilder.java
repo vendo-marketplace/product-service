@@ -12,7 +12,7 @@ public class CategoryDataBuilder {
                 .id(String.valueOf(UUID.randomUUID()))
                 .title("Category")
                 .parentId("parent_id")
-                .code("code")
+                .slug("slug")
                 .attributes(List.of("id_1"));
     }
 

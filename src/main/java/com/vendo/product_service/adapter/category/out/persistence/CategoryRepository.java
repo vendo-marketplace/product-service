@@ -4,6 +4,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface CategoryRepository extends MongoRepository<MongoCategory, String> {
 
-    boolean existsByCode(String code);
+    boolean existsBySlug(String slug);
 
 }

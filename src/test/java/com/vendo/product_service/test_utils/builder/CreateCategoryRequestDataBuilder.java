@@ -10,7 +10,7 @@ public class CreateCategoryRequestDataBuilder {
         return CreateCategoryRequest.builder()
                 .title("Title")
                 .parentId("parent_id")
-                .code("code")
+                .slug("slug")
                 .attributes(List.of("id_1"));
     }
 

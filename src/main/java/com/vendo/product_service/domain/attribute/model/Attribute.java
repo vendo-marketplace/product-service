@@ -9,6 +9,7 @@ import java.util.Map;
 public record Attribute(
         String id,
         String title,
+        String slug,
         AttributeType type,
         boolean required,
         List<String> allowedValues

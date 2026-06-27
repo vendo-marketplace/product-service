@@ -19,7 +19,7 @@ public class Category {
 
     private String id;
     private String title;
-    private String code;
+    private String slug;
     private String parentId;
     private List<String> attributes;
     private List<String> path;

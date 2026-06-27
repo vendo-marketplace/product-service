@@ -5,12 +5,14 @@ import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper
 import com.vendo.product_service.adapter.category.out.persistence.CategoryCommandAdapter;
 import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
 import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
+import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.model.Category;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DuplicateKeyException;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -29,10 +31,10 @@ class CategoryCommandAdapterTest {
 
     @Test
     void save_shouldMapAndSaveCategory() {
-        Category category = Category.builder().id("cat123").code("CODE").title("Title").build();
+        Category category = Category.builder().id("cat123").slug("SLUG").title("Title").build();
         MongoCategory categoryEntity = MongoCategory.builder()
                 .id("cat123")
-                .code("CODE")
+                .slug("SLUG")
                 .title("Title")
                 .build();
 
@@ -40,29 +42,27 @@ class CategoryCommandAdapterTest {
 
         commandAdapter.save(category);
 
-        verify(categoryMapper, times(1)).toEntity(category);
-        verify(categoryRepository, times(1)).save(categoryEntity);
+        verify(categoryMapper).toEntity(category);
+        verify(categoryRepository).save(categoryEntity);
         verifyNoMoreInteractions(categoryMapper, categoryRepository);
     }
 
     @Test
-    void save_shouldPropagateException_whenRepositoryFails() {
-        Category category = Category.builder().id("cat123").code("CODE").title("Title").build();
+    void save_shouldThrowException_whenCategoryAlreadyExistsBySlug() {
+        Category category = Category.builder().id("cat123").slug("SLUG").title("Title").build();
         MongoCategory categoryEntity = MongoCategory.builder()
                 .id("cat123")
-                .code("CODE")
+                .slug("SLUG")
                 .title("Title")
                 .build();
 
-        RuntimeException dbException = new RuntimeException("Database error.");
-
         when(categoryMapper.toEntity(category)).thenReturn(categoryEntity);
-        when(categoryRepository.save(categoryEntity)).thenThrow(dbException);
+        when(categoryRepository.save(categoryEntity)).thenThrow(new DuplicateKeyException("exception message"));
 
-        assertThrows(RuntimeException.class, () -> commandAdapter.save(category));
+        assertThrows(CategoryAlreadyExistsException.class, () -> commandAdapter.save(category));
 
-        verify(categoryMapper, times(1)).toEntity(category);
-        verify(categoryRepository, times(1)).save(categoryEntity);
+        verify(categoryMapper).toEntity(category);
+        verify(categoryRepository).save(categoryEntity);
 
         verifyNoMoreInteractions(categoryMapper, categoryRepository);
     }

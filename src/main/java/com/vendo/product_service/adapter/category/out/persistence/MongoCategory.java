@@ -19,7 +19,7 @@ public class MongoCategory {
     private String id;
 
     @Indexed(unique = true)
-    private String code;
+    private String slug;
 
     private String title;
     private String parentId;
