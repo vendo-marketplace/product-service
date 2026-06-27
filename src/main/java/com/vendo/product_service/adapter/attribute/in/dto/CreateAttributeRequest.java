@@ -13,6 +13,7 @@ import static com.vendo.product_service.domain.product.constants.ProductConstant
 @Builder
 public record CreateAttributeRequest(
 
+        @NotNull(message = "Title is required.")
         @Pattern(regexp = ATTRIBUTE_NAME_PATTERN, message = "Title validation failed.")
         String title,
 

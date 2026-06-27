@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.attribute.in;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
@@ -85,6 +84,30 @@ public class AttributeControllerIntegrationTest {
 
             Attribute captorValue = captor.getValue();
             AssertionUtils.assertFrom(attribute, captorValue);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenTitleIsNotPresent() throws Exception {
+            User user = buildUser(UserRole.ADMIN);
+            CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().title(null).build();
+
+            String content = mockMvc.perform(post("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
+                            .content(objectMapper.writeValueAsString(request))
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title is required.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeCommandPort, mapper);
         }
 
         @Test
