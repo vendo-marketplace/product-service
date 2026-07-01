@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.category;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.in.category.CategoryCommandUseCase;
@@ -10,7 +11,6 @@ import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
