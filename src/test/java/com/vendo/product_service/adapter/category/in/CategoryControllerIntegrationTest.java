@@ -5,18 +5,21 @@ import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
-import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
 import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.product_service.test_utils.builder.*;
+import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
+import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
+import com.vendo.product_service.test_utils.builder.CategoryResponseDataBuilder;
+import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.response.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
@@ -41,8 +44,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.vendo.security_lib.http.HttpUtils.AUTHORIZATION_HEADER;
-import static com.vendo.security_lib.http.HttpUtils.BEARER_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -68,8 +69,6 @@ public class CategoryControllerIntegrationTest {
     private CategoryCommandPort categoryCommandPort;
     @MockitoBean
     private AttributeQueryPort attributeQueryPort;
-    @MockitoBean
-    private DtoCategoryMapper dtoCategoryMapper;
 
     @BeforeEach
     public void setUp() {
@@ -94,13 +93,6 @@ public class CategoryControllerIntegrationTest {
         User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
         return mockMvc.perform(post("/categories")
                 .with(authentication(SecurityContextService.initializeAuth(user)))
-                .content(objectMapper.writeValueAsString(categoryRequest))
-                .contentType(MediaType.APPLICATION_JSON));
-    }
-
-    private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, String token) throws Exception {
-        return mockMvc.perform(post("/categories")
-                .header(AUTHORIZATION_HEADER, BEARER_PREFIX + token)
                 .content(objectMapper.writeValueAsString(categoryRequest))
                 .contentType(MediaType.APPLICATION_JSON));
     }
@@ -207,12 +199,9 @@ public class CategoryControllerIntegrationTest {
         @Test
         void save_shouldReturnConflict_whenCategoryIsAlreadyExistsBySlug() throws Exception {
             CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields().parentId(null).attributes(null).build();
-            Category category = Category.builder()
-                    .slug(categoryRequest.slug())
-                    .build();
+            ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
-            when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(category);
-            doThrow(new CategoryAlreadyExistsException("Category already exists by slug.")).when(categoryCommandPort).save(category);
+            doThrow(new CategoryAlreadyExistsException("Category already exists by slug.")).when(categoryCommandPort).save(argumentCaptor.capture());
 
             String content = performCategoryPersist(categoryRequest)
                     .andExpect(status().isConflict())
@@ -226,7 +215,13 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Category already exists by slug.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verify(dtoCategoryMapper).toCategory(categoryRequest);
+            Category category = argumentCaptor.getValue();
+            assertThat(category).isNotNull();
+            assertThat(category.getTitle()).isEqualTo(categoryRequest.title());
+            assertThat(category.getSlug()).isEqualTo(categoryRequest.slug());
+            assertThat(category.getAttributes()).isNotNull();
+            assertThat(category.getAttributes().size()).isEqualTo(0);
+
             verify(categoryCommandPort).save(category);
         }
 
@@ -257,9 +252,6 @@ public class CategoryControllerIntegrationTest {
             CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                     .parentId(null)
                     .build();
-            Category category = CategoryDataBuilder.withAllFields().parentId(null).build();
-
-            when(dtoCategoryMapper.toCategory(request)).thenReturn(category);
 
             String content = performCategoryPersist(request)
                     .andExpect(status().isBadRequest())
@@ -285,15 +277,9 @@ public class CategoryControllerIntegrationTest {
                         .parentId(null)
                         .attributes(null)
                         .build();
-                Category category = CategoryDataBuilder.withAllFields()
-                        .parentId(null)
-                        .attributes(null)
-                        .slug(categoryRequest.slug())
-                        .build();
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(category);
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
                 performCategoryPersist(categoryRequest).andExpect(status().isOk());
@@ -305,7 +291,7 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getParentId()).isNull();
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(1);
-                assertThat(capturedCategory.getPath().get(0)).isEqualTo(category.getId());
+                assertThat(capturedCategory.getPath().get(0)).isEqualTo(capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNotNull();
                 assertThat(capturedCategory.getAttributes()).isEmpty();
             }
@@ -336,7 +322,6 @@ public class CategoryControllerIntegrationTest {
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(sub);
                 when(categoryQueryPort.findById(sub.getParentId(), "Parent category not found.")).thenReturn(parent);
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
@@ -348,11 +333,10 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getParentId()).isEqualTo(categoryRequest.parentId());
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
-                assertThat(capturedCategory.getPath()).containsExactly(parentId, sub.getId());
+                assertThat(capturedCategory.getPath()).containsExactly(parentId, capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNotNull();
                 assertThat(capturedCategory.getAttributes()).isEmpty();
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);
             }
@@ -371,7 +355,6 @@ public class CategoryControllerIntegrationTest {
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(sub);
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parent);
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
@@ -383,11 +366,10 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getParentId()).isEqualTo(categoryRequest.parentId());
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
-                assertThat(capturedCategory.getPath()).containsExactly(parent.getId(), sub.getId());
+                assertThat(capturedCategory.getPath()).containsExactly(parent.getId(), capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNotNull();
                 assertThat(capturedCategory.getAttributes()).isEmpty();
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);
             }
@@ -399,7 +381,6 @@ public class CategoryControllerIntegrationTest {
                         .build();
                 Category category = CategoryDataBuilder.withAllFields().attributes(null).build();
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(category);
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenThrow(new CategoryNotFoundException("Parent category not found."));
 
                 String content = performCategoryPersist(categoryRequest)
@@ -414,7 +395,6 @@ public class CategoryControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
                 assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verifyNoInteractions(commandPort);
             }
@@ -428,7 +408,6 @@ public class CategoryControllerIntegrationTest {
                         .attributes(null)
                         .build();
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(subCategory);
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(childCategory);
 
                 String content = performCategoryPersist(categoryRequest)
@@ -443,7 +422,6 @@ public class CategoryControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("A subcategory cannot have a child category as its parent.");
                 assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verifyNoInteractions(commandPort);
             }
@@ -461,9 +439,6 @@ public class CategoryControllerIntegrationTest {
                 Category sub = CategoryDataBuilder.withAllFields().id(subId).attributes(null).parentId(parentId).path(subPath).build();
 
                 Attribute attribute = new Attribute("id", "title", "slug", AttributeType.STRING, false, null);
-                Category child = CategoryDataBuilder.withAllFields().parentId(sub.getId())
-                        .attributes(List.of(attribute.id()))
-                        .build();
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(sub.getId())
                         .attributes(List.of(attribute.id()))
@@ -471,7 +446,6 @@ public class CategoryControllerIntegrationTest {
 
                 ArgumentCaptor<Category> argumentCaptor = ArgumentCaptor.forClass(Category.class);
 
-                when(dtoCategoryMapper.toCategory(request)).thenReturn(child);
                 when(categoryQueryPort.findById(request.parentId(), "Parent category not found.")).thenReturn(sub);
                 when(attributeQueryPort.findAllByIds(request.attributes())).thenReturn(List.of(attribute));
                 doNothing().when(commandPort).save(argumentCaptor.capture());
@@ -484,12 +458,11 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getParentId()).isEqualTo(request.parentId());
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(3);
-                assertThat(capturedCategory.getPath()).containsExactly(parentId, subId, child.getId());
+                assertThat(capturedCategory.getPath()).containsExactly(parentId, subId, capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNotNull();
                 assertThat(capturedCategory.getAttributes().size()).isEqualTo(1);
                 assertThat(capturedCategory.getAttributes().get(0)).isEqualTo(attribute.id());
 
-                verify(dtoCategoryMapper).toCategory(request);
                 verify(categoryQueryPort, times(2)).findById(request.parentId(), "Parent category not found.");
                 verify(attributeQueryPort).findAllByIds(request.attributes());
                 verify(commandPort).save(capturedCategory);
@@ -498,12 +471,10 @@ public class CategoryControllerIntegrationTest {
             @Test
             void save_shouldReturnBadRequest_whenParentCategoryIsChild() throws Exception {
                 Category subCategory = CategoryDataBuilder.withAllFields().build();
-                Category childCategory = CategoryDataBuilder.withAllFields().parentId(subCategory.getId()).build();
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(subCategory.getId())
                         .build();
 
-                when(dtoCategoryMapper.toCategory(request)).thenReturn(childCategory);
                 when(categoryQueryPort.findById(request.parentId(), "Parent category not found.")).thenReturn(subCategory);
 
                 String content = performCategoryPersist(request)
@@ -518,7 +489,6 @@ public class CategoryControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("A child category cannot have another child category as its parent.");
                 assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-                verify(dtoCategoryMapper).toCategory(request);
                 verify(categoryQueryPort).findById(request.parentId(), "Parent category not found.");
                 verifyNoInteractions(commandPort, attributeQueryPort);
             }
@@ -526,9 +496,7 @@ public class CategoryControllerIntegrationTest {
             @Test
             void save_shouldReturnNotFound_whenParentCategoryNotFound() throws Exception {
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields().build();
-                Category childCategory = CategoryDataBuilder.withAllFields().build();
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(childCategory);
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenThrow(new CategoryNotFoundException("Parent category not found."));
 
                 String content = performCategoryPersist(categoryRequest)
@@ -543,7 +511,6 @@ public class CategoryControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("Parent category not found.");
                 assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verifyNoInteractions(commandPort);
             }
@@ -551,10 +518,9 @@ public class CategoryControllerIntegrationTest {
             @Test
             void save_shouldReturnNotFound_whenAttributeNotFound() throws Exception {
                 Category parentCategory = CategoryDataBuilder.withAllFields().attributes(null).build();
-                CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields().parentId(parentCategory.getId()).attributes(null).build();
+                CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields().parentId(parentCategory.getId()).build();
                 Category childCategory = CategoryDataBuilder.withAllFields().parentId(parentCategory.getId()).build();
 
-                when(dtoCategoryMapper.toCategory(categoryRequest)).thenReturn(childCategory);
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
                 when(attributeQueryPort.findAllByIds(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
 
@@ -570,7 +536,6 @@ public class CategoryControllerIntegrationTest {
                 assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0)));
                 assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-                verify(dtoCategoryMapper).toCategory(categoryRequest);
                 verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(attributeQueryPort).findAllByIds(childCategory.getAttributes());
                 verifyNoInteractions(commandPort);
@@ -592,7 +557,6 @@ public class CategoryControllerIntegrationTest {
                     .build();
 
             when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
-            when(dtoCategoryMapper.toResponse(category)).thenReturn(response);
 
             String content = performCategoryGet(category.getId())
                     .andExpect(status().isOk())
@@ -603,9 +567,10 @@ public class CategoryControllerIntegrationTest {
             CategoryResponse categoryResponse = objectMapper.readValue(content, CategoryResponse.class);
 
             AssertionUtils.assertFrom(category, categoryResponse, "type");
+            assertThat(categoryResponse.type()).isNotNull();
+            assertThat(categoryResponse.type()).isEqualTo(CategoryType.CHILD);
 
             verify(categoryQueryPort).findById(category.getId(), "Category not found.");
-            verify(dtoCategoryMapper).toResponse(category);
         }
 
         @Test
@@ -667,9 +632,12 @@ public class CategoryControllerIntegrationTest {
             assertThat(tree.attributes()).isEmpty();
             assertThat(tree.children()).isNotNull();
             assertThat(tree.children().size()).isEqualTo(1);
+            assertThat(tree.type()).isNotNull();
+            assertThat(tree.type()).isEqualTo(CategoryType.PARENT);
 
             CategoryTreeResponse.CategoryTree treeChild = tree.children().get(0);
             AssertionUtils.assertFrom(treeChild, child, "children", "parentId", "attributes");
+            assertThat(treeChild.type()).isEqualTo(CategoryType.CHILD);
 
             assertThat(treeChild.attributes().stream().map(Attribute::id).toList()).containsAll(child.getAttributes());
         }

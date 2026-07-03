@@ -1,12 +1,12 @@
 package com.vendo.product_service.domain.category.model;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class Category {
     public List<String> buildPath(List<String> parentPath) {
         if (id == null) throw new IllegalStateException("Id is empty.");
 
-        if (parentPath.isEmpty()) {
+        if (CollectionUtils.isEmpty(parentPath)) {
             return List.of(id);
         }
 
