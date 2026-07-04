@@ -30,3 +30,4 @@ endpoints:
       - /internal/**
     product:
       - /categories/tree
+      - /products/compare
