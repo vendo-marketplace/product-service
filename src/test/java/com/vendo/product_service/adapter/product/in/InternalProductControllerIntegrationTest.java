@@ -8,7 +8,7 @@ import com.vendo.product_service.port.out.product.InternalProductQueryPort;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
