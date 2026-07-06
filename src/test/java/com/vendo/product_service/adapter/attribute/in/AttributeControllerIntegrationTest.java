@@ -6,6 +6,7 @@ import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest
 import com.vendo.product_service.adapter.attribute.out.mapper.DtoAttributeMapper;
 import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
@@ -128,7 +129,7 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title validation failed.");
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.TITLE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort, mapper);
