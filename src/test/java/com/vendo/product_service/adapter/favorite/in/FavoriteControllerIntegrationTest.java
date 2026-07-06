@@ -13,7 +13,7 @@ import com.vendo.product_service.port.out.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.builder.UserDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

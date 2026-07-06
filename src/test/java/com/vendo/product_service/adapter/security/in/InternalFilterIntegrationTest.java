@@ -5,7 +5,7 @@ import com.vendo.core_lib.type.ServiceName;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.security_starter.jwt.parser.TokenClaims;
 import com.vendo.security_starter.jwt.parser.TokenClaimsParser;
 import org.junit.jupiter.api.Test;
