@@ -12,6 +12,7 @@ import com.vendo.product_service.domain.category.exception.CategoryAlreadyExists
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
+import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.out.category.CategoryCommandPort;
@@ -142,7 +143,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title validation failed.");
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.TITLE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(categoryQueryPort);
@@ -190,7 +191,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("slug")).isEqualTo("Slug validation failed.");
+            assertThat(exceptionResponse.getErrors().get("slug")).isEqualTo(ProductPatterns.SLUG_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(categoryQueryPort);
