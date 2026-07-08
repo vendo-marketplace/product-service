@@ -25,7 +25,7 @@ public class CategoryQueryAdapter implements CategoryQueryPort {
 
     @Override
     public Category findById(String id) {
-        return findById(id, "Product not found.");
+        return findById(id, "Category not found.");
     }
 
     @Override

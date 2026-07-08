@@ -31,8 +31,7 @@ public class DefaultAttributesValidator implements AttributesValidator {
                 .toList();
 
         if (!invalidAttributes.isEmpty()) {
-            Map<String, String> validationErrors = invalidAttributes.stream()
-                    .collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
+            Map<String, String> validationErrors = invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
             throw new CategoryValidationException("Validation failed.", validationErrors);
         }
     }
