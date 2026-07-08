@@ -15,25 +15,21 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class DefaultAttributesValidator implements AttributesValidator {
+class DefaultAttributeValidator implements AttributeValidator {
 
-    private final AttributesValidationFactory attributesValidationFactory;
+    private final AttributeValidationFactory attributeValidationFactory;
 
     @Override
     public void validate(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
-        compareAndValidate(originAttributes, requestAttributes);
+        List<ValidationBody> invalidAttributes = getAttributesValidation(originAttributes, requestAttributes);
+        if (!invalidAttributes.isEmpty()) throwInvalidAttributes(invalidAttributes);
     }
 
-    private void compareAndValidate(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
-        List<ValidationBody> invalidAttributes = originAttributes.stream()
+    private List<ValidationBody> getAttributesValidation(List<Attribute> originAttributes, List<AttributeValue> requestAttributes) {
+        return originAttributes.stream()
                 .map(originAttribute -> validateRequestAttribute(originAttribute, requestAttributes))
                 .filter(attribute -> !attribute.valid())
                 .toList();
-
-        if (!invalidAttributes.isEmpty()) {
-            Map<String, String> validationErrors = invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
-            throw new CategoryValidationException("Validation failed.", validationErrors);
-        }
     }
 
     private ValidationBody validateRequestAttribute(Attribute originAttribute, List<AttributeValue> requestAttributes) {
@@ -42,9 +38,9 @@ public class DefaultAttributesValidator implements AttributesValidator {
     }
 
     private ValidationBody isAttributeValid(Attribute originAttribute, List<String> requestAttributeValue) {
-        AttributeValidatorStrategy validationStrategy = attributesValidationFactory.getValidator(originAttribute.type());
+        final boolean required = originAttribute.required(), empty = CollectionUtils.isEmpty(requestAttributeValue);
+        AttributeValidatorStrategy validationStrategy = attributeValidationFactory.getValidator(originAttribute.type());
 
-        boolean required = originAttribute.required(), empty = CollectionUtils.isEmpty(requestAttributeValue);
         if (required && empty) {
             return ValidationBody.from(originAttribute.title(), "%s is required.".formatted(originAttribute.title()));
         } else if (!required && empty) {
@@ -59,5 +55,10 @@ public class DefaultAttributesValidator implements AttributesValidator {
                 .filter(requestAttribute -> requestAttribute.id().equals(originAttributeId))
                 .findAny()
                 .orElse(new AttributeValue(originAttributeId, List.of()));
+    }
+
+    private void throwInvalidAttributes(List<ValidationBody> invalidAttributes) {
+        Map<String, String> validationErrors = invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
+        throw new CategoryValidationException("Validation failed.", validationErrors);
     }
 }

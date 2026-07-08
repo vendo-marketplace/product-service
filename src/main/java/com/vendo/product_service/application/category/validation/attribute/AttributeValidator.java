@@ -5,7 +5,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeValue;
 
 import java.util.List;
 
-public interface AttributesValidator {
+public interface AttributeValidator {
 
     void validate(List<Attribute> originAttributes, List<AttributeValue> requestAttributes);
 

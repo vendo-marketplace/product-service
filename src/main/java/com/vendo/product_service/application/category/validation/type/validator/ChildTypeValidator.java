@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChildTypeValidator implements TypeValidator {
+class ChildTypeValidator implements TypeValidator {
 
     private final CategoryQueryPort categoryQueryPort;
     private final AttributeQueryPort attributeQueryPort;
@@ -19,6 +19,7 @@ public class ChildTypeValidator implements TypeValidator {
     @Override
     public void validate(Category category) {
         Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
+
         if (parent.getType() == CategoryType.CHILD) {
             throw new CategoryTypeException("A child category cannot have another child category as its parent.");
         }
