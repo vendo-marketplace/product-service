@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static com.vendo.product_service.domain.category.model.Category.CATEGORY_TYPE_VALIDATION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -263,7 +264,7 @@ public class CategoryControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid category structure.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo(CATEGORY_TYPE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(commandPort, categoryQueryPort);

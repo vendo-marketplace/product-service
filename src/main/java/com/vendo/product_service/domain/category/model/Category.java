@@ -24,6 +24,11 @@ public class Category {
     private List<String> attributes;
     private List<String> path;
 
+    public static final String CATEGORY_TYPE_VALIDATION_MESSAGE = "Invalid category structure. Expected category types: " +
+            "Parent: parentId is absent, attributes are absent. " +
+            "Subcategory: parentId is present, attributes are absent. " +
+            "Child: parentId is present, attributes are present.";
+
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()
                 .flatMap(category -> category.getAttributes().stream())
@@ -54,7 +59,7 @@ public class Category {
             return CategoryType.CHILD;
         }
 
-        throw new CategoryValidationException("Invalid category structure.");
+        throw new CategoryValidationException(CATEGORY_TYPE_VALIDATION_MESSAGE);
     }
 
     public void throwIfNotDesiredType(CategoryType desiredType, String message) {
