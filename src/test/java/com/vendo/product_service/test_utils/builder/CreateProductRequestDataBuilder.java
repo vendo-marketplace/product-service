@@ -11,7 +11,7 @@ public record CreateProductRequestDataBuilder() {
 
     public static CreateProductRequest.CreateProductRequestBuilder withAllFields() {
         return CreateProductRequest.builder()
-                .title("title")
+                .title("Title")
                 .description("description")
                 .price(BigDecimal.ONE)
                 .categoryId("category_id")

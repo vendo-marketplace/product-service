@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SubTypeValidator implements TypeValidator {
+class SubTypeValidator implements TypeValidator {
 
     private final CategoryQueryPort categoryQueryPort;
 

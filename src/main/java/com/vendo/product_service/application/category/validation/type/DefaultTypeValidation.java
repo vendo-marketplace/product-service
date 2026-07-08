@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class TypeValidationService implements TypeValidationPort {
+class DefaultTypeValidation implements TypeValidationPort {
 
     private final List<TypeValidator> typeValidators;
 

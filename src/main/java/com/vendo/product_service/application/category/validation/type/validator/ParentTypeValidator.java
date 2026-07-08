@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ParentTypeValidator implements TypeValidator {
+class ParentTypeValidator implements TypeValidator {
 
     @Override
     public void validate(Category category) {

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class RangeAttributeValidator implements AttributeValidatorStrategy {
+class RangeAttributeValidator implements AttributeValidatorStrategy {
 
     @Override
     public ValidationBody validate(Attribute originAttribute, List<String> requestAttributes) {
