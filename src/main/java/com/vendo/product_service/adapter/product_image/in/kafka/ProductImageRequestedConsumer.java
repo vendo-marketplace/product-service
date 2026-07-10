@@ -21,7 +21,8 @@ public class ProductImageRequestedConsumer {
             topics = "${kafka.events.product.image-requested-event.topic}",
             groupId = "${kafka.events.product.image-requested-event.groupId}",
             properties = {"auto.offset.reset: ${kafka.events.product.image-requested-event.properties.auto-offset-reset}"},
-            containerFactory = "${kafka.events.product.image-requested-event.container-factory}"
+            containerFactory = "${kafka.events.product.image-requested-event.container-factory}",
+            autoStartup = "${kafka.events.product.image-requested-event.auto-startup}"
     )
     private void listenProductImageRequestedEvent(ProductImageRequestedEvent event) {
         log.info("Received event for product image requested: {}", event);

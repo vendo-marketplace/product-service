@@ -25,9 +25,9 @@ kafka:
         topic: "PRODUCT_IMAGE_REQUESTED_TEST_TOPIC"
         groupId: "product_image_requested_group"
         container-factory: "consumerContainerFactory"
-        auto-startup: "false"
         properties:
           auto-offset-reset: "latest"
+        auto-startup: "false"
 
 endpoints:
   unauthenticated:

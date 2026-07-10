@@ -10,6 +10,4 @@ public record Favorite (
     String productId
 
 ) {
-
-
 }
