@@ -10,7 +10,7 @@ import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
+import com.vendo.product_service.port.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.ExceptionResponse;

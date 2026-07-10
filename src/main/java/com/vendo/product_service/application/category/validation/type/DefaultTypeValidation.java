@@ -3,7 +3,7 @@ package com.vendo.product_service.application.category.validation.type;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.port.in.category.TypeValidationPort;
+import com.vendo.product_service.port.category.TypeValidationPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

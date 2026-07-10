@@ -4,11 +4,11 @@ import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundExcep
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.in.favorite.FavoriteUseCase;
-import com.vendo.product_service.port.out.favorite.FavoriteCommandPort;
-import com.vendo.product_service.port.out.favorite.FavoriteQueryPort;
-import com.vendo.product_service.port.out.product.ProductQueryPort;
-import com.vendo.product_service.port.out.user.AuthUserPort;
+import com.vendo.product_service.port.favorite.FavoriteUseCase;
+import com.vendo.product_service.port.favorite.FavoriteCommandPort;
+import com.vendo.product_service.port.favorite.FavoriteQueryPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
+import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +53,7 @@ public class FavoriteService implements FavoriteUseCase {
         List<Favorite> favorites = favoriteQueryPort.findAllBy(authUserPort.getAuthUser().id());
         if (favorites.isEmpty()) return List.of();
 
-        List<String> productIds = favorites.stream().map(Favorite::getProductId).toList();
+        List<String> productIds = favorites.stream().map(Favorite::productId).toList();
         return productQueryPort.findAllByIds(productIds);
     }
 }
