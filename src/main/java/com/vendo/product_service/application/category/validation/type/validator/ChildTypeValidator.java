@@ -4,8 +4,8 @@ import com.vendo.product_service.application.category.validation.type.TypeValida
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

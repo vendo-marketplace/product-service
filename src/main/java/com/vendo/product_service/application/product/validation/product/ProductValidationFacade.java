@@ -7,10 +7,10 @@ import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.product_service.port.out.product.ProductValidationPort;
-import com.vendo.product_service.port.out.user.AuthUserPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.product.ProductValidationPort;
+import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

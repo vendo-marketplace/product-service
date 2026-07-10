@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.out.product.InternalProductQueryPort;
+import com.vendo.product_service.port.product.InternalProductQueryPort;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
