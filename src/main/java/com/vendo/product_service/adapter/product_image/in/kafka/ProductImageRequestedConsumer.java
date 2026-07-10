@@ -25,7 +25,7 @@ public class ProductImageRequestedConsumer {
             autoStartup = "${kafka.events.product.image-requested-event.auto-startup}"
     )
     private void listenProductImageRequestedEvent(ProductImageRequestedEvent event) {
-        log.info("Received event for product image requested: {}", event);
+        log.info("Received event for product image requested: {}.", event);
         productImageUseCase.save(mapper.toProductImage(event));
     }
 
