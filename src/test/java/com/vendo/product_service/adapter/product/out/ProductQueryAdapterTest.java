@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,5 +70,37 @@ class ProductQueryAdapterTest {
 
         assertThat(exists).isTrue();
         verify(productRepository).existsById(productId);
+    }
+
+    @Test
+    void requireAllByIds_shouldReturnProductsOrderedByRequestedIds() {
+        List<String> productIds = List.of("prod_2", "prod_1");
+
+        MongoProduct entity1 = MongoProduct.builder().id("prod_1").title("First").build();
+        MongoProduct entity2 = MongoProduct.builder().id("prod_2").title("Second").build();
+        Product product1 = Product.builder().id("prod_1").title("First").build();
+        Product product2 = Product.builder().id("prod_2").title("Second").build();
+
+        when(productRepository.findAllById(productIds)).thenReturn(List.of(entity1, entity2));
+        when(mongoProductMapper.toProducts(List.of(entity1, entity2))).thenReturn(List.of(product1, product2));
+
+        List<Product> result = productQueryAdapter.requireAllByIds(productIds);
+
+        assertThat(result).containsExactly(product2, product1);
+    }
+
+    @Test
+    void requireAllByIds_shouldThrowException_whenSomeProductNotFound() {
+        List<String> productIds = List.of("prod_1", "prod_2");
+
+        MongoProduct entity1 = MongoProduct.builder().id("prod_1").title("First").build();
+        Product product1 = Product.builder().id("prod_1").title("First").build();
+
+        when(productRepository.findAllById(productIds)).thenReturn(List.of(entity1));
+        when(mongoProductMapper.toProducts(List.of(entity1))).thenReturn(List.of(product1));
+
+        assertThatThrownBy(() -> productQueryAdapter.requireAllByIds(productIds))
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Product not found by id: prod_2.");
     }
 }

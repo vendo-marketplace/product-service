@@ -12,11 +12,9 @@ import com.vendo.product_service.port.out.category.CategoryQueryPort;
 import com.vendo.product_service.port.out.product.ProductQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -30,24 +28,17 @@ public class ProductCompareService implements ProductCompareUseCase {
     public List<ProductComparison> compare(String categoryId, List<String> productIds) {
         Category category = categoryQueryPort.findById(categoryId);
 
-        List<Product> products = productQueryPort.findAllByIds(productIds);
-        validateProductsFound(productIds, products);
-        validateProductsCategory(products, categoryId);
+        List<Product> products = productQueryPort.requireAllByIds(productIds);
+        requireProductsInCategory(products, categoryId);
 
-        if (category.getAttributes() == null || category.getAttributes().isEmpty()) {
+        if (CollectionUtils.isEmpty(category.getAttributes())) {
             return List.of();
         }
 
         List<Attribute> attributes = attributeQueryPort.findAllByIds(category.getAttributes());
 
-        Map<String, Product> productsById = products.stream()
-                .collect(Collectors.toMap(Product::getId, Function.identity()));
-        List<Product> orderedProducts = productIds.stream()
-                .map(productsById::get)
-                .toList();
-
         return attributes.stream()
-                .map(attribute -> buildComparison(attribute, orderedProducts))
+                .map(attribute -> buildComparison(attribute, products))
                 .toList();
     }
 
@@ -70,13 +61,7 @@ public class ProductCompareService implements ProductCompareUseCase {
                 .orElse(List.of());
     }
 
-    private void validateProductsFound(List<String> productIds, List<Product> products) {
-        if (products.size() != productIds.size()) {
-            throw new ProductNotFoundException("Some products were not found.");
-        }
-    }
-
-    private void validateProductsCategory(List<Product> products, String categoryId) {
+    private void requireProductsInCategory(List<Product> products, String categoryId) {
         boolean allBelongToCategory = products.stream()
                 .allMatch(product -> categoryId.equals(product.getCategoryId()));
         if (!allBelongToCategory) {

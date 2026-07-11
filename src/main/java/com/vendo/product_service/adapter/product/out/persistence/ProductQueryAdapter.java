@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,5 +35,21 @@ public class ProductQueryAdapter implements ProductQueryPort {
     public List<Product> findAllByIds(List<String> productIds) {
         List<MongoProduct> allById = repository.findAllById(productIds);
         return mapper.toProducts(allById);
+    }
+
+    @Override
+    public List<Product> requireAllByIds(List<String> productIds) {
+        Map<String, Product> productsById = findAllByIds(productIds).stream()
+                .collect(Collectors.toMap(Product::getId, Function.identity()));
+
+        return productIds.stream()
+                .map(id -> {
+                    Product product = productsById.get(id);
+                    if (product == null) {
+                        throw new ProductNotFoundException("Product not found by id: %s.".formatted(id));
+                    }
+                    return product;
+                })
+                .toList();
     }
 }

@@ -9,5 +9,6 @@ public interface ProductQueryPort {
     Product findById(String id);
     boolean existsById(String id);
     List<Product> findAllByIds(List<String> productIds);
+    List<Product> requireAllByIds(List<String> productIds);
 
 }

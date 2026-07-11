@@ -80,7 +80,7 @@ public class CompareProductControllerIntegrationTest {
                     .build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
@@ -101,7 +101,7 @@ public class CompareProductControllerIntegrationTest {
             assertThat(response.values().get(1)).isEqualTo(List.of("Blue"));
 
             verify(categoryQueryPort).findById(category.getId());
-            verify(productQueryPort).findAllByIds(List.of("prod_1", "prod_2"));
+            verify(productQueryPort).requireAllByIds(List.of("prod_1", "prod_2"));
             verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
         }
 
@@ -120,7 +120,7 @@ public class CompareProductControllerIntegrationTest {
                     .build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
@@ -141,7 +141,7 @@ public class CompareProductControllerIntegrationTest {
             Product product2 = ProductDataBuilder.withAllFields().id("prod_2").categoryId(category.getId()).build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
                     .andExpect(status().isOk())
@@ -170,7 +170,7 @@ public class CompareProductControllerIntegrationTest {
                     .build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
@@ -191,8 +191,8 @@ public class CompareProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2")))
-                    .thenReturn(List.of(ProductDataBuilder.withAllFields().id("prod_1").categoryId(category.getId()).build()));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2")))
+                    .thenThrow(new ProductNotFoundException("Product not found by id: prod_2."));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
                     .andExpect(status().isNotFound())
@@ -202,7 +202,7 @@ public class CompareProductControllerIntegrationTest {
 
             ExceptionResponse response = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(response.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(response.getMessage()).isEqualTo("Some products were not found.");
+            assertThat(response.getMessage()).isEqualTo("Product not found by id: prod_2.");
         }
 
         @Test
@@ -214,7 +214,7 @@ public class CompareProductControllerIntegrationTest {
             Product product2 = ProductDataBuilder.withAllFields().id("prod_2").categoryId("different_category").build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
 
             String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
                     .andExpect(status().isNotFound())
@@ -269,7 +269,7 @@ public class CompareProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of()).build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.findAllByIds(List.of("prod_1"))).thenReturn(
+            when(productQueryPort.requireAllByIds(List.of("prod_1"))).thenReturn(
                     List.of(ProductDataBuilder.withAllFields().id("prod_1").categoryId(category.getId()).build())
             );
 
