@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
+import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
@@ -9,11 +10,12 @@ import java.util.List;
 
 @Builder
 public record CreateProductRequest(
-        @NotBlank(message = "Title is required.")
-        @Size(min = 2, max = 100, message = "Title must be between 2 and 100 characters.")
+
+        @NotNull(message = "Title is required.")
+        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
         String title,
 
-        @NotBlank(message = "Description is required.")
+        @NotNull(message = "Description is required.")
         @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters.")
         String description,
 
@@ -28,5 +30,6 @@ public record CreateProductRequest(
         @NotNull(message = "Id is required.")
         String categoryId,
 
+        @NotEmpty(message = "Attributes are required.")
         List<AttributeValue> attributes) {
 }

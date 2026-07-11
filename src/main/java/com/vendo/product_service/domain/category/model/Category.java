@@ -1,12 +1,12 @@
 package com.vendo.product_service.domain.category.model;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,11 @@ public class Category {
     private String parentId;
     private List<String> attributes;
     private List<String> path;
+
+    public static final String CATEGORY_TYPE_VALIDATION_MESSAGE = "Invalid category structure. Expected category types: " +
+            "Parent: parentId is absent, attributes are absent. " +
+            "Subcategory: parentId is present, attributes are absent. " +
+            "Child: parentId is present, attributes are present.";
 
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()
@@ -54,7 +59,7 @@ public class Category {
             return CategoryType.CHILD;
         }
 
-        throw new CategoryValidationException("Invalid category structure.");
+        throw new CategoryValidationException(CATEGORY_TYPE_VALIDATION_MESSAGE);
     }
 
     public void throwIfNotDesiredType(CategoryType desiredType, String message) {
@@ -66,7 +71,7 @@ public class Category {
     public List<String> buildPath(List<String> parentPath) {
         if (id == null) throw new IllegalStateException("Id is empty.");
 
-        if (parentPath.isEmpty()) {
+        if (CollectionUtils.isEmpty(parentPath)) {
             return List.of(id);
         }
 

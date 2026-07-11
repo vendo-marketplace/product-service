@@ -1,8 +1,10 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
+import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -11,7 +13,8 @@ import java.util.List;
 
 @Builder
 public record UpdateProductRequest(
-        @Size(min = 2, max = 100, message = "Title must be between 2 and 100 characters.")
+
+        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
         String title,
 
         @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters.")

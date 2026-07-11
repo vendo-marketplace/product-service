@@ -10,6 +10,7 @@ import org.mapstruct.Mapper;
 public interface DtoCategoryMapper {
 
     Category toCategory(CreateCategoryRequest request);
+
     CategoryResponse toResponse(Category category);
 
 }

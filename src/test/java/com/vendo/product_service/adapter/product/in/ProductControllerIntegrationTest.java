@@ -12,14 +12,14 @@ import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.product_service.port.out.product.ProductCommandPort;
-import com.vendo.product_service.port.out.product.ProductEventSenderPort;
-import com.vendo.product_service.port.out.product.ProductQueryPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductEventSenderPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.*;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import org.junit.jupiter.api.Nested;
@@ -358,13 +358,15 @@ public class ProductControllerIntegrationTest {
 
             Attribute requiredStringAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").required(true).build();
             Attribute requiredNumberAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.NUMBER).title("Number").required(true).build();
-            List<Attribute> attributes = List.of(requiredStringAttribute, requiredNumberAttribute);
+            Attribute notRequiredEnumAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.ENUM).title("Enum").allowedValues(List.of("TYPE1")).build();
+            List<Attribute> attributes = List.of(requiredStringAttribute, requiredNumberAttribute, notRequiredEnumAttribute);
             List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
+            List<AttributeValue> attributeValues = List.of(new AttributeValue(notRequiredEnumAttribute.id(), List.of("TYPE1")));
 
             Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(List.of())
+                    .attributes(attributeValues)
                     .build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
@@ -402,6 +404,7 @@ public class ProductControllerIntegrationTest {
                     .description(null)
                     .price(null)
                     .categoryId(null)
+                    .attributes(null)
                     .build();
 
             String content = performProductPersist(request)
@@ -414,7 +417,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(4);
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(5);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);

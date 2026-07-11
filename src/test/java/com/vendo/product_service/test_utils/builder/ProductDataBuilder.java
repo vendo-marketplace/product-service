@@ -12,7 +12,7 @@ public record ProductDataBuilder() {
     public static Product.ProductBuilder withAllFields() {
         return Product.builder()
                 .id(String.valueOf(UUID.randomUUID()))
-                .title("title")
+                .title("Title")
                 .description("description")
                 .quantity(1)
                 .price(BigDecimal.ONE)

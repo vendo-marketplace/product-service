@@ -2,6 +2,7 @@ package com.vendo.product_service.application.category.model;
 
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.type.CategoryType;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ public record CategoryNode(
         String id,
         String title,
         String slug,
+        CategoryType type,
         List<Attribute> attributes,
         List<String> path,
         List<CategoryNode> children
@@ -19,6 +21,7 @@ public record CategoryNode(
                 category.getId(),
                 category.getTitle(),
                 category.getSlug(),
+                category.getType(),
                 attributes,
                 category.getPath(),
                 children

@@ -1,8 +1,8 @@
 package com.vendo.product_service.adapter.product.out.mapper;
 
-import com.vendo.event_lib.product.AttributeEvent;
 import com.vendo.event_lib.product.ProductCreatedEvent;
 import com.vendo.event_lib.product.ProductUpdatedEvent;
+import com.vendo.event_lib.product.nested.AttributeEvent;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;

@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.category.in.exception;
 
 import com.vendo.product_service.domain.category.exception.*;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

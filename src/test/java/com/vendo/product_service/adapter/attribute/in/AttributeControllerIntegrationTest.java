@@ -1,17 +1,19 @@
 package com.vendo.product_service.adapter.attribute.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.core_lib.constants.Delimiters;
 import com.vendo.core_lib.utils.AssertionUtils;
+import com.vendo.core_lib.utils.ClassFields;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
-import com.vendo.product_service.adapter.attribute.out.mapper.DtoAttributeMapper;
 import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeType;
+import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.product_service.port.out.attribute.AttributeCommandPort;
-import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
+import com.vendo.product_service.port.attribute.AttributeCommandPort;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,8 +49,6 @@ public class AttributeControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private DtoAttributeMapper mapper;
-    @MockitoBean
     private AttributeCommandPort attributeCommandPort;
 
     @BeforeEach
@@ -66,11 +66,9 @@ public class AttributeControllerIntegrationTest {
         @Test
         void save_shouldSuccessfullySave() throws Exception {
             User user = buildUser(UserRole.ADMIN);
-            Attribute attribute = AttributeDataBuilder.withAllFields().build();
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
 
-            when(mapper.toAttribute(request)).thenReturn(attribute);
             doNothing().when(attributeCommandPort).save(captor.capture());
 
             mockMvc.perform(post("/attributes")
@@ -79,11 +77,10 @@ public class AttributeControllerIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
 
-            verify(mapper).toAttribute(request);
-            verify(attributeCommandPort).save(attribute);
-
             Attribute captorValue = captor.getValue();
-            AssertionUtils.assertFrom(attribute, captorValue);
+            AssertionUtils.assertFrom(request, captorValue, "id");
+
+            verify(attributeCommandPort).save(captorValue);
         }
 
         @Test
@@ -107,7 +104,42 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title is required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verifyNoInteractions(attributeCommandPort, mapper);
+            verifyNoInteractions(attributeCommandPort);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenInvalidEnumType() throws Exception {
+            User user = buildUser(UserRole.ADMIN);
+            String enumValues = String.join(Delimiters.COMMA_DELIMITER, ClassFields.getEnumValues(AttributeType.class));
+            String invalidBody = """
+                    {"title": "Title", "slug": "slug", "type": "invalid_type"}
+                    """;
+
+            String content = mockMvc.perform(post("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(user)))
+                            .content(invalidBody)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(content).isNotBlank();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getTimestamp()).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(400);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().get("type")).isEqualTo("Allowed types are: " + enumValues);
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeCommandPort);
+        }
+
+        public static void main(String[] args) {
+
         }
 
         @Test
@@ -128,10 +160,10 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title validation failed.");
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.TITLE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verifyNoInteractions(attributeCommandPort, mapper);
+            verifyNoInteractions(attributeCommandPort);
         }
 
         @Test
@@ -155,7 +187,7 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().get("type")).isEqualTo("Type is required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verifyNoInteractions(attributeCommandPort, mapper);
+            verifyNoInteractions(attributeCommandPort);
         }
 
         @Test
@@ -179,17 +211,15 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().get("slug")).isEqualTo("Slug is required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verifyNoInteractions(attributeCommandPort, mapper);
+            verifyNoInteractions(attributeCommandPort);
         }
 
         @Test
         void save_shouldReturnConflict_whenAttributeAlreadyExistsBySlug() throws Exception {
             User user = buildUser(UserRole.ADMIN);
-            Attribute attribute = AttributeDataBuilder.withAllFields().build();
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
 
-            when(mapper.toAttribute(request)).thenReturn(attribute);
             doThrow(new AttributeAlreadyExistsException("Attribute already exists by slug.")).when(attributeCommandPort).save(captor.capture());
 
             String content = mockMvc.perform(post("/attributes")
@@ -204,11 +234,10 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute already exists by slug.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verify(mapper).toAttribute(request);
-            verify(attributeCommandPort).save(attribute);
-
             Attribute captorValue = captor.getValue();
-            AssertionUtils.assertFrom(attribute, captorValue);
+            verify(attributeCommandPort).save(captorValue);
+
+            AssertionUtils.assertFrom(request, captorValue, "id");
         }
 
         @Test
@@ -229,7 +258,7 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
-            verifyNoInteractions(attributeCommandPort, mapper);
+            verifyNoInteractions(attributeCommandPort);
         }
     }
 }

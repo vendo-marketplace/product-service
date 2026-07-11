@@ -1,16 +1,16 @@
 package com.vendo.product_service.application.product.validation.product;
 
-import com.vendo.product_service.application.category.validation.attribute.AttributesValidator;
+import com.vendo.product_service.application.category.validation.attribute.AttributeValidator;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
-import com.vendo.product_service.port.out.product.ProductValidationPort;
-import com.vendo.product_service.port.out.user.AuthUserPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.product.ProductValidationPort;
+import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductValidationFacade implements ProductValidationPort {
 
-    private final AttributesValidator attributesValidator;
+    private final AttributeValidator attributeValidator;
 
     private final AttributeQueryPort attributeQueryPort;
     private final CategoryQueryPort categoryQueryPort;
@@ -29,7 +29,7 @@ public class ProductValidationFacade implements ProductValidationPort {
     @Override
     public List<Attribute> validateAttributes(List<String> originAttributeIds, List<AttributeValue> requestAttributes) {
         List<Attribute> originAttributes = attributeQueryPort.findAllByIds(originAttributeIds);
-        attributesValidator.validate(originAttributes, requestAttributes);
+        attributeValidator.validate(originAttributes, requestAttributes);
         return originAttributes;
     }
 

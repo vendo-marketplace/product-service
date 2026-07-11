@@ -1,18 +1,13 @@
 package com.vendo.product_service.domain.favorite.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Favorite {
+public record Favorite (
 
-    private String id;
-    private String userId;
-    private String productId;
+    String id,
+    String userId,
+    String productId
 
+) {
 }

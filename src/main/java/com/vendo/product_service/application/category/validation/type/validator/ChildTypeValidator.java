@@ -4,14 +4,14 @@ import com.vendo.product_service.application.category.validation.type.TypeValida
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.port.out.attribute.AttributeQueryPort;
-import com.vendo.product_service.port.out.category.CategoryQueryPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ChildTypeValidator implements TypeValidator {
+class ChildTypeValidator implements TypeValidator {
 
     private final CategoryQueryPort categoryQueryPort;
     private final AttributeQueryPort attributeQueryPort;
@@ -19,6 +19,7 @@ public class ChildTypeValidator implements TypeValidator {
     @Override
     public void validate(Category category) {
         Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
+
         if (parent.getType() == CategoryType.CHILD) {
             throw new CategoryTypeException("A child category cannot have another child category as its parent.");
         }

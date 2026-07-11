@@ -7,13 +7,13 @@ import com.vendo.product_service.adapter.favorite.in.dto.FavoritesResponse;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
-import com.vendo.product_service.port.out.favorite.FavoriteCommandPort;
-import com.vendo.product_service.port.out.favorite.FavoriteQueryPort;
-import com.vendo.product_service.port.out.product.ProductQueryPort;
+import com.vendo.product_service.port.favorite.FavoriteCommandPort;
+import com.vendo.product_service.port.favorite.FavoriteQueryPort;
+import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.builder.UserDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -88,8 +88,8 @@ public class FavoriteControllerIntegrationTest {
             verify(favoriteCommandPort).save(argumentCaptor.capture());
 
             Favorite savedFavorite = argumentCaptor.getValue();
-            assertThat(savedFavorite.getUserId()).isEqualTo(user.id());
-            assertThat(savedFavorite.getProductId()).isEqualTo(productId);
+            assertThat(savedFavorite.userId()).isEqualTo(user.id());
+            assertThat(savedFavorite.productId()).isEqualTo(productId);
         }
 
         @Test
@@ -200,7 +200,7 @@ public class FavoriteControllerIntegrationTest {
             Favorite favorite = Favorite.builder().id("id").userId(user.id()).productId(product.getId()).build();
 
             when(favoriteQueryPort.findAllBy(user.id())).thenReturn(List.of(favorite));
-            when(productQueryPort.findAllByIds(List.of(favorite.getProductId()))).thenReturn(List.of(product));
+            when(productQueryPort.findAllByIds(List.of(favorite.productId()))).thenReturn(List.of(product));
 
             String content = performGetAll()
                     .andExpect(status().isOk())
@@ -218,7 +218,7 @@ public class FavoriteControllerIntegrationTest {
             AssertionUtils.assertFrom(actual, product, "ownerId", "attributes", "createdAt", "description", "categoryId");
 
             verify(favoriteQueryPort).findAllBy(user.id());
-            verify(productQueryPort).findAllByIds(List.of(favorite.getProductId()));
+            verify(productQueryPort).findAllByIds(List.of(favorite.productId()));
         }
 
         @Test

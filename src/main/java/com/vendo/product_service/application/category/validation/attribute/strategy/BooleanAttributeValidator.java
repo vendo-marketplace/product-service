@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class BooleanAttributeValidator implements AttributeValidatorStrategy {
+class BooleanAttributeValidator implements AttributeValidatorStrategy {
 
     private final Set<String> BOOLEAN_VALUES = Set.of(
             Boolean.FALSE.toString(),

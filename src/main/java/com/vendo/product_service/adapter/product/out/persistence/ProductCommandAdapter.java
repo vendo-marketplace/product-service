@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.product.out.persistence;
 import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.out.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

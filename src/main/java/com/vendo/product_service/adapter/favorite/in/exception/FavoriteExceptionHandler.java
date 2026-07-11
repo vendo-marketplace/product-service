@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.favorite.in.exception;
 
 import com.vendo.product_service.domain.favorite.exception.FavoriteAlreadyExistsException;
 import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundException;
-import com.vendo.security_lib.exception.response.ExceptionResponse;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
