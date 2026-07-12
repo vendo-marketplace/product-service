@@ -62,13 +62,24 @@ public class CompareProductControllerIntegrationTest {
         return mockMvc.perform(requestBuilder);
     }
 
+    // TODO tests to verify
+    public void compare_shouldReturnComparedProductAttributes_whenSame() {}
+    public void compare_shouldReturnComparedProductAttributes_whenDifferent() {}
+    public void compare_shouldReturnNotFound_whenCategoryNotFound() {}
+    public void compare_shouldReturnNotFound_whenProductNotFound() {}
+    public void compare_shouldReturnBadRequest_whenProductDoNotBelongToCategory() {}
+    public void compare_shouldReturnEmptyList_whenCategoryHasNotAttributes() {}
+    public void compare_shouldReturnNotFound_whenAttributeNotFound() {}
+    public void compare_shouldReturnBadRequest_whenProductIdsAreEmpty() {}
+    public void compare_shouldReturnBadRequest_whenCategoryIdIsNull() {}
+
     @Nested
     class CompareProductTests {
 
         @Test
         void compare_shouldReturnComparison_whenProductsHaveDifferentValues() throws Exception {
             Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").title("Color").build();
-            Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withAllFields().id("ctgr_1").attributes(List.of(attribute.id())).build();
 
             Product product1 = ProductDataBuilder.withAllFields()
                     .id("prod_1").categoryId(category.getId())
@@ -80,10 +91,10 @@ public class CompareProductControllerIntegrationTest {
                     .build();
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(productQueryPort.requireAllByIds(List.of(product1.getId(), product2.getId()))).thenReturn(List.of(product1, product2));
             when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
 
-            String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
+            String content = performCompare(category.getId(), List.of(product1.getId(), product2.getId()))
                     .andExpect(status().isOk())
                     .andReturn()
                     .getResponse()

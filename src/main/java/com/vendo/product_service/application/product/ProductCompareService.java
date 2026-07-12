@@ -27,14 +27,10 @@ public class ProductCompareService implements ProductCompareUseCase {
     @Override
     public List<ProductComparison> compare(String categoryId, List<String> productIds) {
         Category category = categoryQueryPort.findById(categoryId);
-
         List<Product> products = productQueryPort.requireAllByIds(productIds);
-        requireProductsInCategory(products, categoryId);
+        requireProductsInCategory(categoryId, products);
 
-        if (CollectionUtils.isEmpty(category.getAttributes())) {
-            return List.of();
-        }
-
+        if (CollectionUtils.isEmpty(category.getAttributes())) return List.of();
         List<Attribute> attributes = attributeQueryPort.findAllByIds(category.getAttributes());
 
         return attributes.stream()
@@ -44,16 +40,19 @@ public class ProductCompareService implements ProductCompareUseCase {
 
     private ProductComparison buildComparison(Attribute attribute, List<Product> products) {
         List<List<String>> values = products.stream()
-                .map(product -> getAttributeValues(product, attribute.id()))
+                .map(product -> getAttributeValues(attribute.id(), product))
                 .toList();
 
-        boolean same = values.stream().distinct().count() <= 1;
-
-        return new ProductComparison(attribute.id(), attribute.title(), same, values);
+        return new ProductComparison(attribute.id(), attribute.title(), isSameAttributeValues(values), values);
     }
 
-    private List<String> getAttributeValues(Product product, String attributeId) {
-        if (product.getAttributes() == null) return List.of();
+    private boolean isSameAttributeValues(List<List<String>> values) {
+        return values.stream().distinct().count() <= 1;
+    }
+
+    private List<String> getAttributeValues(String attributeId, Product product) {
+        if (CollectionUtils.isEmpty(product.getAttributes())) return List.of();
+
         return product.getAttributes().stream()
                 .filter(av -> av.id().equals(attributeId))
                 .map(AttributeValue::values)
@@ -61,12 +60,9 @@ public class ProductCompareService implements ProductCompareUseCase {
                 .orElse(List.of());
     }
 
-    private void requireProductsInCategory(List<Product> products, String categoryId) {
-        boolean allBelongToCategory = products.stream()
-                .allMatch(product -> categoryId.equals(product.getCategoryId()));
-        if (!allBelongToCategory) {
-            throw new ProductNotFoundException("Some products do not belong to the specified category.");
-        }
+    private void requireProductsInCategory(String categoryId, List<Product> products) {
+        boolean allBelongToCategory = products.stream().allMatch(product -> categoryId.equals(product.getCategoryId()));
+        if (!allBelongToCategory) throw new ProductNotFoundException("Some products do not belong to the specified category.");
     }
 
 }
