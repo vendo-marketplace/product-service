@@ -3,6 +3,7 @@ package com.vendo.product_service.adapter.product.in;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.adapter.product.in.dto.CompareAttributeResponse;
+import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
@@ -62,22 +63,11 @@ public class CompareProductControllerIntegrationTest {
         return mockMvc.perform(requestBuilder);
     }
 
-    // TODO tests to verify
-    public void compare_shouldReturnComparedProductAttributes_whenSame() {}
-    public void compare_shouldReturnComparedProductAttributes_whenDifferent() {}
-    public void compare_shouldReturnNotFound_whenCategoryNotFound() {}
-    public void compare_shouldReturnNotFound_whenProductNotFound() {}
-    public void compare_shouldReturnBadRequest_whenProductDoNotBelongToCategory() {}
-    public void compare_shouldReturnEmptyList_whenCategoryHasNotAttributes() {}
-    public void compare_shouldReturnNotFound_whenAttributeNotFound() {}
-    public void compare_shouldReturnBadRequest_whenProductIdsAreEmpty() {}
-    public void compare_shouldReturnBadRequest_whenCategoryIdIsNull() {}
-
     @Nested
     class CompareProductTests {
 
         @Test
-        void compare_shouldReturnComparison_whenProductsHaveDifferentValues() throws Exception {
+        void compare_shouldReturnComparedProductAttributes_whenDifferent() throws Exception {
             Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").title("Color").build();
             Category category = CategoryDataBuilder.withAllFields().id("ctgr_1").attributes(List.of(attribute.id())).build();
 
@@ -117,7 +107,43 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnSameTrue_whenProductsHaveIdenticalValues() throws Exception {
+        void compare_shouldReturnValuesInRequestedProductOrder_regardlessOfRepositoryOrder() throws Exception {
+            Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").title("Color").build();
+            Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of(attribute.id())).build();
+
+            Product product1 = ProductDataBuilder.withAllFields()
+                    .id("prod_1").categoryId(category.getId())
+                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Red"))))
+                    .build();
+            Product product2 = ProductDataBuilder.withAllFields()
+                    .id("prod_2").categoryId(category.getId())
+                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Green"))))
+                    .build();
+            Product product3 = ProductDataBuilder.withAllFields()
+                    .id("prod_3").categoryId(category.getId())
+                    .attributes(List.of(new AttributeValue(attribute.id(), List.of("Blue"))))
+                    .build();
+
+            List<String> requestedOrder = List.of("prod_3", "prod_1", "prod_2");
+
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(productQueryPort.requireAllByIds(requestedOrder)).thenReturn(List.of(product3, product1, product2));
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            String content = performCompare(category.getId(), requestedOrder)
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            List<List<String>> values = responses.get(0).values();
+
+            assertThat(values).isEqualTo(List.of(List.of("Blue"), List.of("Red"), List.of("Green")));
+        }
+
+        @Test
+        void compare_shouldReturnComparedProductAttributes_whenSame() throws Exception {
             Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").title("Color").build();
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of(attribute.id())).build();
 
@@ -145,7 +171,7 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnEmptyList_whenCategoryHasNoAttributes() throws Exception {
+        void compare_shouldReturnEmptyList_whenCategoryHasNotAttributes() throws Exception {
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(null).build();
 
             Product product1 = ProductDataBuilder.withAllFields().id("prod_1").categoryId(category.getId()).build();
@@ -217,7 +243,7 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnNotFound_whenProductBelongsToDifferentCategory() throws Exception {
+        void compare_shouldReturnNotFound_whenProductDoNotBelongToCategory() throws Exception {
             Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").build();
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of(attribute.id())).build();
 
@@ -256,7 +282,30 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnBadRequest_whenCategoryIdIsMissing() throws Exception {
+        void compare_shouldReturnNotFound_whenAttributeNotFound() throws Exception {
+            Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of("attr_1")).build();
+
+            Product product1 = ProductDataBuilder.withAllFields().id("prod_1").categoryId(category.getId()).build();
+            Product product2 = ProductDataBuilder.withAllFields().id("prod_2").categoryId(category.getId()).build();
+
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(productQueryPort.requireAllByIds(List.of("prod_1", "prod_2"))).thenReturn(List.of(product1, product2));
+            when(attributeQueryPort.findAllByIds(List.of("attr_1")))
+                    .thenThrow(new AttributeNotFoundException("Attribute not found by id: attr_1."));
+
+            String content = performCompare(category.getId(), List.of("prod_1", "prod_2"))
+                    .andExpect(status().isNotFound())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse response = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(response.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(response.getMessage()).isEqualTo("Attribute not found by id: attr_1.");
+        }
+
+        @Test
+        void compare_shouldReturnBadRequest_whenCategoryIdIsNull() throws Exception {
             mockMvc.perform(get("/products/compare")
                     .param("productIds", "prod_1", "prod_2")
                     .contentType(MediaType.APPLICATION_JSON))
@@ -266,7 +315,7 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnBadRequest_whenProductIdsAreMissing() throws Exception {
+        void compare_shouldReturnBadRequest_whenProductIdsAreEmpty() throws Exception {
             mockMvc.perform(get("/products/compare")
                     .param("categoryId", "cat_1")
                     .contentType(MediaType.APPLICATION_JSON))
