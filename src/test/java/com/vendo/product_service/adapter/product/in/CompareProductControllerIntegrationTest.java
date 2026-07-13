@@ -2,7 +2,8 @@ package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.product_service.adapter.product.in.dto.CompareAttributeResponse;
+import com.vendo.product_service.adapter.product.in.dto.CompareAttributeValueResponse;
+import com.vendo.product_service.adapter.product.in.dto.CompareProductResponse;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
@@ -72,11 +73,11 @@ public class CompareProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withAllFields().id("ctgr_1").attributes(List.of(attribute.id())).build();
 
             Product product1 = ProductDataBuilder.withAllFields()
-                    .id("prod_1").categoryId(category.getId())
+                    .id("prod_1").title("Product One").categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attribute.id(), List.of("Red"))))
                     .build();
             Product product2 = ProductDataBuilder.withAllFields()
-                    .id("prod_2").categoryId(category.getId())
+                    .id("prod_2").title("Product Two").categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attribute.id(), List.of("Blue"))))
                     .build();
 
@@ -90,16 +91,28 @@ public class CompareProductControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            List<CompareProductResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
             assertThat(responses).isNotNull();
-            assertThat(responses.size()).isEqualTo(1);
+            assertThat(responses.size()).isEqualTo(2);
 
-            CompareAttributeResponse response = responses.get(0);
-            assertThat(response.id()).isEqualTo(attribute.id());
-            assertThat(response.title()).isEqualTo(attribute.title());
-            assertThat(response.same()).isFalse();
-            assertThat(response.values().get(0)).isEqualTo(List.of("Red"));
-            assertThat(response.values().get(1)).isEqualTo(List.of("Blue"));
+            CompareProductResponse response1 = responses.get(0);
+            assertThat(response1.id()).isEqualTo(product1.getId());
+            assertThat(response1.title()).isEqualTo(product1.getTitle());
+            assertThat(response1.attributes().size()).isEqualTo(1);
+
+            CompareAttributeValueResponse attribute1 = response1.attributes().get(0);
+            assertThat(attribute1.id()).isEqualTo(attribute.id());
+            assertThat(attribute1.title()).isEqualTo(attribute.title());
+            assertThat(attribute1.same()).isFalse();
+            assertThat(attribute1.values()).isEqualTo(List.of("Red"));
+
+            CompareProductResponse response2 = responses.get(1);
+            assertThat(response2.id()).isEqualTo(product2.getId());
+            assertThat(response2.title()).isEqualTo(product2.getTitle());
+
+            CompareAttributeValueResponse attribute2 = response2.attributes().get(0);
+            assertThat(attribute2.same()).isFalse();
+            assertThat(attribute2.values()).isEqualTo(List.of("Blue"));
 
             verify(categoryQueryPort).findById(category.getId());
             verify(productQueryPort).requireAllByIds(List.of("prod_1", "prod_2"));
@@ -107,20 +120,20 @@ public class CompareProductControllerIntegrationTest {
         }
 
         @Test
-        void compare_shouldReturnValuesInRequestedProductOrder_regardlessOfRepositoryOrder() throws Exception {
+        void compare_shouldReturnProductsInRequestedOrder_regardlessOfRepositoryOrder() throws Exception {
             Attribute attribute = AttributeDataBuilder.withAllFields().id("attr_1").title("Color").build();
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(List.of(attribute.id())).build();
 
             Product product1 = ProductDataBuilder.withAllFields()
-                    .id("prod_1").categoryId(category.getId())
+                    .id("prod_1").title("Product One").categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attribute.id(), List.of("Red"))))
                     .build();
             Product product2 = ProductDataBuilder.withAllFields()
-                    .id("prod_2").categoryId(category.getId())
+                    .id("prod_2").title("Product Two").categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attribute.id(), List.of("Green"))))
                     .build();
             Product product3 = ProductDataBuilder.withAllFields()
-                    .id("prod_3").categoryId(category.getId())
+                    .id("prod_3").title("Product Three").categoryId(category.getId())
                     .attributes(List.of(new AttributeValue(attribute.id(), List.of("Blue"))))
                     .build();
 
@@ -136,10 +149,13 @@ public class CompareProductControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
-            List<List<String>> values = responses.get(0).values();
+            List<CompareProductResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
 
-            assertThat(values).isEqualTo(List.of(List.of("Blue"), List.of("Red"), List.of("Green")));
+            assertThat(responses.stream().map(CompareProductResponse::id).toList())
+                    .isEqualTo(requestedOrder);
+            assertThat(responses.get(0).attributes().get(0).values()).isEqualTo(List.of("Blue"));
+            assertThat(responses.get(1).attributes().get(0).values()).isEqualTo(List.of("Red"));
+            assertThat(responses.get(2).attributes().get(0).values()).isEqualTo(List.of("Green"));
         }
 
         @Test
@@ -166,12 +182,13 @@ public class CompareProductControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
-            assertThat(responses.get(0).same()).isTrue();
+            List<CompareProductResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(responses.get(0).attributes().get(0).same()).isTrue();
+            assertThat(responses.get(1).attributes().get(0).same()).isTrue();
         }
 
         @Test
-        void compare_shouldReturnEmptyList_whenCategoryHasNotAttributes() throws Exception {
+        void compare_shouldReturnProductsWithEmptyAttributes_whenCategoryHasNotAttributes() throws Exception {
             Category category = CategoryDataBuilder.withAllFields().id("cat_1").attributes(null).build();
 
             Product product1 = ProductDataBuilder.withAllFields().id("prod_1").categoryId(category.getId()).build();
@@ -186,8 +203,10 @@ public class CompareProductControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
-            assertThat(responses.size()).isEqualTo(0);
+            List<CompareProductResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(responses.size()).isEqualTo(2);
+            assertThat(responses.get(0).attributes()).isEqualTo(List.of());
+            assertThat(responses.get(1).attributes()).isEqualTo(List.of());
 
             verifyNoInteractions(attributeQueryPort);
         }
@@ -216,11 +235,11 @@ public class CompareProductControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            List<CompareAttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
-            CompareAttributeResponse response = responses.get(0);
-            assertThat(response.same()).isFalse();
-            assertThat(response.values().get(0)).isEqualTo(List.of("Red"));
-            assertThat(response.values().get(1)).isEqualTo(List.of());
+            List<CompareProductResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(responses.get(0).attributes().get(0).same()).isFalse();
+            assertThat(responses.get(0).attributes().get(0).values()).isEqualTo(List.of("Red"));
+            assertThat(responses.get(1).attributes().get(0).same()).isFalse();
+            assertThat(responses.get(1).attributes().get(0).values()).isEqualTo(List.of());
         }
 
         @Test

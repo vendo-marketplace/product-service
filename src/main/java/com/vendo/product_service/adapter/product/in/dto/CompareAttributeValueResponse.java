@@ -5,10 +5,10 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record CompareAttributeResponse(
+public record CompareAttributeValueResponse(
         String id,
         String title,
         boolean same,
-        List<List<String>> values
+        List<String> values
 ) {
 }

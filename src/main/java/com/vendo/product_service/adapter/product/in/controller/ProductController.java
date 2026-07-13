@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.product.in.controller;
 
-import com.vendo.product_service.adapter.product.in.dto.CompareAttributeResponse;
+import com.vendo.product_service.adapter.product.in.dto.CompareProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
@@ -51,7 +51,7 @@ class ProductController {
     }
 
     @GetMapping("/compare")
-    ResponseEntity<List<CompareAttributeResponse>> compare(
+    ResponseEntity<List<CompareProductResponse>> compare(
             @RequestParam @NotBlank(message = "Category ID is required.") String categoryId,
             @RequestParam @NotEmpty(message = "Product IDs are required.") List<String> productIds
     ) {
