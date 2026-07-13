@@ -3,15 +3,17 @@ package com.vendo.product_service.adapter.product_image.out.persistence;
 import com.vendo.product_service.adapter.product_image.out.mapper.ProductImageMapper;
 import com.vendo.product_service.domain.product_image.exception.ProductImageAlreadyExists;
 import com.vendo.product_service.domain.product_image.model.ProductImage;
+import com.vendo.product_service.domain.product_image.model.ProductImageStatus;
 import com.vendo.product_service.port.product_image.ProductImageCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
-public class ProductImageCommandAdapter implements ProductImageCommandPort {
-
+class ProductImageCommandAdapter implements ProductImageCommandPort {
     private final ProductImageRepository repository;
     private final ProductImageMapper mapper;
 
@@ -23,4 +25,10 @@ public class ProductImageCommandAdapter implements ProductImageCommandPort {
             throw new ProductImageAlreadyExists("Product image already exists by key: %s.".formatted(productImage.key()));
         }
     }
+
+    @Override
+    public void updateAllBy(List<String> keys, ProductImageStatus status) {
+        repository.updateStatusByKeyIn(keys, status);
+    }
+
 }

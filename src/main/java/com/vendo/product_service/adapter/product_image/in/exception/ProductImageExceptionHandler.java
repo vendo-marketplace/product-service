@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.product_image.in.exception;
 
 import com.vendo.product_service.domain.product_image.exception.ProductImageAlreadyExists;
+import com.vendo.product_service.domain.product_image.exception.ProductImageNotFoundException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,17 @@ public class ProductImageExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(ProductImageNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleProductImageNotFoundException(ProductImageNotFoundException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
     }
 
 }

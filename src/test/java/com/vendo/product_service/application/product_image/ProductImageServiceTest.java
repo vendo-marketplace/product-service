@@ -1,7 +1,7 @@
 package com.vendo.product_service.application.product_image;
 
 import com.vendo.core_lib.utils.AssertionUtils;
-import com.vendo.product_service.domain.product_image.model.ImageStatus;
+import com.vendo.product_service.domain.product_image.model.ProductImageStatus;
 import com.vendo.product_service.domain.product_image.model.ProductImage;
 import com.vendo.product_service.port.product_image.ProductImageCommandPort;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ public class ProductImageServiceTest {
 
         ProductImage captorValue = captor.getValue();
         assertThat(captorValue).isNotNull();
-        assertThat(captorValue.status()).isEqualTo(ImageStatus.PENDING);
+        assertThat(captorValue.status()).isEqualTo(ProductImageStatus.PENDING);
         AssertionUtils.assertFrom(productImage, captorValue, "status");
 
         verify(productImageCommandPort).save(captorValue);

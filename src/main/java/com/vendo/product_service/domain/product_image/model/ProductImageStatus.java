@@ -1,6 +1,6 @@
 package com.vendo.product_service.domain.product_image.model;
 
-public enum ImageStatus {
+public enum ProductImageStatus {
 
     PENDING,
     CONFIRMED

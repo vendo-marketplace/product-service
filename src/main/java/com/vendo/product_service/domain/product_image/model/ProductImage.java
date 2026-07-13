@@ -7,6 +7,6 @@ public record ProductImage(
         String contentType,
         long size,
         @With
-        ImageStatus status
+        ProductImageStatus status
 ) {
 }

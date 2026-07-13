@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.product_image.out.persistence;
 
 import com.vendo.product_service.adapter.product_image.out.mapper.ProductImageMapper;
 import com.vendo.product_service.domain.product_image.exception.ProductImageAlreadyExists;
-import com.vendo.product_service.domain.product_image.model.ImageStatus;
+import com.vendo.product_service.domain.product_image.model.ProductImageStatus;
 import com.vendo.product_service.domain.product_image.model.ProductImage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ public class ProductImageCommandAdapterTest {
 
     @Test
     void save_shouldSaveEntity() {
-        ProductImage productImage = new ProductImage("key", "image/png", 1, ImageStatus.PENDING);
+        ProductImage productImage = new ProductImage("key", "image/png", 1, ProductImageStatus.PENDING);
         ProductImageMongo imageMongo = mock(ProductImageMongo.class);
 
         when(mapper.toEntity(eq((productImage)))).thenReturn(imageMongo);
@@ -41,7 +41,7 @@ public class ProductImageCommandAdapterTest {
 
     @Test
     void save_shouldThrowProductImageAlreadyExists_whenDuplicateEntityFound() {
-        ProductImage productImage = new ProductImage("key", "image/png", 1, ImageStatus.PENDING);
+        ProductImage productImage = new ProductImage("key", "image/png", 1, ProductImageStatus.PENDING);
         ProductImageMongo imageMongo = mock(ProductImageMongo.class);
 
         when(mapper.toEntity(eq((productImage)))).thenReturn(imageMongo);

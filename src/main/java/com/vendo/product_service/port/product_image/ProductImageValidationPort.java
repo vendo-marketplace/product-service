@@ -4,10 +4,8 @@ import com.vendo.product_service.domain.product_image.model.ProductImage;
 
 import java.util.List;
 
-public interface ProductImageUseCase {
+public interface ProductImageValidationPort {
 
-    void save(ProductImage productImage);
-
-    void confirm(List<String> keys);
+    void validate(List<ProductImage> productImages);
 
 }

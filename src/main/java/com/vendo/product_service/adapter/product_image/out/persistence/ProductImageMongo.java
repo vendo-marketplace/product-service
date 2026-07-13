@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.product_image.out.persistence;
 
-import com.vendo.product_service.domain.product_image.model.ImageStatus;
+import com.vendo.product_service.domain.product_image.model.ProductImageStatus;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,7 +24,7 @@ public class ProductImageMongo {
 
     private String contentType;
     private long size;
-    private ImageStatus status;
+    private ProductImageStatus status;
 
     @CreatedDate
     private Instant createdAt;
