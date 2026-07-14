@@ -16,5 +16,4 @@ public interface ProductImageRepository extends MongoRepository<ProductImageMong
     @Update("{ '$set': { 'status': ?1 } }")
     void updateStatusByKeyIn(List<String> keys, ProductImageStatus status);
 
-
 }

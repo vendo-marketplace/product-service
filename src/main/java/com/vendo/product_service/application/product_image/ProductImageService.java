@@ -42,5 +42,4 @@ public class ProductImageService implements ProductImageUseCase {
             }
         }
     }
-
 }

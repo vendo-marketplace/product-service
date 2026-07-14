@@ -14,4 +14,6 @@ public interface ProductImageMapper {
 
     List<ProductImage> toProductImage(List<ProductImageMongo> entities);
 
+
+
 }
