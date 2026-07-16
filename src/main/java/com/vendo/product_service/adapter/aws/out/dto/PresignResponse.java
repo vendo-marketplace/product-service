@@ -1,10 +1,10 @@
 package com.vendo.product_service.adapter.aws.out.dto;
 
-import com.vendo.product_service.domain.image.model.PresignedImage;
+import com.vendo.product_service.domain.image.model.PresignImage;
 
 import java.util.List;
 
 public record PresignResponse(
-        List<PresignedImage> data
+        List<PresignImage> data
 ) {
 }

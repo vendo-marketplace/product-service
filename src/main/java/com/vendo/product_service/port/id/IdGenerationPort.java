@@ -1,4 +1,4 @@
-package com.vendo.product_service.port;
+package com.vendo.product_service.port.id;
 
 public interface IdGenerationPort {
 

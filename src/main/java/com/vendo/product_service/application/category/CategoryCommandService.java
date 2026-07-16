@@ -5,7 +5,7 @@ import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.category.CategoryCommandUseCase;
 import com.vendo.product_service.port.category.TypeValidationPort;
-import com.vendo.product_service.port.IdGenerationPort;
+import com.vendo.product_service.port.id.IdGenerationPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;
