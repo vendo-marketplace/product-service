@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.image.in.controller;
 
+import com.vendo.product_service.adapter.image.in.controller.factory.ImageFactory;
 import com.vendo.product_service.adapter.image.in.controller.validation.ImageValidationService;
 import com.vendo.product_service.port.image.ImageUseCase;
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,7 @@ public class ImageController {
 
     private final ImageUseCase productImageUseCase;
     private final ImageValidationService validationService;
+    private final ImageFactory imageFactory;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upload(
@@ -31,6 +33,7 @@ public class ImageController {
             @NotEmpty(message = "Images are required.")
             @RequestParam List<MultipartFile> images
     ) {
-        productImageUseCase.upload(productId, validationService.validate(images));
+        validationService.validate(images);
+        productImageUseCase.upload(productId, imageFactory.create(images));
     }
 }

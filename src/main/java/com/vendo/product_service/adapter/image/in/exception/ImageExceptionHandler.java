@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.image.in.exception;
 
+import com.vendo.product_service.domain.image.exception.ImageUploadException;
 import com.vendo.product_service.domain.image.exception.InvalidImageException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,17 @@ public class ImageExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(ImageUploadException.class)
+    ResponseEntity<ExceptionResponse> handleImageUploadException(ImageUploadException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message("Image upload internal error.")
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
     }
 
 }

@@ -1,7 +1,16 @@
 package com.vendo.product_service.adapter.aws.out.dto;
 
+import java.util.List;
+
 public record PresignRequest(
-        String id,
-        String contentType
+        PresignType type,
+        List<PresignBody> images
 ) {
+
+    public record PresignBody(
+            String id,
+            String contentType
+    ) {
+    }
+
 }

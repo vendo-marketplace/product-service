@@ -2,7 +2,6 @@ package com.vendo.product_service.adapter.image.out.validation;
 
 import com.vendo.product_service.adapter.image.in.controller.validation.ImageValidationService;
 import com.vendo.product_service.domain.image.exception.InvalidImageException;
-import com.vendo.product_service.domain.image.model.Image;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,25 +35,33 @@ public class DefaultImageValidationService implements ImageValidationService {
     private int IMAGE_MAX_SIZE;
 
     @Override
-    public List<Image> validate(List<MultipartFile> images) {
-        return images.stream().map(this::validate).toList();
+    public void validate(List<MultipartFile> images) {
+        images.forEach(this::validate);
     }
 
-    private Image validate(MultipartFile image) {
+    private void validate(MultipartFile image) {
         String filename = getFilename(image.getOriginalFilename());
+        throwIfEmpty(image, filename);
+        throwIfSizeExceeded(image.getSize(), filename);
+        throwIfInvalidContentType(image.getContentType(), filename);
+    }
+
+    private void throwIfEmpty(MultipartFile image, String filename) {
         if (image.isEmpty()) {
             throw new InvalidImageException("%s is empty.".formatted(filename));
         }
+    }
 
-        if (image.getSize() > IMAGE_MAX_SIZE) {
+    private void throwIfSizeExceeded(long size, String filename) {
+        if (size > IMAGE_MAX_SIZE) {
             throw new InvalidImageException("%s is to large. Maximum size is %d.".formatted(filename, IMAGE_MAX_SIZE / MEGABYTE_IN_BYTES));
         }
+    }
 
-        if (!isImage(image.getContentType())) {
+    private void throwIfInvalidContentType(String contentType, String filename) {
+        if (!isImage(contentType)) {
             throw new InvalidImageException("%s has invalid image content type.".formatted(filename));
         }
-
-        return Image.from(image.getContentType(), image.getSize());
     }
 
     private String getFilename(String originalFilename) {

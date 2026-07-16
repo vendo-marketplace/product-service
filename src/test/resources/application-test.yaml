@@ -37,3 +37,7 @@ endpoints:
       - /internal/**
     product:
       - /categories/tree
+
+product:
+  image:
+    max-size: 1000

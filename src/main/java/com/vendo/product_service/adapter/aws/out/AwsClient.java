@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.List;
-
 @Component
 @FeignClient(
         name = "aws-service",
@@ -18,6 +16,6 @@ import java.util.List;
 public interface AwsClient {
 
     @PostMapping("/presigned")
-    PresignResponse presign(@RequestBody List<PresignRequest> files);
+    PresignResponse presign(@RequestBody PresignRequest files);
 
 }
