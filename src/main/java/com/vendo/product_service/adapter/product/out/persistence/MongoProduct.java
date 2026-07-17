@@ -27,6 +27,7 @@ public class MongoProduct {
     private String ownerId;
     private String categoryId;
     private List<AttributeValue> attributes;
+    private List<String> imageKeys;
     private Boolean active;
 
     @Version
