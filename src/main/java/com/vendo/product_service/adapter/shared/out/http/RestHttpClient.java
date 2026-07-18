@@ -18,12 +18,12 @@ class RestHttpClient implements HttpClient {
     private final RestTemplate restTemplate;
 
     @Override
-    public void put(String url, Object body) {
+    public void put(String url, String contentType, Object body) {
         try {
             URI uri = URI.create(url);
             RequestEntity<byte[]> request = RequestEntity
                     .put(uri)
-                    .contentType(MediaType.IMAGE_PNG)
+                    .contentType(MediaType.parseMediaType(contentType))
                     .body((byte[]) body);
 
             restTemplate.exchange(request, Void.class);

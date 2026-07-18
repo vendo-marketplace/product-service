@@ -4,6 +4,6 @@ import com.vendo.product_service.adapter.shared.out.http.exception.HttpClientExc
 
 public interface HttpClient {
 
-    void put(String url, Object body) throws HttpClientException;
+    void put(String url, String contentType, Object body) throws HttpClientException;
 
 }

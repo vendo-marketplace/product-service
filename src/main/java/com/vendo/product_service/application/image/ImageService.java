@@ -63,12 +63,12 @@ class ImageService implements ImageUseCase {
         if (!authUser.id().equals(ownerId)) throw new NotProductOwnerException("You're not product's owner.");
     }
 
-    private Map<String, byte[]> mapToImagesByUrl(List<Image> images, List<PresignImage> presigns) {
-        Map<String, byte[]> imagesByUrl = new HashMap<>();
+    private Map<String, Image> mapToImagesByUrl(List<Image> images, List<PresignImage> presigns) {
+        Map<String, Image> imagesByUrl = new HashMap<>();
 
         for (PresignImage presign : presigns) {
             Image imageById = Image.findById(presign.id(), images);
-            imagesByUrl.put(presign.uploadUrl(), imageById.bytes());
+            imagesByUrl.put(presign.uploadUrl(), imageById);
         }
 
         return imagesByUrl;
