@@ -18,9 +18,14 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
             return new AwsServiceUnavailableException(ServiceName.AWS_SERVICE + " is unavailable.");
         }
 
-        log.error(response.reason());
-        log.error(response.body().toString());
+        if (HttpStatus.CONFLICT.value() == response.status()) {
+        }
+
+        if (HttpStatus.BAD_REQUEST.value() == response.status()) {
+
+        }
+
+        log.error(response.toString());
         return new IllegalArgumentException("Unhandled aws exception.");
     }
-
 }

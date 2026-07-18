@@ -7,6 +7,6 @@ import java.util.List;
 
 public record PresignRequest(
         PresignType type,
-        List<PresignBody> images
+        List<PresignBody> files
 ) {
 }

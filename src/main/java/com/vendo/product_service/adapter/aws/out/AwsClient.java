@@ -16,6 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface AwsClient {
 
     @PostMapping("/presign")
-    PresignResponse presign(@RequestBody PresignRequest files);
+    PresignResponse presign(@RequestBody PresignRequest request);
 
 }
