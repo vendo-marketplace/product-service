@@ -15,10 +15,12 @@ class RestHttpClient implements HttpClient {
 
     @Override
     public void put(String url, Object body) {
+        System.out.println(url);
+        System.out.println(body);
         try {
             restTemplate.put(url, body);
         } catch (Exception e) {
-            throw new HttpClientException("Http request failed. Reason: %s.".formatted(e.getCause()));
+            throw new HttpClientException("Http request failed. Reason: %s.".formatted(e.getMessage()));
         }
     }
 
