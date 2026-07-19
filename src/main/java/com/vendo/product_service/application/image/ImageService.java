@@ -38,20 +38,16 @@ class ImageService implements ImageUseCase {
 
     @Override
     public void upload(String productId, List<Image> images) {
-        validateImages(images);
-        images = withIds(images);
+        images.forEach(image -> image.validate(maxSize));
+        final List<Image> withIds = withIds(images);
 
         Product product = productQueryPort.findById(productId);
         validateOwner(product.getOwnerId());
 
-        List<PresignImage> presigns = presignPort.generate(images);
-        imageUploadPort.upload(mapToImagesByUrl(images, presigns));
+        List<PresignImage> presigns = presignPort.generate(withIds);
+        imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
 
         productCommandPort.update(productId, Product.builder().imageKeys(getKeys(presigns)).build());
-    }
-
-    private void validateImages(List<Image> images) {
-        images.forEach(image -> image.validate(maxSize));
     }
 
     private List<Image> withIds(List<Image> images) {
