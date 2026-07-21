@@ -1,16 +1,25 @@
 package com.vendo.product_service.adapter.image.adapter.in.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.product_service.domain.image.model.PresignImage;
+import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
+import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
+import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
+import com.vendo.product_service.port.image.ImageUploadPort;
 import com.vendo.product_service.port.image.PresignPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
+import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
+import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,13 +31,21 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ImageControllerIntegrationTest {
+
+    private static final String DEFAULT_USER_ID = "123456";
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -41,6 +58,8 @@ public class ImageControllerIntegrationTest {
     private PresignPort presignPort;
     @MockitoBean
     private ProductCommandPort productCommandPort;
+    @MockitoBean
+    private ImageUploadPort imageUploadPort;
 
     private ResultActions performUpload(String userId, String productId, List<MultipartFile> files) throws Exception {
         User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
@@ -60,44 +79,186 @@ public class ImageControllerIntegrationTest {
         return mockMvc.perform(request);
     }
 
-    void upload_shouldReturnBadRequest_whenProductIdParameterIsMissing() {
+    private ResultActions performUploadWithoutProductId(String userId, List<MultipartFile> files) throws Exception {
+        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
 
+        MockMultipartHttpServletRequestBuilder request = multipart("/images/upload");
+        request.with(authentication(SecurityContextService.initializeAuth(user)));
+
+        for (MultipartFile file : files) {
+            request.file(new MockMultipartFile(
+                    "images",
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            ));
+        }
+
+        return mockMvc.perform(request);
     }
 
-    void upload_shouldReturnBadRequest_whenProductIdParameterIsBlank() {
-
+    private MockMultipartFile validImage(String filename) {
+        return new MockMultipartFile("images", filename, "image/png", new byte[]{1, 2, 3});
     }
 
-    void upload_shouldReturnBadRequest_whenImagesParameterIsMissing() {
+    @Test
+    void upload_shouldReturnBadRequest_whenProductIdParameterIsMissing() throws Exception {
+        performUploadWithoutProductId(DEFAULT_USER_ID, List.of(validImage("photo.png")))
+                .andExpect(status().isBadRequest());
 
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldReturnBadRequest_whenImagesParameterIsEmpty() {
+    @Test
+    void upload_shouldReturnBadRequest_whenProductIdParameterIsBlank() throws Exception {
+        String content = performUpload(DEFAULT_USER_ID, "", List.of(validImage("photo.png")))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
 
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product id is required.");
+
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldReturnBadRequest_whenMultipartImageIsEmpty() {
+    @Test
+    void upload_shouldReturnBadRequest_whenImagesParameterIsMissing() throws Exception {
+        performUpload(DEFAULT_USER_ID, "product_id", List.of())
+                .andExpect(status().isBadRequest());
 
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldBadRequest_whenImageSizeExceeded() {
+    @Test
+    void upload_shouldReturnBadRequest_whenImagesParameterIsEmpty() throws Exception {
+        performUpload(DEFAULT_USER_ID, "product_id", List.of())
+                .andExpect(status().isBadRequest());
 
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldBadRequest_whenFileTypeIsNotImage() {
+    @Test
+    void upload_shouldReturnInternalError_whenMultipartImageIsEmpty() throws Exception {
+        MockMultipartFile emptyImage = new MockMultipartFile("images", "empty.png", "image/png", new byte[0]);
 
+        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(emptyImage))
+                .andExpect(status().isInternalServerError())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldReturnNotFound_whenProductNotFound() {
+    @Test
+    void upload_shouldBadRequest_whenImageSizeExceeded() throws Exception {
+        MockMultipartFile tooLargeImage = new MockMultipartFile("images", "large.png", "image/png", new byte[2000]);
 
+        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(tooLargeImage))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("size", "large.png is too large. Maximum size is 0.");
+
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldReturnForbidden_whenNotProductOwner() {
+    @Test
+    void upload_shouldBadRequest_whenFileTypeIsNotImage() throws Exception {
+        MockMultipartFile notImage = new MockMultipartFile("images", "document.txt", "text/plain", "content".getBytes());
 
+        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(notImage))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
+
+        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
-    void upload_shouldReturnInternalError_whenImageNotFoundById_whileMappingByUrl() {
+    @Test
+    void upload_shouldReturnNotFound_whenProductNotFound() throws Exception {
+        String productId = "product_id";
+        when(productQueryPort.findById(productId)).thenThrow(new ProductNotFoundException("Product not found."));
 
+        String content = performUpload(DEFAULT_USER_ID, productId, List.of(validImage("photo.png")))
+                .andExpect(status().isNotFound())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+
+        verify(productQueryPort).findById(productId);
+        verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
+    }
+
+    @Test
+    void upload_shouldReturnForbidden_whenNotProductOwner() throws Exception {
+        Product product = ProductDataBuilder.withAllFields().ownerId("owner_id").build();
+        when(productQueryPort.findById(product.getId())).thenReturn(product);
+
+        String content = performUpload("not_owner_id", product.getId(), List.of(validImage("photo.png")))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
+        assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+
+        verify(productQueryPort).findById(product.getId());
+        verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
+    }
+
+    @Test
+    void upload_shouldReturnInternalError_whenImageNotFoundById_whileMappingByUrl() throws Exception {
+        Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).build();
+        when(productQueryPort.findById(product.getId())).thenReturn(product);
+        when(presignPort.generate(any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
+
+        String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(validImage("photo.png")))
+                .andExpect(status().isInternalServerError())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+
+        verify(productQueryPort).findById(product.getId());
+        verify(presignPort).generate(any());
+        verifyNoInteractions(productCommandPort, imageUploadPort);
     }
 
 }
