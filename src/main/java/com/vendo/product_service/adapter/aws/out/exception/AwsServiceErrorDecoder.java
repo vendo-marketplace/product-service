@@ -18,11 +18,9 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
             return new AwsServiceUnavailableException(ServiceName.AWS_SERVICE + " is unavailable.");
         }
 
-        if (HttpStatus.CONFLICT.value() == response.status()) {
-        }
-
         if (HttpStatus.BAD_REQUEST.value() == response.status()) {
-
+            log.error("Internal call failed: {}.", response.reason());
+            throw new AwsInternalServerException("Something went wrong.");
         }
 
         log.error(response.toString());
