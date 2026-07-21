@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.aws.in.exception;
 
+import com.vendo.product_service.adapter.aws.out.exception.AwsBadRequestException;
 import com.vendo.product_service.adapter.aws.out.exception.AwsInternalServerException;
 import com.vendo.product_service.adapter.aws.out.exception.AwsServiceUnavailableException;
 import com.vendo.security_lib.exception.ExceptionResponse;
@@ -21,6 +22,20 @@ public class AwsExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(AwsBadRequestException.class)
+    public ResponseEntity<ExceptionResponse> handleAwsBadRequestException(AwsBadRequestException e, HttpServletRequest request) {
+        ExceptionResponse responseEr = e.getExceptionResponse();
+
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(responseEr.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .errors(responseEr.getErrors())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
     @ExceptionHandler(AwsInternalServerException.class)
