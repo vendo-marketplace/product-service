@@ -8,34 +8,15 @@ import com.vendo.product_service.domain.image.exception.NotImageException;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Path;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ImageExceptionHandler {
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    ResponseEntity<ExceptionResponse> handleConstraintViolationException(ConstraintViolationException e, HttpServletRequest request) {
-        Map<String, String> errors = e.getConstraintViolations().stream()
-                .collect(Collectors.toMap(this::lastPropertyNode, ConstraintViolation::getMessage, (first, second) -> first));
-
-        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Validation failed.")
-                .errors(errors)
-                .code(HttpStatus.BAD_REQUEST.value())
-                .path(request.getRequestURI())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
-    }
 
     @ExceptionHandler(InvalidImageException.class)
     ResponseEntity<ExceptionResponse> handleInvalidImageException(InvalidImageException e, HttpServletRequest request) {
@@ -81,14 +62,6 @@ public class ImageExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(exceptionResponse);
-    }
-
-    private String lastPropertyNode(ConstraintViolation<?> violation) {
-        String name = "";
-        for (Path.Node node : violation.getPropertyPath()) {
-            name = node.getName();
-        }
-        return name;
     }
 
 }

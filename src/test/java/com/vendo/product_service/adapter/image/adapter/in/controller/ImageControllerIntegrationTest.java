@@ -2,7 +2,6 @@ package com.vendo.product_service.adapter.image.adapter.in.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.domain.image.model.PresignImage;
-import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
@@ -15,10 +14,12 @@ import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
+import com.vendo.web_starter.exception.ValidationExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(ValidationExceptionHandler.class)
 public class ImageControllerIntegrationTest {
 
     private static final String DEFAULT_USER_ID = "123456";
