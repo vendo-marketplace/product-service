@@ -145,24 +145,28 @@ public class ImageControllerIntegrationTest {
     }
 
     @Test
-    void upload_shouldReturnInternalError_whenMultipartImageIsEmpty() throws Exception {
+    void upload_shouldReturnBadRequest_whenMultipartImageIsEmpty() throws Exception {
         MockMultipartFile emptyImage = new MockMultipartFile("images", "empty.png", "image/png", new byte[0]);
 
         String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(emptyImage))
-                .andExpect(status().isInternalServerError())
+                .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+        assertThat(exceptionResponse.getErrors()).isNotEmpty();
+        assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+        assertThat(exceptionResponse.getErrors().get("size")).isEqualTo("%s is empty.".formatted(emptyImage.getOriginalFilename()));
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
     @Test
-    void upload_shouldBadRequest_whenImageSizeExceeded() throws Exception {
+    void upload_shouldReturnBadRequest_whenImageSizeExceeded() throws Exception {
         MockMultipartFile tooLargeImage = new MockMultipartFile("images", "large.png", "image/png", new byte[2000]);
 
         String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(tooLargeImage))
@@ -181,7 +185,7 @@ public class ImageControllerIntegrationTest {
     }
 
     @Test
-    void upload_shouldBadRequest_whenFileTypeIsNotImage() throws Exception {
+    void upload_shouldReturnBadRequest_whenFileTypeIsNotImage() throws Exception {
         MockMultipartFile notImage = new MockMultipartFile("images", "document.txt", "text/plain", "content".getBytes());
 
         String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(notImage))

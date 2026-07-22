@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.image.model;
 
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.image.exception.ImageExceedSizeException;
 import com.vendo.product_service.domain.image.exception.NotImageException;
 import lombok.Builder;
@@ -43,8 +44,12 @@ public record Image(
                 .orElseThrow(() -> new IllegalStateException("Image not found by id: %s.".formatted(id)));
     }
 
+    public static String getDefaultFilename(String filename) {
+        return StringUtils.defaultIfEmpty(filename, DEFAULT_FILENAME);
+    }
+
     public void validate(int maxSize) {
-        String defaultFilename = getDefaultFilename();
+        String defaultFilename = getDefaultFilename(filename);
 
         if (isSizeExceeded(maxSize)) {
             throw new ImageExceedSizeException("%s is too large. Maximum size is %d.".formatted(defaultFilename, maxSize / MEGABYTE_IN_BYTES), size);
@@ -61,9 +66,5 @@ public record Image(
 
     private boolean isImage() {
         return contentType != null && IMAGE_MIME_TYPES.contains(contentType.toLowerCase(Locale.ROOT));
-    }
-
-    private String getDefaultFilename() {
-        return filename == null || filename.isBlank() ? DEFAULT_FILENAME : filename;
     }
 }

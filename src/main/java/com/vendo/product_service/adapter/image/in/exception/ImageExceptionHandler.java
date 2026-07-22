@@ -1,10 +1,7 @@
 package com.vendo.product_service.adapter.image.in.exception;
 
 import com.vendo.core_lib.utils.ClassFields;
-import com.vendo.product_service.domain.image.exception.ImageExceedSizeException;
-import com.vendo.product_service.domain.image.exception.ImageUploadException;
-import com.vendo.product_service.domain.image.exception.InvalidImageException;
-import com.vendo.product_service.domain.image.exception.NotImageException;
+import com.vendo.product_service.domain.image.exception.*;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,6 +31,18 @@ public class ImageExceptionHandler {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
                 .errors(Map.of(ClassFields.nameOf("contentType", Image.class), e.getMessage()))
+                .code(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(EmptyImageException.class)
+    ResponseEntity<ExceptionResponse> handleEmptyImageException(EmptyImageException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message("Validation failed.")
+                .errors(Map.of(ClassFields.nameOf("size", Image.class), e.getMessage()))
                 .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())
                 .build();
