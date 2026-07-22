@@ -14,12 +14,10 @@ import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
-import com.vendo.web_starter.exception.ValidationExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,9 +32,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,7 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(ValidationExceptionHandler.class)
 public class ImageControllerIntegrationTest {
 
     private static final String DEFAULT_USER_ID = "123456";
@@ -105,8 +100,14 @@ public class ImageControllerIntegrationTest {
 
     @Test
     void upload_shouldReturnBadRequest_whenProductIdParameterIsMissing() throws Exception {
-        performUploadWithoutProductId(DEFAULT_USER_ID, List.of(validImage("photo.png")))
-                .andExpect(status().isBadRequest());
+        String content = performUploadWithoutProductId(DEFAULT_USER_ID, List.of(validImage("photo.png")))
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product id is required.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }

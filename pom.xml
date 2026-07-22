@@ -136,7 +136,7 @@
 		<dependency>
 			<groupId>io.github.vendo-marketplace-be</groupId>
 			<artifactId>web-starter</artifactId>
-			<version>1.4.4</version>
+			<version>3.5.7</version>
 		</dependency>
 
         <!--vendo libs-->
