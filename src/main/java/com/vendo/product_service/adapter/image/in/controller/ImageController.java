@@ -25,8 +25,9 @@ public class ImageController {
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upload(
-            @NotBlank(message = "Product id is required.")
+            @NotBlank(message = "Product ID is required.")
             @RequestParam String productId,
+
             @NotEmpty(message = "Images are required.")
             @RequestParam List<MultipartFile> images
     ) {

@@ -107,7 +107,7 @@ public class ImageControllerIntegrationTest {
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product id is required.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Required parameter 'productId' is not present.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
@@ -124,23 +124,35 @@ public class ImageControllerIntegrationTest {
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product id is required.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product ID is required.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
     @Test
     void upload_shouldReturnBadRequest_whenImagesParameterIsMissing() throws Exception {
-        performUpload(DEFAULT_USER_ID, "product_id", List.of())
-                .andExpect(status().isBadRequest());
+        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of())
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
 
     @Test
     void upload_shouldReturnBadRequest_whenImagesParameterIsEmpty() throws Exception {
-        performUpload(DEFAULT_USER_ID, "product_id", List.of())
-                .andExpect(status().isBadRequest());
+        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of())
+                .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
     }
