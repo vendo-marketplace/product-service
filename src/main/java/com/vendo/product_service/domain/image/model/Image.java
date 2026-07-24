@@ -52,7 +52,7 @@ public record Image(
         String defaultFilename = getDefaultFilename(filename);
 
         if (isSizeExceeded(maxSize)) {
-            throw new ImageExceedSizeException("%s is too large. Maximum size is %d.".formatted(defaultFilename, maxSize / MEGABYTE_IN_BYTES), size);
+            throw new ImageExceedSizeException("%s is too large. Maximum size is %dMB.".formatted(defaultFilename, maxSize / MEGABYTE_IN_BYTES), size);
         }
 
         if (!isImage()) {

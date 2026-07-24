@@ -30,4 +30,4 @@ endpoints:
 
 product:
   image:
-    max-size: 1000
+    max-size: 8388608
