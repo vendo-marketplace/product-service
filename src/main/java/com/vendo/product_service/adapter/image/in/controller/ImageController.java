@@ -21,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImageController {
 
-    private final ImageUseCase productImageUseCase;
+    private final ImageUseCase imageUseCase;
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upload(
@@ -31,6 +31,6 @@ public class ImageController {
             @NotEmpty(message = "Images are required.")
             @RequestParam List<MultipartFile> images
     ) {
-        productImageUseCase.upload(productId, ImageMapper.toImages(images));
+        imageUseCase.upload(productId, ImageMapper.toImages(images));
     }
 }
