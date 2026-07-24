@@ -1,6 +1,3 @@
-server:
-  url: server_test_url
-
 security:
   jwt:
     internal:
@@ -21,13 +18,6 @@ kafka:
         topic: "PRODUCT_CREATED_TEST_TOPIC"
       updated-event:
         topic: "PRODUCT_UPDATED_TEST_TOPIC"
-      image-requested-event:
-        topic: "PRODUCT_IMAGE_REQUESTED_TEST_TOPIC"
-        groupId: "product_image_requested_group"
-        container-factory: "consumerContainerFactory"
-        properties:
-          auto-offset-reset: "latest"
-        auto-startup: "false"
 
 endpoints:
   unauthenticated:
@@ -37,3 +27,7 @@ endpoints:
       - /internal/**
     product:
       - /categories/tree
+
+product:
+  image:
+    max-size: 8388608

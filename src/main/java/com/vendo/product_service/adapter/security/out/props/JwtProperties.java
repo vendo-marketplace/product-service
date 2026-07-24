@@ -13,6 +13,6 @@ public class JwtProperties {
 
     private Internal internal;
 
-    public record Internal(String key) { }
+    public record Internal(String key, long expirationTime) { }
 
 }

@@ -215,7 +215,7 @@ public class FavoriteControllerIntegrationTest {
 
 
             FavoriteResponse actual = favoritesResponse.data().get(0);
-            AssertionUtils.assertFrom(actual, product, "ownerId", "attributes", "createdAt", "description", "categoryId");
+            AssertionUtils.assertFrom(actual, product, "ownerId", "attributes", "createdAt", "description", "categoryId", "imageKeys");
 
             verify(favoriteQueryPort).findAllBy(user.id());
             verify(productQueryPort).findAllByIds(List.of(favorite.productId()));
