@@ -1,7 +1,6 @@
 package com.vendo.product_service.adapter.image.out.mapper;
 
 import com.vendo.core_lib.constants.Separators;
-import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.image.exception.EmptyImageException;
 import com.vendo.product_service.domain.image.exception.InvalidImageException;
 import com.vendo.product_service.domain.image.model.Image;

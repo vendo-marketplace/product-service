@@ -6,11 +6,7 @@ import lombok.Getter;
 @Getter
 public class AwsBadRequestException extends RuntimeException {
 
-    private ExceptionResponse exceptionResponse;
-
-    public AwsBadRequestException(String message) {
-        super(message);
-    }
+    private final ExceptionResponse exceptionResponse;
 
     public AwsBadRequestException(ExceptionResponse exceptionResponse) {
         this.exceptionResponse = exceptionResponse;
