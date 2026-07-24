@@ -6,3 +6,8 @@ spring:
     include: kafka
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}"
+vendo:
+  web:
+    global-exception-handler:
+      enabled: false
+
