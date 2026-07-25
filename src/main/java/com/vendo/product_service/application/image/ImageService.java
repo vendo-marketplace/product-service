@@ -1,5 +1,7 @@
 package com.vendo.product_service.application.image;
 
+import com.vendo.core_lib.utils.CollectionUtils;
+import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
 import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
@@ -13,6 +15,7 @@ import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -22,6 +25,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 class ImageService implements ImageUseCase {
+
+    @Value("${product.images.max-limit}")
+    private int IMAGES_MAX_LIMIT;
 
     private final ProductCommandPort productCommandPort;
     private final ProductQueryPort productQueryPort;
@@ -38,7 +44,9 @@ class ImageService implements ImageUseCase {
         final List<Image> withIds = withIds(images);
 
         Product product = productQueryPort.findById(productId);
+
         validateOwner(product.getOwnerId());
+        validateImagesLimit(product, images);
 
         List<PresignImage> presigns = presignPort.generate(withIds);
         imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
@@ -53,6 +61,14 @@ class ImageService implements ImageUseCase {
     private void validateOwner(String ownerId) {
         User authUser = authUserPort.getAuthUser();
         if (!authUser.id().equals(ownerId)) throw new NotProductOwnerException("You're not product's owner.");
+    }
+
+    private void validateImagesLimit(Product product, List<Image> images) {
+        int currentImagesCount = CollectionUtils.isEmpty(product.getImageKeys()) ? 0 : product.getImageKeys().size();
+
+        if (images.size() > IMAGES_MAX_LIMIT || images.size() + currentImagesCount > IMAGES_MAX_LIMIT) {
+            throw new ImagesLimitExceededException("The maximum number of images is %d.".formatted(IMAGES_MAX_LIMIT));
+        }
     }
 
     private Map<String, Image> mapToImagesByUrl(List<Image> images, List<PresignImage> presigns) {

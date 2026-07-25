@@ -14,8 +14,8 @@ public final class ImageMapper {
     private ImageMapper() {
     }
 
-    public static List<Image> toImages(List<MultipartFile> files) {
-        return files.stream().map(ImageMapper::toImage)
+    public static List<Image> toImages(List<MultipartFile> images) {
+        return images.stream().map(ImageMapper::toImage)
                 .toList();
     }
 

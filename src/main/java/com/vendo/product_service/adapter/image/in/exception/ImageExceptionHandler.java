@@ -50,11 +50,10 @@ public class ImageExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
-    @ExceptionHandler(ImageExceedSizeException.class)
-    ResponseEntity<ExceptionResponse> handleImageExceedSizeException(ImageExceedSizeException e, HttpServletRequest request) {
+    @ExceptionHandler(ImagesLimitExceededException.class)
+    ResponseEntity<ExceptionResponse> handleImageExceedSizeException(ImagesLimitExceededException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Validation failed.")
-                .errors(Map.of(ClassFields.nameOf("size", Image.class), e.getMessage()))
+                .message(e.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())
                 .build();
