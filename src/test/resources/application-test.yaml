@@ -29,5 +29,5 @@ endpoints:
       - /categories/tree
 
 product:
-  image:
-    max-size: 8388608
+  images:
+    max-limit: 10

@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -195,6 +196,32 @@ public class ImageControllerIntegrationTest {
         assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
 
         verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+    }
+
+    @Test
+    void upload_shouldReturnBadRequest_whenImagesLimitExceeded() throws Exception {
+        MockMultipartFile image = new MockMultipartFile("images", "image.png", "image/png", "content".getBytes());
+        Product product = ProductDataBuilder.withAllFields()
+                .ownerId(DEFAULT_USER_ID)
+                .imageKeys(IntStream.rangeClosed(1, 10).mapToObj(String::valueOf).toList())
+                .build();
+
+        when(productQueryPort.findById(product.getId())).thenReturn(product);
+
+        String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(image))
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("The maximum number of images is 10.");
+
+        verify(productQueryPort).findById(product.getId());
+
+        verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
     }
 
     @Test
