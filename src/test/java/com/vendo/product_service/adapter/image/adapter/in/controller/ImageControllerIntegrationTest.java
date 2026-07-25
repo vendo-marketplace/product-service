@@ -179,25 +179,6 @@ public class ImageControllerIntegrationTest {
     }
 
     @Test
-    void upload_shouldReturnBadRequest_whenImageSizeExceeded() throws Exception {
-        MockMultipartFile tooLargeImage = new MockMultipartFile("images", "large.png", "image/png", new byte[9000000]);
-
-        String content = performUpload(DEFAULT_USER_ID, "product_id", List.of(tooLargeImage))
-                .andExpect(status().isBadRequest())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-        assertThat(exceptionResponse).isNotNull();
-        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-        assertThat(exceptionResponse.getErrors()).containsEntry("size", "large.png is too large. Maximum size is 8MB.");
-
-        verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
-    }
-
-    @Test
     void upload_shouldReturnBadRequest_whenFileTypeIsNotImage() throws Exception {
         MockMultipartFile notImage = new MockMultipartFile("images", "document.txt", "text/plain", "content".getBytes());
 

@@ -13,7 +13,6 @@ import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -33,12 +32,9 @@ class ImageService implements ImageUseCase {
     private final IdGenerationPort idGenerationPort;
     private final AuthUserPort authUserPort;
 
-    @Value("${product.image.max-size}")
-    private int maxSize;
-
     @Override
     public void upload(String productId, List<Image> images) {
-        images.forEach(image -> image.validate(maxSize));
+        images.forEach(Image::throwIfNotImage);
         final List<Image> withIds = withIds(images);
 
         Product product = productQueryPort.findById(productId);
