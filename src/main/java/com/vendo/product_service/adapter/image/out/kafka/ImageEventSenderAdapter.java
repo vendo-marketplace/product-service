@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ImageEventSenderAdapter implements ImageEventSenderPort {
 
-    private final ImageDeletedEventProducer imageDeletedEventProducer;
+    private final FileDeletedEventProducer fileDeletedEventProducer;
 
     @Override
     public void delete(String imageKey) {
-        imageDeletedEventProducer.send(imageKey);
+        fileDeletedEventProducer.send(imageKey);
     }
 }

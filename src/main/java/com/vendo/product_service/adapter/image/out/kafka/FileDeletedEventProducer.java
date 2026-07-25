@@ -9,16 +9,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ImageDeletedEventProducer {
+public class FileDeletedEventProducer {
 
-    @Value("${kafka.events.product.image-deleted-event.topic}")
-    private String productImageDeletedEventTopic;
+    @Value("${kafka.events.file.deleted-event.topic}")
+    private String fileDeletedEventTopic;
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    public void send(String imageKey) {
-        log.info("Sent event for product image deleted: {}.", imageKey);
-        kafkaTemplate.send(productImageDeletedEventTopic, imageKey);
+    public void send(String fileKey) {
+        log.info("Sent event for file deleted: {}.", fileKey);
+        kafkaTemplate.send(fileDeletedEventTopic, fileKey);
     }
 
 }
