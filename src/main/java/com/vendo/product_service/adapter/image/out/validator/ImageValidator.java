@@ -1,12 +1,12 @@
 package com.vendo.product_service.adapter.image.out.validator;
 
 import com.vendo.core_lib.constants.Separators;
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.image.exception.EmptyImageException;
-import com.vendo.product_service.domain.image.exception.InvalidImageException;
+import com.vendo.product_service.domain.image.exception.NotImageException;
 import com.vendo.product_service.domain.image.model.Image;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 public final class ImageValidator {
@@ -14,27 +14,13 @@ public final class ImageValidator {
     private ImageValidator() {
     }
 
-    public static List<Image> validate(List<MultipartFile> images) {
-        return images.stream().map(ImageValidator::validate)
-                .toList();
+    public static void validate(List<MultipartFile> files) {
+        files.forEach(ImageValidator::validate);
     }
 
-    private static Image validate(MultipartFile file) {
+    private static void validate(MultipartFile file) {
         throwIfEmpty(file);
-
-        try {
-            Image image = Image.builder()
-                    .size(file.getSize())
-                    .contentType(file.getContentType())
-                    .filename(file.getOriginalFilename())
-                    .bytes(file.getBytes())
-                    .build();
-
-            image.throwIfNotImage();
-            return image;
-        } catch (IOException e) {
-            throw new InvalidImageException("%s is invalid.".formatted(file.getOriginalFilename()));
-        }
+        throwIfNotImage(file);
     }
 
     private static void throwIfEmpty(MultipartFile file) {
@@ -47,4 +33,13 @@ public final class ImageValidator {
         if (file == null) return Image.getDefaultFilename(Separators.EMPTY_STRING);
         return Image.getDefaultFilename(file.getOriginalFilename());
     }
+
+    private static void throwIfNotImage(MultipartFile file) {
+        String contentType = file.getContentType(), filename = getDefaultFilename(file);
+
+        if (StringUtils.isEmpty(contentType) || !Image.isImage(contentType)) {
+            throw new NotImageException("%s has invalid image content type %s.".formatted(filename, contentType), contentType);
+        }
+    }
+
 }

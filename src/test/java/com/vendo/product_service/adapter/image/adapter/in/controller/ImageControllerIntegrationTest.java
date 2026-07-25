@@ -386,6 +386,8 @@ public class ImageControllerIntegrationTest {
             String imageKey = "products/key.png";
             Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of("another_image_key")).build();
 
+            when(productQueryPort.findById(product.getId())).thenReturn(product);
+
             String content = performDelete(DEFAULT_USER_ID, product.getId(), imageKey)
                     .andExpect(status().isNotFound())
                     .andReturn().getResponse().getContentAsString();
@@ -397,13 +399,14 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("%s does not exist in product.".formatted(imageKey));
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
-            verifyNoInteractions(productCommandPort, productQueryPort);
+            verify(productQueryPort).findById(product.getId());
+
+            verifyNoInteractions(productCommandPort);
         }
 
         @Test
         void delete_shouldReturnBadRequest_whenProductIdIsNotPresent() throws Exception {
             String imageKey = "products/key.png";
-            Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of("another_image_key")).build();
 
             String content = performDelete(DEFAULT_USER_ID, null, imageKey)
                     .andExpect(status().isBadRequest())
@@ -428,8 +431,6 @@ public class ImageControllerIntegrationTest {
             String imageKey = "products/key.png";
             Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of(imageKey)).build();
 
-            when(productQueryPort.findById(product.getId())).thenReturn(product);
-
             String content = performDelete(DEFAULT_USER_ID, product.getId(), null)
                     .andExpect(status().isBadRequest())
                     .andReturn().getResponse().getContentAsString();
@@ -444,11 +445,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get("imageKey")).isEqualTo("Image key is required.");
 
-            verify(productQueryPort).findById(product.getId());
-            verifyNoInteractions(productCommandPort);
+            verifyNoInteractions(productCommandPort, productQueryPort);
         }
-
     }
-
-
 }

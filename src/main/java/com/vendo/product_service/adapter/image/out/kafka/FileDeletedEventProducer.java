@@ -17,8 +17,8 @@ public class FileDeletedEventProducer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     public void send(String fileKey) {
-        log.info("Sent event for file deleted: {}.", fileKey);
         kafkaTemplate.send(fileDeletedEventTopic, fileKey);
+        log.info("Sent event for file deleted: {}.", fileKey);
     }
 
 }

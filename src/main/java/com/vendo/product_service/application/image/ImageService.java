@@ -19,7 +19,6 @@ import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +55,6 @@ class ImageService implements ImageUseCase {
     }
 
     @Override
-    @Transactional
     public void delete(String productId, String imageKey) {
         Product product = productQueryPort.findById(productId);
 

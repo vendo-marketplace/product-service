@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.image.in.controller;
 
+import com.vendo.product_service.adapter.image.out.mapper.ImageMapper;
 import com.vendo.product_service.adapter.image.out.validator.ImageValidator;
 import com.vendo.product_service.port.image.ImageUseCase;
 import jakarta.validation.constraints.NotBlank;
@@ -28,7 +29,8 @@ public class ImageController {
             @NotEmpty(message = "Images are required.")
             @RequestParam List<MultipartFile> images
     ) {
-        imageUseCase.upload(productId, ImageValidator.validate(images));
+        ImageValidator.validate(images);
+        imageUseCase.upload(productId, ImageMapper.toImages(images));
     }
 
     @DeleteMapping
