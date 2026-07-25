@@ -61,6 +61,17 @@ public class ImageExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
+    @ExceptionHandler(ImageKeyNotFoundException.class)
+    ResponseEntity<ExceptionResponse> handleImageKeyNotFoundException(ImageKeyNotFoundException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.NOT_FOUND.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exceptionResponse);
+    }
+
     @ExceptionHandler(ImageUploadException.class)
     ResponseEntity<ExceptionResponse> handleImageUploadException(ImageUploadException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
