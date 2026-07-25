@@ -1,7 +1,6 @@
 package com.vendo.product_service.adapter.image.adapter.in.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
@@ -23,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -42,6 +42,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@EmbeddedKafka
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -111,9 +112,8 @@ public class ImageControllerIntegrationTest {
         return new MockMultipartFile("images", filename, "image/png", new byte[]{1, 2, 3});
     }
 
-
     @Nested
-    class UploadTests {
+    class UploadImageTests {
 
         @Test
         void upload_shouldReturnBadRequest_whenProductIdParameterIsMissing() throws Exception {
@@ -125,6 +125,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Required parameter 'productId' is not present.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
         }
@@ -142,6 +143,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product ID is required.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
         }
@@ -156,6 +158,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
         }
@@ -170,6 +173,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
         }
@@ -187,7 +191,8 @@ public class ImageControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
             assertThat(exceptionResponse.getErrors()).isNotEmpty();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get("size")).isEqualTo("%s is empty.".formatted(emptyImage.getOriginalFilename()));
@@ -208,6 +213,7 @@ public class ImageControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
 
@@ -232,6 +238,7 @@ public class ImageControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("The maximum number of images is 10.");
 
@@ -255,7 +262,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(productId);
             verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
@@ -276,7 +283,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
@@ -296,8 +303,9 @@ public class ImageControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Internal server error.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images/upload");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(product.getId());
             verify(presignPort).generate(any());
@@ -306,7 +314,7 @@ public class ImageControllerIntegrationTest {
     }
 
     @Nested
-    class DeleteTests {
+    class DeleteImageTests {
 
         @Test
         void delete_shouldDeleteImageFromProduct() throws Exception {
@@ -314,40 +322,130 @@ public class ImageControllerIntegrationTest {
             Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of(imageKey)).build();
             ArgumentCaptor<Product> productArgumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-            performDelete(DEFAULT_USER_ID, product.getId(), imageKey).andExpect(status().isOk());
-
             when(productQueryPort.findById(product.getId())).thenReturn(product);
-            doNothing().when(productCommandPort).update(product.getId(), productArgumentCaptor.capture());
+            doNothing().when(productCommandPort).update(eq(product.getId()), productArgumentCaptor.capture());
+
+            performDelete(DEFAULT_USER_ID, product.getId(), imageKey).andExpect(status().isOk());
 
             Product captorValue = productArgumentCaptor.getValue();
 
             verify(productQueryPort).findById(product.getId());
             verify(productCommandPort).update(product.getId(), captorValue);
+
+            assertThat(captorValue).isNotNull();
+            assertThat(captorValue.getImageKeys()).isNotNull();
+            assertThat(captorValue.getImageKeys().size()).isEqualTo(0);
         }
 
         @Test
-        void delete_shouldReturnNotFound_whenProductNotFound() {
+        void delete_shouldReturnNotFound_whenProductNotFound() throws Exception {
+            String imageKey = "products/key.png";
+            Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of(imageKey)).build();
 
+            when(productQueryPort.findById(product.getId())).thenThrow(new ProductNotFoundException("Product not found."));
+
+            String content = performDelete(DEFAULT_USER_ID, product.getId(), imageKey)
+                    .andExpect(status().isNotFound())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+
+            verify(productQueryPort).findById(product.getId());
+            verifyNoInteractions(productCommandPort);
         }
 
         @Test
-        void delete_shouldReturnForbidden_whenNotProductOwner() {
+        void delete_shouldReturnForbidden_whenNotProductOwner() throws Exception {
+            String imageKey = "products/key.png";
+            Product product = ProductDataBuilder.withAllFields().ownerId("not_product_owner_id").imageKeys(List.of(imageKey)).build();
 
+            when(productQueryPort.findById(product.getId())).thenReturn(product);
+
+            String content = performDelete(DEFAULT_USER_ID, product.getId(), imageKey)
+                    .andExpect(status().isForbidden())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+
+            verify(productQueryPort).findById(product.getId());
+            verifyNoInteractions(productCommandPort);
         }
 
         @Test
-        void delete_shouldReturnNotFound_whenImageKeyNotFound() {
+        void delete_shouldReturnNotFound_whenImageKeyNotFound() throws Exception {
+            String imageKey = "products/key.png";
+            Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of("another_image_key")).build();
 
+            String content = performDelete(DEFAULT_USER_ID, product.getId(), imageKey)
+                    .andExpect(status().isNotFound())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("%s does not exist in product.".formatted(imageKey));
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+
+            verifyNoInteractions(productCommandPort, productQueryPort);
         }
 
         @Test
-        void delete_shouldReturnBadRequest_whenProductIdIsNotPresent() {
+        void delete_shouldReturnBadRequest_whenProductIdIsNotPresent() throws Exception {
+            String imageKey = "products/key.png";
+            Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of("another_image_key")).build();
 
+            String content = performDelete(DEFAULT_USER_ID, null, imageKey)
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get("productId")).isEqualTo("Product ID is required.");
+
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+
+            verifyNoInteractions(productCommandPort, productQueryPort);
         }
 
         @Test
-        void delete_shouldReturnBadRequest_whenImageKeyIsNotPresent() {
+        void delete_shouldReturnBadRequest_whenImageKeyIsNotPresent() throws Exception {
+            String imageKey = "products/key.png";
+            Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).imageKeys(List.of(imageKey)).build();
 
+            when(productQueryPort.findById(product.getId())).thenReturn(product);
+
+            String content = performDelete(DEFAULT_USER_ID, product.getId(), null)
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get("imageKey")).isEqualTo("Image key is required.");
+
+            verify(productQueryPort).findById(product.getId());
+            verifyNoInteractions(productCommandPort);
         }
 
     }
