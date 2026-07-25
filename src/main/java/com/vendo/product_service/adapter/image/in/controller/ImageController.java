@@ -20,7 +20,7 @@ public class ImageController {
 
     private final ImageUseCase imageUseCase;
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void upload(
             @NotBlank(message = "Product ID is required.")
             @RequestParam String productId,
