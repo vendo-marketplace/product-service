@@ -8,5 +8,6 @@ public interface ImageUseCase {
 
     void upload(String productId, List<Image> images);
 
+    void delete(String productId, String imageKey);
 
 }

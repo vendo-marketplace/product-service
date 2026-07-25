@@ -1,7 +1,6 @@
 package com.vendo.product_service.domain.image.model;
 
 import com.vendo.core_lib.utils.StringUtils;
-import com.vendo.product_service.domain.image.exception.NotImageException;
 import lombok.Builder;
 import lombok.With;
 
@@ -46,13 +45,7 @@ public record Image(
         return StringUtils.defaultIfEmpty(filename, DEFAULT_FILENAME);
     }
 
-    public void throwIfNotImage() {
-        if (!isImage()) {
-            throw new NotImageException("%s has invalid image content type %s.".formatted(getDefaultFilename(filename), contentType), contentType);
-        }
-    }
-
-    private boolean isImage() {
+    public static boolean isImage(String contentType) {
         return contentType != null && IMAGE_MIME_TYPES.contains(contentType.toLowerCase(Locale.ROOT));
     }
 }

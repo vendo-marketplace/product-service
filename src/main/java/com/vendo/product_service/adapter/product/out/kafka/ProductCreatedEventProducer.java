@@ -18,7 +18,7 @@ public class ProductCreatedEventProducer {
     private final KafkaTemplate<String, ProductCreatedEvent> kafkaTemplate;
 
     public void send(ProductCreatedEvent event) {
-        log.info("Sent event for product created: {}.", event);
         kafkaTemplate.send(productCreatedEventTopic, event);
+        log.info("Sent event for product created: {}.", event);
     }
 }

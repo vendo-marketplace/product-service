@@ -12,7 +12,6 @@ import com.vendo.product_service.port.product.ProductValidationPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -35,7 +34,6 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    @Transactional
     public void save(Product request) {
         Category category = validationPort.validateCategoryOnSave(request.getCategoryId());
         List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
@@ -48,7 +46,6 @@ public class ProductService implements ProductUseCase {
     }
 
     @Override
-    @Transactional
     public void update(String id, Product request) {
         request.setId(id);
 

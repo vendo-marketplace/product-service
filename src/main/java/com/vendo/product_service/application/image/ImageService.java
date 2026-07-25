@@ -1,6 +1,7 @@
 package com.vendo.product_service.application.image;
 
 import com.vendo.core_lib.utils.CollectionUtils;
+import com.vendo.product_service.domain.image.exception.ImageKeyNotFoundException;
 import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
@@ -8,6 +9,7 @@ import com.vendo.product_service.domain.product.exception.NotProductOwnerExcepti
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.id.IdGenerationPort;
+import com.vendo.product_service.port.image.ImageEventSenderPort;
 import com.vendo.product_service.port.image.ImageUploadPort;
 import com.vendo.product_service.port.image.ImageUseCase;
 import com.vendo.product_service.port.image.PresignPort;
@@ -34,15 +36,14 @@ class ImageService implements ImageUseCase {
 
     private final PresignPort presignPort;
     private final ImageUploadPort imageUploadPort;
+    private final ImageEventSenderPort imageEventSenderPort;
 
     private final IdGenerationPort idGenerationPort;
     private final AuthUserPort authUserPort;
 
     @Override
     public void upload(String productId, List<Image> images) {
-        images.forEach(Image::throwIfNotImage);
         final List<Image> withIds = withIds(images);
-
         Product product = productQueryPort.findById(productId);
 
         validateOwner(product.getOwnerId());
@@ -50,8 +51,19 @@ class ImageService implements ImageUseCase {
 
         List<PresignImage> presigns = presignPort.generate(withIds);
         imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
-
         productCommandPort.update(productId, Product.builder().imageKeys(getKeys(presigns)).build());
+    }
+
+    @Override
+    public void delete(String productId, String imageKey) {
+        Product product = productQueryPort.findById(productId);
+
+        validateOwner(product.getOwnerId());
+        throwIfImageKeyNotContains(imageKey, product.getImageKeys());
+
+        Product updateProduct = Product.builder().imageKeys(filterImageKeys(imageKey, product.getImageKeys())).build();
+        productCommandPort.update(productId, updateProduct);
+        imageEventSenderPort.delete(imageKey);
     }
 
     private List<Image> withIds(List<Image> images) {
@@ -84,5 +96,15 @@ class ImageService implements ImageUseCase {
 
     private List<String> getKeys(List<PresignImage> presigns) {
         return presigns.stream().map(PresignImage::key).toList();
+    }
+
+    private void throwIfImageKeyNotContains(String imageKey, List<String> imageKeys) {
+        if (CollectionUtils.isEmpty(imageKeys) || !imageKeys.contains(imageKey)) {
+            throw new ImageKeyNotFoundException("%s does not exist in product.".formatted(imageKey));
+        }
+    }
+
+    private List<String> filterImageKeys(String imageKey, List<String> imageKeys) {
+        return imageKeys.stream().filter(ik -> !ik.equals(imageKey)).toList();
     }
 }

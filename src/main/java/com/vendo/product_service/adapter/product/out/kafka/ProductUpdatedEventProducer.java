@@ -18,8 +18,8 @@ public class ProductUpdatedEventProducer {
     private final KafkaTemplate<String, ProductUpdatedEvent> kafkaTemplate;
 
     public void send(ProductUpdatedEvent event) {
-        log.info("Sent event for product updated: {}.", event);
         kafkaTemplate.send(productUpdatedEventTopic, event);
+        log.info("Sent event for product updated: {}.", event);
     }
 
 }

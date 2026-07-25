@@ -18,6 +18,10 @@ kafka:
         topic: "PRODUCT_CREATED_TEST_TOPIC"
       updated-event:
         topic: "PRODUCT_UPDATED_TEST_TOPIC"
+    file:
+      deleted-event:
+        topic: "FILE_DELETED_TEST_TOPIC"
+
 
 endpoints:
   unauthenticated:
