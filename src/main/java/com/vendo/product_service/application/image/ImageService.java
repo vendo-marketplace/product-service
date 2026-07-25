@@ -59,6 +59,8 @@ class ImageService implements ImageUseCase {
     @Transactional
     public void delete(String productId, String imageKey) {
         Product product = productQueryPort.findById(productId);
+
+        validateOwner(product.getOwnerId());
         throwIfImageKeyNotContains(imageKey, product.getImageKeys());
 
         Product updateProduct = Product.builder().imageKeys(filterImageKeys(imageKey, product.getImageKeys())).build();
