@@ -51,7 +51,7 @@ class ImageService implements ImageUseCase {
 
         List<PresignImage> presigns = presignPort.generate(withIds);
         imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
-        productCommandPort.update(productId, Product.builder().imageKeys(getKeys(presigns)).build());
+        productCommandPort.update(productId, Product.builder().imageKeys(addAllKeys(product, getKeys(presigns))).build());
     }
 
     @Override
@@ -64,6 +64,17 @@ class ImageService implements ImageUseCase {
         Product updateProduct = Product.builder().imageKeys(filterImageKeys(imageKey, product.getImageKeys())).build();
         productCommandPort.update(productId, updateProduct);
         imageEventSenderPort.delete(imageKey);
+    }
+
+    private List<String> addAllKeys(Product product, List<String> requestImageKeys) {
+        List<String> imageKeys = product.getImageKeys();
+
+        if (CollectionUtils.isEmpty(imageKeys)) {
+            return requestImageKeys;
+        }
+
+        imageKeys.addAll(requestImageKeys);
+        return imageKeys;
     }
 
     private List<Image> withIds(List<Image> images) {
