@@ -5,11 +5,13 @@ import com.vendo.product_service.adapter.aws.out.exception.AwsInternalServerExce
 import com.vendo.product_service.adapter.aws.out.exception.AwsServiceUnavailableException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class AwsExceptionHandler {
 
@@ -40,8 +42,9 @@ public class AwsExceptionHandler {
 
     @ExceptionHandler(AwsInternalServerException.class)
     public ResponseEntity<ExceptionResponse> handleAwsInternalServerException(AwsInternalServerException e, HttpServletRequest request) {
+        log.error("Aws internal server error occurred: {}.", e.getMessage());
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message(e.getMessage())
+                .message("Internal server error.")
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .path(request.getRequestURI())
                 .build();
