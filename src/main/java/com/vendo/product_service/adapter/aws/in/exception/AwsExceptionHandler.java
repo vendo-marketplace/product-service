@@ -42,7 +42,7 @@ public class AwsExceptionHandler {
 
     @ExceptionHandler(AwsInternalServerException.class)
     public ResponseEntity<ExceptionResponse> handleAwsInternalServerException(AwsInternalServerException e, HttpServletRequest request) {
-        log.error("Aws internal server error occurred: {}.", e.getMessage());
+        log.error("Aws internal error occurred: {}.", e.getMessage());
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Internal server error.")
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
