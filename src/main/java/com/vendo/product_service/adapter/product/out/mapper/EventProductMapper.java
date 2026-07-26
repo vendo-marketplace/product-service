@@ -19,4 +19,6 @@ public interface EventProductMapper {
     @Mapping(target = "attributes", source = "attributes")
     ProductUpdatedEvent toUpdatedEvent(Product product, List<AttributeEvent> attributes);
 
+    ProductUpdatedEvent toUpdatedEvent(Product product);
+
 }

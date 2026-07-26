@@ -14,6 +14,7 @@ import com.vendo.product_service.port.image.ImageUploadPort;
 import com.vendo.product_service.port.image.ImageUseCase;
 import com.vendo.product_service.port.image.PresignPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
+import com.vendo.product_service.port.product.ProductEventSenderPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ class ImageService implements ImageUseCase {
 
     private final ProductCommandPort productCommandPort;
     private final ProductQueryPort productQueryPort;
+    private final ProductEventSenderPort productEventSenderPort;
 
     private final PresignPort presignPort;
     private final ImageUploadPort imageUploadPort;
@@ -51,7 +53,10 @@ class ImageService implements ImageUseCase {
 
         List<PresignImage> presigns = presignPort.generate(withIds);
         imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
-        productCommandPort.update(productId, Product.builder().imageKeys(addAllKeys(product, getKeys(presigns))).build());
+        Product updateProduct = Product.builder().imageKeys(addAllKeys(product, getKeys(presigns))).build();
+
+        productCommandPort.update(productId, updateProduct);
+        productEventSenderPort.sendUpdated(updateProduct);
     }
 
     @Override

@@ -35,4 +35,10 @@ public class ProductEventSenderAdapter implements ProductEventSenderPort {
         ProductUpdatedEvent event = productMapper.toUpdatedEvent(product, attributeEvents);
         updatedEventProducer.send(event);
     }
+
+    @Override
+    public void sendUpdated(Product product) {
+        ProductUpdatedEvent event = productMapper.toUpdatedEvent(product);
+        updatedEventProducer.send(event);
+    }
 }
