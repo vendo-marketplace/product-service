@@ -18,6 +18,7 @@ public record ProductResponse (
         String ownerId,
         String categoryId,
         List<AttributeValue> attributes,
+        List<String> imageKeys,
         boolean active,
         Instant createdAt
 ) {
