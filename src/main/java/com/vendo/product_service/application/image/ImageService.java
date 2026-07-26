@@ -68,7 +68,9 @@ class ImageService implements ImageUseCase {
 
         Product updateProduct = Product.builder().imageKeys(filterImageKeys(imageKey, product.getImageKeys())).build();
         productCommandPort.update(productId, updateProduct);
+
         imageEventSenderPort.delete(imageKey);
+        productEventSenderPort.sendUpdated(updateProduct);
     }
 
     private List<String> addAllKeys(Product product, List<String> requestImageKeys) {
