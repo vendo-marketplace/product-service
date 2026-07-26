@@ -24,6 +24,7 @@ public class ProductEventSenderAdapter implements ProductEventSenderPort {
 
     @Override
     public void sendCreated(Product product, List<Attribute> attributes) {
+        product.throwIfMissingId();
         List<AttributeEvent> attributeEvents = attributeMapper.toEvents(product.getAttributes(), attributes);
         ProductCreatedEvent event = productMapper.toCreatedEvent(product, attributeEvents);
         createdEventProducer.send(event);
@@ -31,8 +32,16 @@ public class ProductEventSenderAdapter implements ProductEventSenderPort {
 
     @Override
     public void sendUpdated(Product product, List<Attribute> attributes) {
+        product.throwIfMissingId();
         List<AttributeEvent> attributeEvents = attributeMapper.toEvents(product.getAttributes(), attributes);
         ProductUpdatedEvent event = productMapper.toUpdatedEvent(product, attributeEvents);
+        updatedEventProducer.send(event);
+    }
+
+    @Override
+    public void sendUpdated(Product product) {
+        product.throwIfMissingId();
+        ProductUpdatedEvent event = productMapper.toUpdatedEvent(product);
         updatedEventProducer.send(event);
     }
 }
