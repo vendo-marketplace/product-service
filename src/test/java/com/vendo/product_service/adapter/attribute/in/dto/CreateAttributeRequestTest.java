@@ -41,35 +41,35 @@ public class CreateAttributeRequestTest {
 
         @Test
         void validate_shouldReturnConstraint_whenTitleIsNotFromCapital() {
-            Set<String> validationMessages = Set.of(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            Set<String> validationMessages = Set.of(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             CreateAttributeRequest request = withRequiredFields().title("non capital title").build();
             failAttributeValidation(request, validationMessages);
         }
 
         @Test
         void validate_shouldReturnConstraint_whenTitleStartsWithNumber() {
-            Set<String> validationMessages = Set.of(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            Set<String> validationMessages = Set.of(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             CreateAttributeRequest request = withRequiredFields().title("1 Non capital title").build();
             failAttributeValidation(request, validationMessages);
         }
 
         @Test
         void validate_shouldReturnConstraint_whenTitleStartsWithSpecialSymbol() {
-            Set<String> validationMessages = Set.of(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            Set<String> validationMessages = Set.of(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             CreateAttributeRequest request = withRequiredFields().title("& Non capital title").build();
             failAttributeValidation(request, validationMessages);
         }
 
         @Test
         void validate_shouldReturnConstraint_whenTitleContainsUnderscore() {
-            Set<String> validationMessages = Set.of(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            Set<String> validationMessages = Set.of(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             CreateAttributeRequest request = withRequiredFields().title("Non_capital title").build();
             failAttributeValidation(request, validationMessages);
         }
 
         @Test
         void validate_shouldReturnConstraint_whenTitleContainsOnlyOneLetter() {
-            Set<String> validationMessages = Set.of(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            Set<String> validationMessages = Set.of(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             CreateAttributeRequest request = withRequiredFields().title("A").build();
             failAttributeValidation(request, validationMessages);
         }

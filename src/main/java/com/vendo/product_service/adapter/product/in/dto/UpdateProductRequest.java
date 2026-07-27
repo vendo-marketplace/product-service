@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public record UpdateProductRequest(
 
-        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
+        @Pattern(regexp = ProductPatterns.PRODUCT_TITLE_PATTERN, message = ProductPatterns.PRODUCT_TITLE_VALIDATION_MESSAGE)
         String title,
 
         @Size(min = 5, max = 250, message = "Description must be between 5 and 250 characters.")

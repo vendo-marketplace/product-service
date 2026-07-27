@@ -12,7 +12,7 @@ import java.util.List;
 public record CreateAttributeRequest(
 
         @NotNull(message = "Title is required.")
-        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
+        @Pattern(regexp = ProductPatterns.ATTRIBUTE_TITLE_PATTERN, message = ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE)
         String title,
 
         @NotNull(message = "Slug is required.")

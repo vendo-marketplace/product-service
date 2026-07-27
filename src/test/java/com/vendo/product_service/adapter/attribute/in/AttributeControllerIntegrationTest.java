@@ -160,7 +160,7 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.ATTRIBUTE_TITLE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort);

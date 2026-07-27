@@ -144,7 +144,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.TITLE_VALIDATION_MESSAGE);
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo(ProductPatterns.CATEGORY_TITLE_VALIDATION_MESSAGE);
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(categoryQueryPort);

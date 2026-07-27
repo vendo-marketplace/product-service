@@ -12,7 +12,7 @@ import java.util.List;
 public record CreateProductRequest(
 
         @NotNull(message = "Title is required.")
-        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
+        @Pattern(regexp = ProductPatterns.PRODUCT_TITLE_PATTERN, message = ProductPatterns.PRODUCT_TITLE_VALIDATION_MESSAGE)
         String title,
 
         @NotNull(message = "Description is required.")

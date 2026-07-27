@@ -11,7 +11,7 @@ import java.util.List;
 public record CreateCategoryRequest(
 
         @NotNull(message = "Title is required.")
-        @Pattern(regexp = ProductPatterns.TITLE_PATTERN, message = ProductPatterns.TITLE_VALIDATION_MESSAGE)
+        @Pattern(regexp = ProductPatterns.CATEGORY_TITLE_PATTERN, message = ProductPatterns.CATEGORY_TITLE_VALIDATION_MESSAGE)
         String title,
 
         @NotNull(message = "Slug is required.")
