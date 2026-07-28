@@ -1,10 +1,10 @@
 package com.vendo.product_service.adapter.favorite.out.persistence;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
-public interface FavoriteRepository extends MongoRepository<MongoFavorite, String> {
+public interface FavoriteRepository extends CrudRepository<MongoFavorite, String> {
 
     List<MongoFavorite> findAllByUserId(String userId);
 

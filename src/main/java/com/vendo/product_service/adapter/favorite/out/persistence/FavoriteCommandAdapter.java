@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class FavoriteCommandAdapter implements FavoriteCommandPort {
+class FavoriteCommandAdapter implements FavoriteCommandPort {
 
     private final FavoriteRepository favoriteRepository;
     private final FavoriteMapper favoriteMapper;

@@ -16,14 +16,14 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ImagePresignAdapter implements ImagePresignPort {
+class ImagePresignAdapter implements ImagePresignPort {
 
-    private final PresignMapper mapper;
+    private final PresignMapper presignMapper;
     private final AwsClient awsClient;
 
     @Override
     public List<PresignImage> generate(List<Image> images) {
-        List<PresignBody> presignBodies = mapper.toPresignBodies(images);
+        List<PresignBody> presignBodies = presignMapper.toPresignBodies(images);
         PresignResponse response = awsClient.presign(new PresignRequest(PresignType.PRODUCT, presignBodies));
         return response.data();
     }

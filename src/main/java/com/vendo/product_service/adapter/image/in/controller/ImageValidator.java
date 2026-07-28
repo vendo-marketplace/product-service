@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.image.out.validator;
+package com.vendo.product_service.adapter.image.in.controller;
 
 import com.vendo.core_lib.constants.Separators;
 import com.vendo.core_lib.utils.StringUtils;
@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-public final class ImageValidator {
+final class ImageValidator {
 
     private ImageValidator() {
     }

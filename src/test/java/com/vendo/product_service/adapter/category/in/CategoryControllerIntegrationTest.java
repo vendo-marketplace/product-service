@@ -221,8 +221,7 @@ public class CategoryControllerIntegrationTest {
             assertThat(category).isNotNull();
             assertThat(category.getTitle()).isEqualTo(categoryRequest.title());
             assertThat(category.getSlug()).isEqualTo(categoryRequest.slug());
-            assertThat(category.getAttributes()).isNotNull();
-            assertThat(category.getAttributes().size()).isEqualTo(0);
+            assertThat(category.getAttributes()).isNull();
 
             verify(categoryCommandPort).save(category);
         }
@@ -294,8 +293,7 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(1);
                 assertThat(capturedCategory.getPath().get(0)).isEqualTo(capturedCategory.getId());
-                assertThat(capturedCategory.getAttributes()).isNotNull();
-                assertThat(capturedCategory.getAttributes()).isEmpty();
+                assertThat(capturedCategory.getAttributes()).isNull();
             }
         }
 
@@ -336,8 +334,7 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
                 assertThat(capturedCategory.getPath()).containsExactly(parentId, capturedCategory.getId());
-                assertThat(capturedCategory.getAttributes()).isNotNull();
-                assertThat(capturedCategory.getAttributes()).isEmpty();
+                assertThat(capturedCategory.getAttributes()).isNull();
 
                 verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);
@@ -369,8 +366,7 @@ public class CategoryControllerIntegrationTest {
                 assertThat(capturedCategory.getPath()).isNotNull();
                 assertThat(capturedCategory.getPath().size()).isEqualTo(2);
                 assertThat(capturedCategory.getPath()).containsExactly(parent.getId(), capturedCategory.getId());
-                assertThat(capturedCategory.getAttributes()).isNotNull();
-                assertThat(capturedCategory.getAttributes()).isEmpty();
+                assertThat(capturedCategory.getAttributes()).isNull();
 
                 verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);

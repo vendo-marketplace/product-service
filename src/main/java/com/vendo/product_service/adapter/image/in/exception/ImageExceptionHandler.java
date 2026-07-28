@@ -18,7 +18,7 @@ import java.util.Map;
 public class ImageExceptionHandler {
 
     @ExceptionHandler(InvalidImageException.class)
-    ResponseEntity<ExceptionResponse> handleInvalidImageException(InvalidImageException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleInvalidImageException(InvalidImageException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
@@ -29,7 +29,7 @@ public class ImageExceptionHandler {
     }
 
     @ExceptionHandler(NotImageException.class)
-    ResponseEntity<ExceptionResponse> handleNotImageException(NotImageException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleNotImageException(NotImageException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
                 .errors(Map.of(ClassFields.nameOf("contentType", Image.class), e.getMessage()))
@@ -41,7 +41,7 @@ public class ImageExceptionHandler {
     }
 
     @ExceptionHandler(EmptyImageException.class)
-    ResponseEntity<ExceptionResponse> handleEmptyImageException(EmptyImageException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleEmptyImageException(EmptyImageException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Validation failed.")
                 .errors(Map.of(ClassFields.nameOf("size", Image.class), e.getMessage()))
@@ -53,7 +53,7 @@ public class ImageExceptionHandler {
     }
 
     @ExceptionHandler(ImagesLimitExceededException.class)
-    ResponseEntity<ExceptionResponse> handleImageExceedSizeException(ImagesLimitExceededException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleImageExceedSizeException(ImagesLimitExceededException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
@@ -64,7 +64,7 @@ public class ImageExceptionHandler {
     }
 
     @ExceptionHandler(ImageKeyNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleImageKeyNotFoundException(ImageKeyNotFoundException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleImageKeyNotFoundException(ImageKeyNotFoundException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())
@@ -75,7 +75,7 @@ public class ImageExceptionHandler {
     }
 
     @ExceptionHandler(ImageUploadException.class)
-    ResponseEntity<ExceptionResponse> handleImageUploadException(ImageUploadException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleImageUploadException(ImageUploadException e, HttpServletRequest request) {
         log.error("Image upload internal error occurred: {}.", e.getMessage());
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message("Internal server error.")

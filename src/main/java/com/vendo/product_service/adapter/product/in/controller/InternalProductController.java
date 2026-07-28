@@ -16,6 +16,7 @@ import java.util.List;
 
 import static com.vendo.product_service.adapter.product.in.constants.InternalProductConstants.MAX_LIMIT;
 
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/internal/products")

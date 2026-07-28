@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.attribute.model;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import lombok.Builder;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public record Attribute(
 ) {
 
     public static List<Attribute> extractAll(List<String> ids, Map<String, Attribute> attributesById) {
-        if (ids.isEmpty()) return List.of();
+        if (CollectionUtils.isEmpty(ids)) return List.of();
         return ids.stream().map(attributesById::get).toList();
     }
 

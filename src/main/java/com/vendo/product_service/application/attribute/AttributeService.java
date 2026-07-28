@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AttributeService implements AttributeUseCase {
+class AttributeService implements AttributeUseCase {
 
     private final AttributeCommandPort attributeCommandPort;
 

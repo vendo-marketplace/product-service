@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ImageEventSenderAdapter implements ImageEventSenderPort {
+class ImageEventSenderAdapter implements ImageEventSenderPort {
 
     private final FileDeletedEventProducer fileDeletedEventProducer;
 

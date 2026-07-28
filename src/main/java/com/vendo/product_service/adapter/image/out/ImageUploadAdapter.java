@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ImageUploadAdapter implements ImageUploadPort {
+class ImageUploadAdapter implements ImageUploadPort {
 
     private final HttpClient httpClient;
 

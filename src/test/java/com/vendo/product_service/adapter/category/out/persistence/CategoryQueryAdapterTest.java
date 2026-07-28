@@ -1,9 +1,6 @@
-package com.vendo.product_service.adapter.category.out;
+package com.vendo.product_service.adapter.category.out.persistence;
 
 import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
-import com.vendo.product_service.adapter.category.out.persistence.CategoryQueryAdapter;
-import com.vendo.product_service.adapter.category.out.persistence.CategoryRepository;
-import com.vendo.product_service.adapter.category.out.persistence.MongoCategory;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import org.junit.jupiter.api.Test;

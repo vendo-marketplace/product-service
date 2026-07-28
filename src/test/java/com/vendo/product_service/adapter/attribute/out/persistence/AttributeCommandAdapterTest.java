@@ -1,9 +1,6 @@
-package com.vendo.product_service.adapter.attribute.out;
+package com.vendo.product_service.adapter.attribute.out.persistence;
 
 import com.vendo.product_service.adapter.attribute.out.mapper.MongoAttributeMapper;
-import com.vendo.product_service.adapter.attribute.out.persistence.AttributeCommandAdapter;
-import com.vendo.product_service.adapter.attribute.out.persistence.AttributeRepository;
-import com.vendo.product_service.adapter.attribute.out.persistence.MongoAttribute;
 import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import org.junit.jupiter.api.Test;

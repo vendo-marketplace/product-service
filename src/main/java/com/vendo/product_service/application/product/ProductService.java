@@ -8,7 +8,6 @@ import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductEventSenderPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
-import com.vendo.product_service.port.product.ProductValidationPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,13 +16,13 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ProductService implements ProductUseCase {
+class ProductService implements ProductUseCase {
 
     private final AuthUserPort authUserPort;
 
     private final CategoryQueryPort categoryQueryPort;
 
-    private final ProductValidationPort validationPort;
+    private final ProductValidationFacade productValidationFacade;
     private final ProductCommandPort productCommandPort;
     private final ProductQueryPort productQueryPort;
     private final ProductEventSenderPort eventSenderPort;
@@ -35,8 +34,8 @@ public class ProductService implements ProductUseCase {
 
     @Override
     public void save(Product request) {
-        Category category = validationPort.validateCategoryOnSave(request.getCategoryId());
-        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
+        Category category = productValidationFacade.validateCategoryOnSave(request.getCategoryId());
+        List<Attribute> attributes = productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());
 
         request.setOwnerId(authUserPort.getAuthUser().id());
         request.setActive(true);
@@ -50,10 +49,10 @@ public class ProductService implements ProductUseCase {
         request.setId(id);
 
         Product existing = productQueryPort.findById(id);
-        validationPort.validateProductOwnerOnUpdate(existing);
+        productValidationFacade.validateProductOwnerOnUpdate(existing);
 
         Category category = categoryQueryPort.findById(existing.getCategoryId());
-        List<Attribute> attributes = validationPort.validateAttributes(category.getAttributes(), request.getAttributes());
+        List<Attribute> attributes = productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());
 
         productCommandPort.update(id, request);
         eventSenderPort.sendUpdated(request, attributes);

@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryQueryService implements CategoryQueryUseCase {
+class CategoryQueryService implements CategoryQueryUseCase {
 
     private final CategoryQueryPort categoryQueryPort;
     private final AttributeQueryPort attributeQueryPort;

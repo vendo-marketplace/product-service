@@ -1,9 +1,6 @@
-package com.vendo.product_service.adapter.favorite.out;
+package com.vendo.product_service.adapter.favorite.out.persistence;
 
 import com.vendo.product_service.adapter.favorite.out.mapper.FavoriteMapper;
-import com.vendo.product_service.adapter.favorite.out.persistence.FavoriteCommandAdapter;
-import com.vendo.product_service.adapter.favorite.out.persistence.FavoriteRepository;
-import com.vendo.product_service.adapter.favorite.out.persistence.MongoFavorite;
 import com.vendo.product_service.domain.favorite.exception.FavoriteAlreadyExistsException;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import org.junit.jupiter.api.Test;

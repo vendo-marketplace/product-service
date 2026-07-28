@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class InternalProductService implements InternalProductUseCase {
+class InternalProductService implements InternalProductUseCase {
 
     private final InternalProductQueryPort internalProductQueryPort;
 

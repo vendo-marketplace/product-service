@@ -5,7 +5,7 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MongoIdGenerationAdapter implements IdGenerationPort {
+class MongoIdGenerationAdapter implements IdGenerationPort {
 
     @Override
     public String generate() {

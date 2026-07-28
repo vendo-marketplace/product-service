@@ -1,5 +1,6 @@
 package com.vendo.product_service.domain.user;
 
+import com.vendo.product_service.domain.product.exception.NotProductOwnerException;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
 import lombok.Builder;
@@ -20,6 +21,12 @@ public record User(
         return roles.stream()
                 .map(Enum::name)
                 .collect(Collectors.toSet());
+    }
+
+    public void throwIfNotOwner(String ownerId) {
+        if (!id.equals(ownerId)) {
+            throw new NotProductOwnerException("You're not product's owner.");
+        }
     }
 
 }

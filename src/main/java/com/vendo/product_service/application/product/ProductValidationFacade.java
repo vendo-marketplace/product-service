@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.product.validation.product;
+package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.application.category.validation.attribute.AttributeValidator;
 import com.vendo.product_service.domain.attribute.model.Attribute;
@@ -9,7 +9,6 @@ import com.vendo.product_service.domain.product.exception.NotProductOwnerExcepti
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
-import com.vendo.product_service.port.product.ProductValidationPort;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ProductValidationFacade implements ProductValidationPort {
+class ProductValidationFacade {
 
     private final AttributeValidator attributeValidator;
 
@@ -26,22 +25,19 @@ public class ProductValidationFacade implements ProductValidationPort {
     private final CategoryQueryPort categoryQueryPort;
     private final AuthUserPort authUserPort;
 
-    @Override
-    public List<Attribute> validateAttributes(List<String> originAttributeIds, List<AttributeValue> requestAttributes) {
+    List<Attribute> validateAttributes(List<String> originAttributeIds, List<AttributeValue> requestAttributes) {
         List<Attribute> originAttributes = attributeQueryPort.findAllByIds(originAttributeIds);
         attributeValidator.validate(originAttributes, requestAttributes);
         return originAttributes;
     }
 
-    @Override
-    public Category validateCategoryOnSave(String categoryId) {
+    Category validateCategoryOnSave(String categoryId) {
         Category category = categoryQueryPort.findById(categoryId);
         category.throwIfNotDesiredType(CategoryType.CHILD, "Category type should be child.");
         return category;
     }
 
-    @Override
-    public void validateProductOwnerOnUpdate(Product product) {
+    void validateProductOwnerOnUpdate(Product product) {
         String ownerId = product.getOwnerId();
         if (!ownerId.equals(authUserPort.getAuthUser().id())) {
             throw new NotProductOwnerException("You're not product's owner.");
