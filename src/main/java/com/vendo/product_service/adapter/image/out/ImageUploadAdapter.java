@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.image.out;
 
-import com.vendo.product_service.adapter.shared.out.http.HttpClient;
-import com.vendo.product_service.adapter.shared.out.http.exception.HttpClientException;
+import com.vendo.product_service.infrastructure.shared.http.HttpClient;
+import com.vendo.product_service.infrastructure.shared.http.exception.HttpClientException;
 import com.vendo.product_service.domain.image.exception.ImageUploadException;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.port.image.ImageUploadPort;

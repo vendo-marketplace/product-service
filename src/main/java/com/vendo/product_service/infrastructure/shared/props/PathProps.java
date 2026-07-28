@@ -1,4 +1,4 @@
-package com.vendo.product_service.infrastructure.props;
+package com.vendo.product_service.infrastructure.shared.props;
 
 import lombok.Getter;
 import lombok.Setter;

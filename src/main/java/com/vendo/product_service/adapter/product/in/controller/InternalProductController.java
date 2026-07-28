@@ -3,7 +3,7 @@ package com.vendo.product_service.adapter.product.in.controller;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.product.InternalProductUseCase;
+import com.vendo.product_service.port.product.internal.InternalProductUseCase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;

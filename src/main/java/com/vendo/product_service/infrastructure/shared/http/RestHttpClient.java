@@ -1,6 +1,6 @@
-package com.vendo.product_service.adapter.shared.out.http;
+package com.vendo.product_service.infrastructure.shared.http;
 
-import com.vendo.product_service.adapter.shared.out.http.exception.HttpClientException;
+import com.vendo.product_service.infrastructure.shared.http.exception.HttpClientException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

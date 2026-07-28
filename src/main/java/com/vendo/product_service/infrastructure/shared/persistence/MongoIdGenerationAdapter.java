@@ -1,6 +1,6 @@
-package com.vendo.product_service.adapter.shared.out.persistence;
+package com.vendo.product_service.infrastructure.shared.persistence;
 
-import com.vendo.product_service.port.id.IdGenerationPort;
+import com.vendo.product_service.port.IdGenerationPort;
 import org.bson.types.ObjectId;
 import org.springframework.stereotype.Component;
 

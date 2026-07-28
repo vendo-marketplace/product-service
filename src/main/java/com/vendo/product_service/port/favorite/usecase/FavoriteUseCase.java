@@ -1,4 +1,4 @@
-package com.vendo.product_service.port.favorite;
+package com.vendo.product_service.port.favorite.usecase;
 
 import com.vendo.product_service.domain.product.model.Product;
 

@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundExcep
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.favorite.FavoriteUseCase;
+import com.vendo.product_service.port.favorite.usecase.FavoriteUseCase;
 import com.vendo.product_service.port.favorite.FavoriteCommandPort;
 import com.vendo.product_service.port.favorite.FavoriteQueryPort;
 import com.vendo.product_service.port.product.ProductQueryPort;

@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.security.out.config;
 
 import com.vendo.product_service.adapter.security.in.filter.InternalFilter;
 import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
-import com.vendo.product_service.infrastructure.props.PathProps;
+import com.vendo.product_service.infrastructure.shared.props.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

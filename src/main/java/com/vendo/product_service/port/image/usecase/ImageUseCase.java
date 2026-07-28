@@ -1,4 +1,4 @@
-package com.vendo.product_service.port.image;
+package com.vendo.product_service.port.image.usecase;
 
 import com.vendo.product_service.domain.image.model.Image;
 

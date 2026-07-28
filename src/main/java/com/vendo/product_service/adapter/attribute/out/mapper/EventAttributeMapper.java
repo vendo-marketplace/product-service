@@ -16,7 +16,7 @@ public interface EventAttributeMapper {
         List<AttributeEvent> events = new ArrayList<>();
 
         for (AttributeValue requestAttribute : requestAttributes) {
-            Attribute attribute = Attribute.getById(requestAttribute.id(), originAttributes);
+            Attribute attribute = requestAttribute.getById(originAttributes);
             events.add(new AttributeEvent(attribute.id(), requestAttribute.values()));
         }
 

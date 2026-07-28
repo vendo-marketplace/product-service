@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.image.in.controller;
 
 import com.vendo.product_service.adapter.image.out.mapper.ImageMapper;
 import com.vendo.product_service.adapter.image.out.validator.ImageValidator;
-import com.vendo.product_service.port.image.ImageUseCase;
+import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;

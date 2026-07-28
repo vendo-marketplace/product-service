@@ -4,7 +4,7 @@ import com.vendo.product_service.application.category.model.CategoryNode;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.type.CategoryType;
-import com.vendo.product_service.port.category.CategoryQueryUseCase;
+import com.vendo.product_service.port.category.usecase.CategoryQueryUseCase;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import lombok.RequiredArgsConstructor;

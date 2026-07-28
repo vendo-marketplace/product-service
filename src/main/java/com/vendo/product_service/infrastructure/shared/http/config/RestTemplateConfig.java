@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.shared.out.http.config;
+package com.vendo.product_service.infrastructure.shared.http.config;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;

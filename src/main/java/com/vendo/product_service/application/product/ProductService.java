@@ -3,7 +3,7 @@ package com.vendo.product_service.application.product;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.product.ProductUseCase;
+import com.vendo.product_service.port.product.usecase.ProductUseCase;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductEventSenderPort;

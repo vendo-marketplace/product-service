@@ -4,7 +4,7 @@ import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
 import com.vendo.product_service.adapter.favorite.in.dto.FavoritesResponse;
 import com.vendo.product_service.adapter.favorite.out.mapper.FavoriteMapper;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.favorite.FavoriteUseCase;
+import com.vendo.product_service.port.favorite.usecase.FavoriteUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
