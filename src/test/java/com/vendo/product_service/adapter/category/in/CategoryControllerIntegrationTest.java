@@ -666,6 +666,40 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
         }
-    }
 
+        @Test
+        void tree_shouldReturnTree_whenCategoryHasNullAttributes() throws Exception {
+            String parentId = String.valueOf(UUID.randomUUID());
+
+            Category parent = CategoryDataBuilder.withAllFields().parentId(null).path(List.of(parentId)).attributes(null).build();
+
+            when(categoryQueryPort.findAll()).thenReturn(List.of(parent));
+
+            String response = performCategoryGetTree()
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            assertThat(response).isNotBlank();
+            CategoryTreeResponse treeResponse = objectMapper.readValue(response, CategoryTreeResponse.class);
+
+            assertThat(treeResponse).isNotNull();
+            assertThat(treeResponse.getData()).isNotNull();
+            assertThat(treeResponse.getData().size()).isEqualTo(1);
+
+            CategoryTreeResponse.CategoryTree tree = treeResponse.getData().get(0);
+            AssertionUtils.assertFrom(tree, parent, "children", "parentId", "attributes");
+
+            assertThat(tree.attributes()).isNotNull();
+            assertThat(tree.attributes()).isEmpty();
+            assertThat(tree.children()).isNotNull();
+            assertThat(tree.children()).isEmpty();
+            assertThat(tree.type()).isNotNull();
+            assertThat(tree.type()).isEqualTo(CategoryType.PARENT);
+
+            verify(categoryQueryPort).findAll();
+            verifyNoInteractions(attributeQueryPort);
+        }
+    }
 }

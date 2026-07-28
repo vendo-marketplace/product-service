@@ -31,6 +31,7 @@ public class Category {
 
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()
+                .filter(category -> !CollectionUtils.isEmpty(category.getAttributes()))
                 .flatMap(category -> category.getAttributes().stream())
                 .distinct()
                 .toList();

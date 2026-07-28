@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.category;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.application.category.model.CategoryNode;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
@@ -37,7 +38,9 @@ class CategoryQueryService implements CategoryQueryUseCase {
     }
 
     private Map<String, Attribute> loadAttributesById(List<Category> categories) {
-        return attributeQueryPort.findAllByIds(Category.extractAttributes(categories)).stream()
+        List<String> attributes = Category.extractAttributes(categories);
+        if (CollectionUtils.isEmpty(attributes)) return Map.of();
+        return attributeQueryPort.findAllByIds(attributes).stream()
                 .collect(Collectors.toMap(Attribute::id, Function.identity()));
     }
 
@@ -53,11 +56,7 @@ class CategoryQueryService implements CategoryQueryUseCase {
             Map<String, List<Category>> childrenByParentId
     ) {
         List<Category> children = childrenByParentId.getOrDefault(parent.getId(), List.of());
-
-        List<CategoryNode> childrenNodes = children.stream()
-                .map(category -> buildBranch(category, attributesById, childrenByParentId))
-                .toList();
-
+        List<CategoryNode> childrenNodes = children.stream().map(category -> buildBranch(category, attributesById, childrenByParentId)).toList();
         return CategoryNode.from(parent, Attribute.extractAll(parent.getAttributes(), attributesById), childrenNodes);
     }
 
