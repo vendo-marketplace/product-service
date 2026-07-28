@@ -13,10 +13,9 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class AttributeQueryAdapter implements AttributeQueryPort {
+class AttributeQueryAdapter implements AttributeQueryPort {
 
     private final MongoAttributeMapper mapper;
-
     private final AttributeRepository attributeRepository;
 
     @Override

@@ -4,7 +4,7 @@ import com.vendo.product_service.domain.favorite.exception.FavoriteNotFoundExcep
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.favorite.FavoriteUseCase;
+import com.vendo.product_service.port.favorite.usecase.FavoriteUseCase;
 import com.vendo.product_service.port.favorite.FavoriteCommandPort;
 import com.vendo.product_service.port.favorite.FavoriteQueryPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
@@ -16,35 +16,26 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class FavoriteService implements FavoriteUseCase {
+class FavoriteService implements FavoriteUseCase {
 
     private final FavoriteCommandPort favoriteCommandPort;
     private final FavoriteQueryPort favoriteQueryPort;
 
     private final ProductQueryPort productQueryPort;
+
     private final AuthUserPort authUserPort;
 
     @Override
     public void add(String productId) {
-        if (!productQueryPort.existsById(productId)) {
-            throw new ProductNotFoundException("Product not found.");
-        }
-
-        Favorite favorite = Favorite.builder()
-                .userId(authUserPort.getAuthUser().id())
-                .productId(productId)
-                .build();
+        throwIfProductNotExistsBy(productId);
+        Favorite favorite = Favorite.builder().userId(authUserPort.getAuthUser().id()).productId(productId).build();
         favoriteCommandPort.save(favorite);
     }
 
     @Override
     public void remove(String productId) {
         String userId = authUserPort.getAuthUser().id();
-
-        if (!favoriteQueryPort.existsBy(userId, productId)) {
-            throw new FavoriteNotFoundException("Favorite not found.");
-        }
-
+        throwIfFavoriteProductNotExistsBy(userId, productId);
         favoriteCommandPort.delete(userId, productId);
     }
 
@@ -55,5 +46,17 @@ public class FavoriteService implements FavoriteUseCase {
 
         List<String> productIds = favorites.stream().map(Favorite::productId).toList();
         return productQueryPort.findAllByIds(productIds);
+    }
+
+    private void throwIfProductNotExistsBy(String productId) {
+        if (!productQueryPort.existsById(productId)) {
+            throw new ProductNotFoundException("Product not found.");
+        }
+    }
+
+    private void throwIfFavoriteProductNotExistsBy(String userId, String productId) {
+        if (!favoriteQueryPort.existsBy(userId, productId)) {
+            throw new FavoriteNotFoundException("Favorite not found.");
+        }
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class AttributeCommandAdapter implements AttributeCommandPort {
+class AttributeCommandAdapter implements AttributeCommandPort {
 
     private final MongoAttributeMapper mapper;
     private final AttributeRepository repository;

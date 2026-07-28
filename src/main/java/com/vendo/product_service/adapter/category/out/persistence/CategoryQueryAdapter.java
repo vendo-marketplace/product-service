@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class CategoryQueryAdapter implements CategoryQueryPort {
+class CategoryQueryAdapter implements CategoryQueryPort {
 
     private final MongoCategoryMapper mapper;
     private final CategoryRepository repository;

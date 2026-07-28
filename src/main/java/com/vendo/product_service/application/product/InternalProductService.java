@@ -1,8 +1,8 @@
 package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.domain.product.model.Product;
-import com.vendo.product_service.port.product.InternalProductUseCase;
-import com.vendo.product_service.port.product.InternalProductQueryPort;
+import com.vendo.product_service.port.product.internal.InternalProductUseCase;
+import com.vendo.product_service.port.product.internal.InternalProductQueryPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class InternalProductService implements InternalProductUseCase {
+class InternalProductService implements InternalProductUseCase {
 
     private final InternalProductQueryPort internalProductQueryPort;
 

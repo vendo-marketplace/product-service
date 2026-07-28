@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-class ProductExceptionHandler {
+public class ProductExceptionHandler {
 
     @ExceptionHandler(ProductNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleProductNotFoundException(ProductNotFoundException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleProductNotFoundException(ProductNotFoundException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())
@@ -24,7 +24,7 @@ class ProductExceptionHandler {
     }
 
     @ExceptionHandler(NotProductOwnerException.class)
-    ResponseEntity<ExceptionResponse> handleNotProductOwnerException(NotProductOwnerException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleNotProductOwnerException(NotProductOwnerException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.FORBIDDEN.value())

@@ -17,17 +17,17 @@ import java.util.stream.Collectors;
 @Builder
 public class Category {
 
+    public static final String CATEGORY_TYPE_VALIDATION_MESSAGE = "Invalid category structure. Expected category types: " +
+            "Parent: parentId is absent, attributes are absent. " +
+            "Subcategory: parentId is present, attributes are absent. " +
+            "Child: parentId is present, attributes are present.";
+
     private String id;
     private String title;
     private String slug;
     private String parentId;
     private List<String> attributes;
     private List<String> path;
-
-    public static final String CATEGORY_TYPE_VALIDATION_MESSAGE = "Invalid category structure. Expected category types: " +
-            "Parent: parentId is absent, attributes are absent. " +
-            "Subcategory: parentId is present, attributes are absent. " +
-            "Child: parentId is present, attributes are present.";
 
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()
@@ -52,9 +52,11 @@ public class Category {
         if (isParent(parentId, attributes)) {
             return CategoryType.PARENT;
         }
+
         if (isSub(parentId, attributes)) {
             return CategoryType.SUB;
         }
+
         if (isChild(parentId, attributes)) {
             return CategoryType.CHILD;
         }

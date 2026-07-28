@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
-class FavoriteExceptionHandler {
+public class FavoriteExceptionHandler {
 
     @ExceptionHandler(FavoriteAlreadyExistsException.class)
-    ResponseEntity<ExceptionResponse> handleFavoriteAlreadyExistsException(FavoriteAlreadyExistsException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleFavoriteAlreadyExistsException(FavoriteAlreadyExistsException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.CONFLICT.value())
@@ -24,7 +24,7 @@ class FavoriteExceptionHandler {
     }
 
     @ExceptionHandler(FavoriteNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleFavoriteNotFoundException(FavoriteNotFoundException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleFavoriteNotFoundException(FavoriteNotFoundException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())

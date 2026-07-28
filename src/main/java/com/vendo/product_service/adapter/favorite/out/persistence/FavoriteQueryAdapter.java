@@ -10,7 +10,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class FavoriteQueryAdapter implements FavoriteQueryPort {
+class FavoriteQueryAdapter implements FavoriteQueryPort {
 
     private final FavoriteRepository favoriteRepository;
     private final FavoriteMapper favoriteMapper;

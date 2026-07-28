@@ -6,7 +6,7 @@ import com.vendo.product_service.domain.product.exception.ProductNotFoundExcepti
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.image.ImageUploadPort;
-import com.vendo.product_service.port.image.PresignPort;
+import com.vendo.product_service.port.image.ImagePresignPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
 import com.vendo.product_service.test_utils.builder.ProductDataBuilder;
@@ -56,7 +56,7 @@ public class ImageControllerIntegrationTest {
     @MockitoBean
     private ProductQueryPort productQueryPort;
     @MockitoBean
-    private PresignPort presignPort;
+    private ImagePresignPort imagePresignPort;
     @MockitoBean
     private ProductCommandPort productCommandPort;
     @MockitoBean
@@ -127,7 +127,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Required parameter 'productId' is not present.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -145,7 +145,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product ID is required.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -160,7 +160,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -175,7 +175,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -197,7 +197,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get("size")).isEqualTo("%s is empty.".formatted(emptyImage.getOriginalFilename()));
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -217,7 +217,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
 
-            verifyNoInteractions(productQueryPort, presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -244,7 +244,7 @@ public class ImageControllerIntegrationTest {
 
             verify(productQueryPort).findById(product.getId());
 
-            verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -265,7 +265,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(productId);
-            verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
@@ -286,14 +286,14 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(product.getId());
-            verifyNoInteractions(presignPort, productCommandPort, imageUploadPort);
+            verifyNoInteractions(imagePresignPort, productCommandPort, imageUploadPort);
         }
 
         @Test
         void upload_shouldReturnInternalError_whenImageNotFoundById_whileMappingByUrl() throws Exception {
             Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).build();
             when(productQueryPort.findById(product.getId())).thenReturn(product);
-            when(presignPort.generate(any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
+            when(imagePresignPort.generate(any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
 
             String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(validImage("photo.png")))
                     .andExpect(status().isInternalServerError())
@@ -308,7 +308,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
 
             verify(productQueryPort).findById(product.getId());
-            verify(presignPort).generate(any());
+            verify(imagePresignPort).generate(any());
             verifyNoInteractions(productCommandPort, imageUploadPort);
         }
     }

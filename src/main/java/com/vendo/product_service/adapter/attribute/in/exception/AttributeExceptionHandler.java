@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class AttributeExceptionHandler {
 
     @ExceptionHandler(AttributeNotFoundException.class)
-    ResponseEntity<ExceptionResponse> handleAttributeNotFoundException(AttributeNotFoundException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleAttributeNotFoundException(AttributeNotFoundException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.NOT_FOUND.value())
@@ -24,7 +24,7 @@ public class AttributeExceptionHandler {
     }
 
     @ExceptionHandler(AttributeAlreadyExistsException.class)
-    ResponseEntity<ExceptionResponse> handleAttributeAlreadyExistsException(AttributeAlreadyExistsException e, HttpServletRequest request) {
+    public ResponseEntity<ExceptionResponse> handleAttributeAlreadyExistsException(AttributeAlreadyExistsException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
                 .message(e.getMessage())
                 .code(HttpStatus.CONFLICT.value())

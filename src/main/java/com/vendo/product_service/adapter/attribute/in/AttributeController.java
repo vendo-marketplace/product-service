@@ -16,14 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/attributes")
 @PreAuthorize("hasAuthority('ADMIN')")
-class AttributeController {
+public class AttributeController {
 
     private final AttributeUseCase attributeUseCase;
-
     private final DtoAttributeMapper mapper;
 
     @PostMapping
-    void save(@Valid @RequestBody CreateAttributeRequest request) {
+    public void save(@Valid @RequestBody CreateAttributeRequest request) {
         Attribute attribute = mapper.toAttribute(request);
         attributeUseCase.save(attribute);
     }
