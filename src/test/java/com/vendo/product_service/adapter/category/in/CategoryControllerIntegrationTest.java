@@ -32,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -62,6 +64,8 @@ public class CategoryControllerIntegrationTest {
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+    @Autowired
+    private CacheManager cacheManager;
 
     @MockitoBean
     private CategoryCommandPort commandPort;
@@ -75,6 +79,7 @@ public class CategoryControllerIntegrationTest {
     @BeforeEach
     public void setUp() {
         SecurityContextHolder.clearContext();
+        cacheManager.getCacheNames().forEach(name -> Objects.requireNonNull(cacheManager.getCache(name)).clear());
     }
 
     private ResultActions performCategoryGet(String categoryId) throws Exception {
@@ -601,7 +606,7 @@ public class CategoryControllerIntegrationTest {
             Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
             String parentId = String.valueOf(UUID.randomUUID()), childId = String.valueOf(UUID.randomUUID());
 
-            Category parent = CategoryDataBuilder.withAllFields().parentId(null).path(List.of(parentId)).attributes(List.of()).build();
+            Category parent = CategoryDataBuilder.withAllFields().parentId(null).path(List.of(parentId)).attributes(null).build();
             Category child = CategoryDataBuilder.withAllFields()
                     .parentId(parent.getId())
                     .attributes(List.of(attribute1.id(), attribute2.id()))
@@ -648,9 +653,10 @@ public class CategoryControllerIntegrationTest {
             Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
             Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
             Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
+            List<String> attributes = Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList();
 
             when(categoryQueryPort.findAll()).thenReturn(List.of(category, category1));
-            when(attributeQueryPort.findAllByIds(Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList()))
+            when(attributeQueryPort.findAllByIds(attributes))
                     .thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attribute1.id())));
 
             String response = performCategoryGetTree()
@@ -665,6 +671,9 @@ public class CategoryControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
+
+            verify(categoryQueryPort).findAll();
+            verify(attributeQueryPort).findAllByIds(attributes);
         }
 
         @Test
