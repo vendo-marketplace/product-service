@@ -3,6 +3,7 @@ package com.vendo.product_service.application.product;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.model.Product;
+import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.product.usecase.ProductUseCase;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
@@ -49,7 +50,8 @@ class ProductService implements ProductUseCase {
         request.setId(id);
 
         Product existing = productQueryPort.findById(id);
-        productValidationFacade.validateProductOwnerOnUpdate(existing);
+        User authUser = authUserPort.getAuthUser();
+        authUser.throwIfNotOwner(existing.getOwnerId());
 
         Category category = categoryQueryPort.findById(existing.getCategoryId());
         List<Attribute> attributes = productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());

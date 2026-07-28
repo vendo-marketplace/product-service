@@ -24,7 +24,7 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
     public Exception decode(String s, Response response) {
 
         if (HttpStatus.valueOf(response.status()).is5xxServerError()) {
-            return new AwsServiceUnavailableException(ServiceName.AWS_SERVICE + " is unavailable.");
+            return new AwsServiceUnavailableException(ServiceName.AWS_SERVICE.getServiceName() + " is unavailable.");
         }
 
         if (HttpStatus.BAD_REQUEST.value() == response.status()) {
@@ -33,7 +33,7 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
 
         if (HttpStatus.CONFLICT.value() == response.status()) {
             log.error("Internal call failed with status: {}, reason: {}.", response.status(), response.reason());
-            throw new AwsInternalServerException("Conflict while calling AWS service.");
+            throw new AwsInternalServerException("Conflict while calling %s.".formatted(ServiceName.AWS_SERVICE.getServiceName()));
         }
 
         log.error(response.toString());
@@ -46,7 +46,7 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
             return new AwsBadRequestException(exceptionResponse);
         } catch (IOException e) {
             log.error(e.getMessage());
-            throw new AwsInternalServerException("Error while parsing response from AWS.");
+            throw new AwsInternalServerException("Error while parsing response from %s.".formatted(ServiceName.AWS_SERVICE.getServiceName()));
         }
     }
 }
