@@ -5,7 +5,7 @@ import com.vendo.product_service.domain.image.model.PresignImage;
 
 import java.util.List;
 
-public interface PresignPort {
+public interface ImagePresignPort {
 
     List<PresignImage> generate(List<Image> images);
 

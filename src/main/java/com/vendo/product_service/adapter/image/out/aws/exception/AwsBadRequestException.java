@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.aws.out.exception;
+package com.vendo.product_service.adapter.image.out.aws.exception;
 
 import com.vendo.security_lib.exception.ExceptionResponse;
 import lombok.Getter;

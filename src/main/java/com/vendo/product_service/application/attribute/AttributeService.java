@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AttributeService implements AttributeUseCase {
 
-    private final AttributeCommandPort commandPort;
+    private final AttributeCommandPort attributeCommandPort;
 
     @Override
     public void save(Attribute attribute) {
-        commandPort.save(attribute);
+        attributeCommandPort.save(attribute);
     }
 
 }

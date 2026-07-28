@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.aws.out.exception;
+package com.vendo.product_service.adapter.image.out.aws.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.type.ServiceName;
@@ -32,8 +32,8 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
         }
 
         if (HttpStatus.CONFLICT.value() == response.status()) {
-            log.error("Internal call failed: {}.", response.reason());
-            throw new AwsInternalServerException("Something went wrong.");
+            log.error("Internal call failed with status: {}, reason: {}.", response.status(), response.reason());
+            throw new AwsInternalServerException("Conflict while calling AWS service.");
         }
 
         log.error(response.toString());
@@ -46,7 +46,7 @@ public class AwsServiceErrorDecoder implements ErrorDecoder {
             return new AwsBadRequestException(exceptionResponse);
         } catch (IOException e) {
             log.error(e.getMessage());
-            throw new AwsInternalServerException("Something went wrong.");
+            throw new AwsInternalServerException("Error while parsing response from AWS.");
         }
     }
 }

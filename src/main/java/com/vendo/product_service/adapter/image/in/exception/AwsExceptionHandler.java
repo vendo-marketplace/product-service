@@ -1,8 +1,8 @@
-package com.vendo.product_service.adapter.aws.in.exception;
+package com.vendo.product_service.adapter.image.in.exception;
 
-import com.vendo.product_service.adapter.aws.out.exception.AwsBadRequestException;
-import com.vendo.product_service.adapter.aws.out.exception.AwsInternalServerException;
-import com.vendo.product_service.adapter.aws.out.exception.AwsServiceUnavailableException;
+import com.vendo.product_service.adapter.image.out.aws.exception.AwsBadRequestException;
+import com.vendo.product_service.adapter.image.out.aws.exception.AwsInternalServerException;
+import com.vendo.product_service.adapter.image.out.aws.exception.AwsServiceUnavailableException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;

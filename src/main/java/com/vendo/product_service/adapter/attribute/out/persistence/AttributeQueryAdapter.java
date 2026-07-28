@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 public class AttributeQueryAdapter implements AttributeQueryPort {
 
     private final MongoAttributeMapper mapper;
-
     private final AttributeRepository attributeRepository;
 
     @Override

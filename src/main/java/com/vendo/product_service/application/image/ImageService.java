@@ -12,7 +12,7 @@ import com.vendo.product_service.port.id.IdGenerationPort;
 import com.vendo.product_service.port.image.ImageEventSenderPort;
 import com.vendo.product_service.port.image.ImageUploadPort;
 import com.vendo.product_service.port.image.ImageUseCase;
-import com.vendo.product_service.port.image.PresignPort;
+import com.vendo.product_service.port.image.ImagePresignPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductEventSenderPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
@@ -36,7 +36,7 @@ class ImageService implements ImageUseCase {
     private final ProductQueryPort productQueryPort;
     private final ProductEventSenderPort productEventSenderPort;
 
-    private final PresignPort presignPort;
+    private final ImagePresignPort imagePresignPort;
     private final ImageUploadPort imageUploadPort;
     private final ImageEventSenderPort imageEventSenderPort;
 
@@ -51,7 +51,7 @@ class ImageService implements ImageUseCase {
         validateOwner(product.getOwnerId());
         validateImagesLimit(product, images);
 
-        List<PresignImage> presigns = presignPort.generate(withIds);
+        List<PresignImage> presigns = imagePresignPort.generate(withIds);
         imageUploadPort.upload(mapToImagesByUrl(withIds, presigns));
         Product updateProduct = Product.builder().id(productId).imageKeys(addAllKeys(product, getKeys(presigns))).build();
 

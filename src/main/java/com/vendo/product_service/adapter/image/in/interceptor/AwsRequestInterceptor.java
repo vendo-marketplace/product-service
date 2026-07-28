@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.aws.in.interceptor;
+package com.vendo.product_service.adapter.image.in.interceptor;
 
 import com.vendo.product_service.adapter.security.out.internal.InternalTokenGenerationPort;
 import feign.RequestInterceptor;

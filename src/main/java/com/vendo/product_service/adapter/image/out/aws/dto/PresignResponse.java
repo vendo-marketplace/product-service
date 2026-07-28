@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.aws.out.dto;
+package com.vendo.product_service.adapter.image.out.aws.dto;
 
 import com.vendo.product_service.domain.image.model.PresignImage;
 
