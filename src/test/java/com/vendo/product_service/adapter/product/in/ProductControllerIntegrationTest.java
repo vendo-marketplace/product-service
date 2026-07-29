@@ -156,7 +156,7 @@ public class ProductControllerIntegrationTest {
         ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
         assertThat(exceptionResponse).isNotNull();
         assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
         assertThat(exceptionResponse.getErrors()).isNotNull();
         assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
         assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo(validationMessage);
@@ -382,7 +382,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(2);
             assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isNotNull();
@@ -423,7 +423,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isNotNull();
@@ -647,7 +647,7 @@ public class ProductControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo("Invalid number value.");

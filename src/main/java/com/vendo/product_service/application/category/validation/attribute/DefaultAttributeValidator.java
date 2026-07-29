@@ -61,6 +61,6 @@ class DefaultAttributeValidator implements AttributeValidator {
 
     private void throwInvalidAttributes(List<ValidationBody> invalidAttributes) {
         Map<String, String> validationErrors = invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
-        throw new InvalidAttributesException("Validation failed.", validationErrors);
+        throw new InvalidAttributesException("Attributes validation failed.", validationErrors);
     }
 }

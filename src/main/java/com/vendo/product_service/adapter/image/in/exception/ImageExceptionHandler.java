@@ -31,7 +31,7 @@ public class ImageExceptionHandler {
     @ExceptionHandler(NotImageException.class)
     public ResponseEntity<ExceptionResponse> handleNotImageException(NotImageException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Validation failed.")
+                .message("Image validation failed.")
                 .errors(Map.of(ClassFields.nameOf("contentType", Image.class), e.getMessage()))
                 .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())
@@ -43,7 +43,7 @@ public class ImageExceptionHandler {
     @ExceptionHandler(EmptyImageException.class)
     public ResponseEntity<ExceptionResponse> handleEmptyImageException(EmptyImageException e, HttpServletRequest request) {
         ExceptionResponse exceptionResponse = ExceptionResponse.builder()
-                .message("Validation failed.")
+                .message("Image validation failed.")
                 .errors(Map.of(ClassFields.nameOf("size", Image.class), e.getMessage()))
                 .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())

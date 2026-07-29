@@ -191,7 +191,7 @@ public class ImageControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
             assertThat(exceptionResponse.getErrors()).isNotEmpty();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
@@ -214,7 +214,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/images");
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
