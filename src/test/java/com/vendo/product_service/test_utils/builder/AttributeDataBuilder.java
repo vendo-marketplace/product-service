@@ -11,6 +11,7 @@ public class AttributeDataBuilder {
         return Attribute.builder()
                 .id(String.valueOf(UUID.randomUUID()))
                 .title("Title")
+                .slug("title")
                 .type(AttributeType.STRING)
                 .required(false)
                 .allowedValues(null);

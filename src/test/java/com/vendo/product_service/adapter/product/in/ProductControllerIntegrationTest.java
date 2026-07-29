@@ -357,9 +357,9 @@ public class ProductControllerIntegrationTest {
         void save_shouldReturnBadRequest_whenRequiredAttributeNotPresent() throws Exception {
             String userId = "userId";
 
-            Attribute requiredStringAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").required(true).build();
-            Attribute requiredNumberAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.NUMBER).title("Number").required(true).build();
-            Attribute notRequiredEnumAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.ENUM).title("Enum").allowedValues(List.of("TYPE1")).build();
+            Attribute requiredStringAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").slug("string").required(true).build();
+            Attribute requiredNumberAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.NUMBER).title("Number").slug("number").required(true).build();
+            Attribute notRequiredEnumAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.ENUM).title("Enum").slug("enum").allowedValues(List.of("TYPE1")).build();
             List<Attribute> attributes = List.of(requiredStringAttribute, requiredNumberAttribute, notRequiredEnumAttribute);
             List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
             List<AttributeValue> attributeValues = List.of(new AttributeValue(notRequiredEnumAttribute.id(), List.of("TYPE1")));
@@ -385,10 +385,10 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(2);
-            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isNotNull();
-            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isEqualTo(requiredStringAttribute.title() + " is required.");
-            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.title())).isNotNull();
-            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.title())).isEqualTo(requiredNumberAttribute.title() + " is required.");
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isEqualTo(requiredStringAttribute.title() + " is required.");
+            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.slug())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredNumberAttribute.slug())).isEqualTo(requiredNumberAttribute.title() + " is required.");
 
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
@@ -426,8 +426,8 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isNotNull();
-            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isEqualTo(requiredStringAttribute.title() + " is required.");
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.slug())).isEqualTo(requiredStringAttribute.title() + " is required.");
 
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 

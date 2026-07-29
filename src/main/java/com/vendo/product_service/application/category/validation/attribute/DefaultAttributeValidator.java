@@ -42,7 +42,7 @@ class DefaultAttributeValidator implements AttributeValidator {
         AttributeValidatorStrategy validationStrategy = attributeValidationFactory.getValidator(originAttribute.type());
 
         if (required && empty) {
-            return ValidationBody.from(originAttribute.title(), "%s is required.".formatted(originAttribute.title()));
+            return ValidationBody.from(originAttribute.slug(), "%s is required.".formatted(originAttribute.title()));
         } else if (!required && empty) {
             return ValidationBody.builder().valid(true).build();
         }
