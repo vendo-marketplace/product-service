@@ -176,7 +176,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().build();
             AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
-            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of(attributeValue)).build();
 
             Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
             Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
@@ -349,7 +349,8 @@ public class ProductControllerIntegrationTest {
 
             Product captorValue = argumentCaptor.getValue();
             assertThat(captorValue.getOwnerId()).isEqualTo(userId);
-            assertThat(captorValue.getActive()).isEqualTo(true);
+            assertThat(captorValue.getIsNew()).isTrue();
+            assertThat(captorValue.getActive()).isTrue();
         }
 
         @Test
@@ -405,6 +406,7 @@ public class ProductControllerIntegrationTest {
                     .price(null)
                     .categoryId(null)
                     .attributes(null)
+                    .isNew(null)
                     .build();
 
             String content = performProductPersist(request)
@@ -417,7 +419,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(5);
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
