@@ -1,13 +1,13 @@
 package com.vendo.product_service.application.category.validation.attribute;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.application.category.validation.attribute.strategy.AttributeValidatorStrategy;
 import com.vendo.product_service.application.category.validation.dto.ValidationBody;
+import com.vendo.product_service.domain.attribute.exception.InvalidAttributesException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
-import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -51,14 +51,16 @@ class DefaultAttributeValidator implements AttributeValidator {
     }
 
     private AttributeValue getRequestAttributeById(String originAttributeId, List<AttributeValue> requestAttributes) {
+        AttributeValue emptyAttribute = new AttributeValue(originAttributeId, List.of());
+        if (CollectionUtils.isEmpty(requestAttributes)) return emptyAttribute;
         return requestAttributes.stream()
                 .filter(requestAttribute -> requestAttribute.id().equals(originAttributeId))
                 .findAny()
-                .orElse(new AttributeValue(originAttributeId, List.of()));
+                .orElse(emptyAttribute);
     }
 
     private void throwInvalidAttributes(List<ValidationBody> invalidAttributes) {
         Map<String, String> validationErrors = invalidAttributes.stream().collect(Collectors.toMap(ValidationBody::fieldName, ValidationBody::errorMessage));
-        throw new CategoryValidationException("Validation failed.", validationErrors);
+        throw new InvalidAttributesException("Validation failed.", validationErrors);
     }
 }

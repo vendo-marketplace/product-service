@@ -399,13 +399,79 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
+        void save_shouldReturnBadRequest_whenAttributesParameterNotPresent_andOneCategoryAttributeIsRequired() throws Exception {
+            String userId = "userId";
+
+            Attribute requiredStringAttribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").required(true).build();
+            List<Attribute> attributes = List.of(requiredStringAttribute);
+            List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
+
+            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .build();
+
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(attributeIds)).thenReturn(attributes);
+
+            String content = performProductPersist(userId, request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse).isNotNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isNotNull();
+            assertThat(exceptionResponse.getErrors().get(requiredStringAttribute.title())).isEqualTo(requiredStringAttribute.title() + " is required.");
+
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products");
+
+            verify(categoryQueryPort).findById(request.categoryId());
+            verify(attributeQueryPort).findAllByIds(attributeIds);
+
+            verifyNoInteractions(productCommandPort, productEventSenderPort);
+        }
+
+        @Test
+        void save_shouldSaveProduct_whenAttributesParameterNotPresent_andNoRequiredAttributes() throws Exception {
+            String userId = "userId";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().type(AttributeType.STRING).title("String").build();
+            List<Attribute> attributes = List.of(attribute);
+            List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
+            ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
+
+            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                    .categoryId(category.getId())
+                    .build();
+
+            when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(attributeIds)).thenReturn(attributes);
+
+            performProductPersist(userId, request).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+            verify(productEventSenderPort).sendCreated(any(), eq(List.of(attribute)));
+            verify(productCommandPort).save(argumentCaptor.capture());
+
+            Product captorValue = argumentCaptor.getValue();
+            assertThat(captorValue.getOwnerId()).isEqualTo(userId);
+        }
+
+        @Test
         void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .title(null)
                     .description(null)
                     .price(null)
                     .categoryId(null)
-                    .attributes(null)
                     .isNew(null)
                     .build();
 
@@ -419,7 +485,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(6);
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(5);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);

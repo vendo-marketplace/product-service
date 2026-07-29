@@ -33,6 +33,5 @@ public record CreateProductRequest(
         @NotNull(message = "Id is required.")
         String categoryId,
 
-        @NotEmpty(message = "Attributes are required.")
         List<AttributeValue> attributes) {
 }
