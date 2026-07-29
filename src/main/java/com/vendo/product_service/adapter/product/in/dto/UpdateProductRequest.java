@@ -22,6 +22,8 @@ public record UpdateProductRequest(
 
         Integer quantity,
 
+        Boolean isNew,
+
         @DecimalMin(value = "0", inclusive = false, message = "Price must be greater or equal to 0.")
         @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after.")
         BigDecimal price,
