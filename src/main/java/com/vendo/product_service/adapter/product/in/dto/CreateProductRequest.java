@@ -22,6 +22,9 @@ public record CreateProductRequest(
         @Min(value = 1, message = "Minimal quantity is one.")
         int quantity,
 
+        @NotNull(message = "Is new flag is required.")
+        Boolean isNew,
+
         @NotNull(message = "Price is required.")
         @DecimalMin(value = "0", inclusive = false, message = "Price must be greater or equal to 0.")
         @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after.")
@@ -30,6 +33,5 @@ public record CreateProductRequest(
         @NotNull(message = "Id is required.")
         String categoryId,
 
-        @NotEmpty(message = "Attributes are required.")
         List<AttributeValue> attributes) {
 }

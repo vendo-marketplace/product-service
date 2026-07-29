@@ -15,6 +15,7 @@ public record ProductDataBuilder() {
                 .title("Title")
                 .description("description")
                 .quantity(1)
+                .isNew(true)
                 .price(BigDecimal.ONE)
                 .ownerId("owner_id")
                 .categoryId("category_id")

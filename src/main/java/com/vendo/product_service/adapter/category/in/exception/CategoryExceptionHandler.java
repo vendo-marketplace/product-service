@@ -39,7 +39,6 @@ public class CategoryExceptionHandler {
                 .message(e.getMessage())
                 .code(HttpStatus.BAD_REQUEST.value())
                 .path(request.getRequestURI())
-                .errors(e.getErrors())
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);

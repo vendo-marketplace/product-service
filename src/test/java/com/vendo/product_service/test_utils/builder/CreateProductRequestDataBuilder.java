@@ -14,6 +14,7 @@ public record CreateProductRequestDataBuilder() {
                 .title("Title")
                 .description("description")
                 .price(BigDecimal.ONE)
+                .isNew(true)
                 .categoryId("category_id")
                 .quantity(1)
                 .attributes(List.of(new AttributeValue("attribute_id", List.of("attribute_value"))));

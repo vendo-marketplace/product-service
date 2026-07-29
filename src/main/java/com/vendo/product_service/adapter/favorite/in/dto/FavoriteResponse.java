@@ -7,5 +7,6 @@ public record FavoriteResponse(
         String title,
         BigDecimal price,
         Integer quantity,
+        Boolean isNew,
         Boolean active
 ) {}

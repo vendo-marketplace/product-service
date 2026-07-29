@@ -20,6 +20,7 @@ public class Product {
     private String title;
     private String description;
     private Integer quantity;
+    private Boolean isNew;
     private BigDecimal price;
     private String ownerId;
     private String categoryId;

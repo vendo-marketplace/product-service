@@ -14,6 +14,7 @@ public record ProductResponse (
         String title,
         String description,
         int quantity,
+        Boolean isNew,
         BigDecimal price,
         String ownerId,
         String categoryId,

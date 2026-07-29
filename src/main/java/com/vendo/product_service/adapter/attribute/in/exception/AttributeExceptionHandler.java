@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.attribute.in.exception;
 
 import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
+import com.vendo.product_service.domain.attribute.exception.InvalidAttributesException;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,18 @@ public class AttributeExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exceptionResponse);
+    }
+
+    @ExceptionHandler(InvalidAttributesException.class)
+    public ResponseEntity<ExceptionResponse> handleInvalidAttributesException(InvalidAttributesException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .errors(e.getErrors())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
 

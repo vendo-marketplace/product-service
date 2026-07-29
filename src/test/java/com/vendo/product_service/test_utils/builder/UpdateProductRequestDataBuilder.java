@@ -14,6 +14,7 @@ public class UpdateProductRequestDataBuilder {
                 .title("Title")
                 .description("Description")
                 .quantity(1)
+                .isNew(true)
                 .price(BigDecimal.TEN)
                 .categoryId(String.valueOf(UUID.randomUUID()))
                 .attributes(List.of(new AttributeValue("attribute_id", List.of("attribute_value"))))
