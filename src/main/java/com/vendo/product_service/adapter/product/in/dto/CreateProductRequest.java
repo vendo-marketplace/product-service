@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.product.in.dto;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
@@ -25,12 +26,16 @@ public record CreateProductRequest(
         @NotNull(message = "Is new flag is required.")
         Boolean isNew,
 
+        @Valid
+        @NotNull(message = "Address is required.")
+        AddressRequest address,
+
         @NotNull(message = "Price is required.")
         @DecimalMin(value = "0", inclusive = false, message = "Price must be greater or equal to 0.")
         @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after.")
         BigDecimal price,
 
-        @NotNull(message = "Id is required.")
+        @NotBlank(message = "Id is required.")
         String categoryId,
 
         List<AttributeValue> attributes) {

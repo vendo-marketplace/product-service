@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.product.out.persistence;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
+import com.vendo.product_service.domain.product.model.nested.Address;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -20,16 +21,21 @@ public class MongoProduct {
 
     @Id
     private String id;
+
     private String title;
     private String description;
     private Integer quantity;
-    private Boolean isNew;
+
     private BigDecimal price;
-    private String ownerId;
-    private String categoryId;
     private List<AttributeValue> attributes;
     private List<String> imageKeys;
+    private Address address;
+
+    private String ownerId;
+    private String categoryId;
+
     private Boolean active;
+    private Boolean isNew;
 
     @Version
     private long version;
