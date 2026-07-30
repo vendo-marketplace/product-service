@@ -4,6 +4,7 @@ import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.image.exception.ImageKeyNotFoundException;
+import com.vendo.product_service.domain.product.nested.Address;
 import lombok.Builder;
 import lombok.Data;
 
@@ -17,16 +18,22 @@ import java.util.List;
 public class Product {
 
     private String id;
+
     private String title;
     private String description;
     private Integer quantity;
-    private Boolean isNew;
     private BigDecimal price;
+    private Address address;
+
     private String ownerId;
     private String categoryId;
+
+    private Boolean isNew;
+    private Boolean active;
+
     private List<AttributeValue> attributes;
     private List<String> imageKeys;
-    private Boolean active;
+
     private Instant createdAt;
 
     public List<String> mergeImageKeys(List<String> newImageKeys) {

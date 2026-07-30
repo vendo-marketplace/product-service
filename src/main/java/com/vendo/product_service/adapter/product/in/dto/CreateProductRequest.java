@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.product.in.dto;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
 
@@ -24,6 +25,10 @@ public record CreateProductRequest(
 
         @NotNull(message = "Is new flag is required.")
         Boolean isNew,
+
+        @Valid
+        @NotNull(message = "Address is required.")
+        RequestAddress address,
 
         @NotNull(message = "Price is required.")
         @DecimalMin(value = "0", inclusive = false, message = "Price must be greater or equal to 0.")

@@ -141,7 +141,6 @@ public class CreateAttributeRequestTest {
 
     }
 
-
     private void passAttributeValidation(CreateAttributeRequest request) {
         Validator validator = validatorFactory.getValidator();
         Set<ConstraintViolation<CreateAttributeRequest>> constraints = validator.validate(request);
