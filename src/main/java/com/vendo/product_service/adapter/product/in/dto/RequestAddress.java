@@ -4,11 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 public record RequestAddress(
-        @NotBlank(message = "City is required.")
+        @NotNull(message = "City is required.")
         @Size(min = 2, max = 100, message = "City should have from 2 to 100 characters.")
         String city,
 
-        @NotBlank(message = "Region is required.")
+        @NotNull(message = "Region is required.")
         @Size(min = 2, max = 100, message = "Region should have from 2 to 100 characters.")
         String region,
 

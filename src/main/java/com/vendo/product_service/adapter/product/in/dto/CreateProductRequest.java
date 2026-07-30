@@ -35,7 +35,7 @@ public record CreateProductRequest(
         @Digits(integer = 8, fraction = 2, message = "Price must have up to 8 digits before the decimal point and 2 after.")
         BigDecimal price,
 
-        @NotNull(message = "Id is required.")
+        @NotBlank(message = "Id is required.")
         String categoryId,
 
         List<AttributeValue> attributes) {

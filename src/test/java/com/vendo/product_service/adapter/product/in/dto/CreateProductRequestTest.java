@@ -9,11 +9,15 @@ import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -167,11 +171,142 @@ public class CreateProductRequestTest {
     @Nested
     class AddressTests {
 
+        static Stream<Arguments> inValidAddresses() {
+            return Stream.of(
+                    Arguments.of(
+                    null, "Address is required."),
+                    Arguments.of(
+                        new RequestAddress(
+                                "",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(49.8397, 24.0297)
+                        ), "City should have from 2 to 100 characters."
+                    ),
+                    Arguments.of(
+                            new RequestAddress(
+                                    "a",
+                                    "Lviv region",
+                                    new RequestAddress.RequestLocation(49.8397, 24.0297)
+                            ), "City should have from 2 to 100 characters."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Region is required.",
+                                new RequestAddress.RequestLocation(49.8397, 24.0297)
+                        ), "Region should have from 2 to 100 characters."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "ab",
+                                new RequestAddress.RequestLocation(49.8397, 24.0297)
+                        ), "Region should have from 2 to 100 characters."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                null
+                        ), "Location is required."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(null, 24.0297)
+                        ), "Latitude is required."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(-91D, 24.0297)
+                        ), "Minimal latitude should be -90."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(91D, 24.0297)
+                        ), "Maximum latitude should be 90."
+                    ),
+                    Arguments.of(
+                            new RequestAddress(
+                                    "Lviv",
+                                    "Lviv region",
+                                    new RequestAddress.RequestLocation(49.8397, null)
+                            ), "Longitude is required."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(49.8397, -181D)
+                        ), "Minimal longitude should be -180."
+                    ),
+                    Arguments.of(
+                        new RequestAddress(
+                                "Lviv",
+                                "Lviv region",
+                                new RequestAddress.RequestLocation(49.8397, 181D)
+                        ), "Maximum longitude should be 180."
+                    )
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("inValidAddresses")
+        void address_shouldFailValidation(RequestAddress address, String message) {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().address(address).build();
+            failValidation(request, Set.of(message));
+        }
     }
 
     @Nested
     class DetailsTests {
 
+        @Test
+        void quantity_shouldFailValidation_whenQuantityIsLessThanOne() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().quantity(0).build();
+            failValidation(request, Set.of("Minimal quantity is one."));
+        }
+
+        @Test
+        void isNew_shouldFailValidation_whenIsNewNotPresent() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().isNew(null).build();
+            failValidation(request, Set.of("Is new flag is required."));
+        }
+
+        @Test
+        void price_shouldFailValidation_whenPriceIsNull() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().price(null).build();
+            failValidation(request, Set.of("Price is required."));
+        }
+
+        @Test
+        void price_shouldFailValidation_whenPriceIsNegative() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().price(BigDecimal.valueOf(-1)).build();
+            failValidation(request, Set.of("Price must be greater or equal to 0."));
+        }
+
+        @Test
+        void price_shouldFailValidation_whenPriceFractionIsMoreThanTwo() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().price(BigDecimal.valueOf(100.234)).build();
+            failValidation(request, Set.of("Price must have up to 8 digits before the decimal point and 2 after."));
+        }
+
+        @Test
+        void category_shouldFailValidation_whenCategoryNotPresent() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(null).build();
+            failValidation(request, Set.of("Id is required."));
+        }
+
+        @Test
+        void category_shouldFailValidation_whenCategoryIsBlank() {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId("").build();
+            failValidation(request, Set.of("Id is required."));
+        }
     }
 
     private void passValidation(CreateProductRequest request) {
@@ -183,6 +318,7 @@ public class CreateProductRequestTest {
 
     private void failValidation(CreateProductRequest request, Set<String> validationMessages) {
         Validator validator = validatorFactory.getValidator();
+
         Set<ConstraintViolation<CreateProductRequest>> constraints = validator.validate(request);
         Set<String> constraintMessages = constraints.stream().map(ConstraintViolation::getMessage).collect(Collectors.toSet());
 
