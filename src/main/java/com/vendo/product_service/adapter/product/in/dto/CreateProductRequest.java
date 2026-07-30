@@ -28,7 +28,7 @@ public record CreateProductRequest(
 
         @Valid
         @NotNull(message = "Address is required.")
-        RequestAddress address,
+        AddressRequest address,
 
         @NotNull(message = "Price is required.")
         @DecimalMin(value = "0", inclusive = false, message = "Price must be greater or equal to 0.")
