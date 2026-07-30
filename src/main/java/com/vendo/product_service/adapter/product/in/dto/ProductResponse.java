@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
-import com.vendo.product_service.domain.product.nested.Address;
+import com.vendo.product_service.domain.product.model.nested.Address;
 import lombok.Builder;
 
 import java.math.BigDecimal;

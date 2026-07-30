@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.favorite.in.dto;
 
-import com.vendo.product_service.domain.product.nested.Address;
+import com.vendo.product_service.domain.product.model.nested.Address;
 
 import java.math.BigDecimal;
 

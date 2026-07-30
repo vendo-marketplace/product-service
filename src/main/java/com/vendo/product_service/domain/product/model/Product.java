@@ -4,7 +4,7 @@ import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.image.exception.ImageKeyNotFoundException;
-import com.vendo.product_service.domain.product.nested.Address;
+import com.vendo.product_service.domain.product.model.nested.Address;
 import lombok.Builder;
 import lombok.Data;
 
