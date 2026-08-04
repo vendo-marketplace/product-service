@@ -1,4 +1,4 @@
-package com.vendo.product_service.application.image;
+package com.vendo.product_service.application.product;
 
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
@@ -9,11 +9,11 @@ import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.IdGenerationPort;
 import com.vendo.product_service.port.image.ImageEventSenderPort;
 import com.vendo.product_service.port.image.ImageUploadPort;
-import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import com.vendo.product_service.port.image.ImagePresignPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductEventSenderPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
+import com.vendo.product_service.port.product.usecase.ProductImageUseCase;
 import com.vendo.product_service.port.user.AuthUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-class ImageService implements ImageUseCase {
+class ProductImageService implements ProductImageUseCase {
 
     private final int imagesMaxLimit;
 

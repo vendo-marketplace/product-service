@@ -1,4 +1,4 @@
-package com.vendo.product_service.adapter.image.adapter.in.controller;
+package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.product_service.domain.image.model.PresignImage;
@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class ImageControllerIntegrationTest {
+public class ProductImageControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -68,8 +68,8 @@ public class ImageControllerIntegrationTest {
         return new User(id, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
     }
 
-    private ResultActions performUpload(String userId, String productId, List<MultipartFile> files) throws Exception {
-        MockMultipartHttpServletRequestBuilder request = multipart("/images?productId=" + productId);
+    private ResultActions performUpload(String userId, String id, List<MultipartFile> files) throws Exception {
+        MockMultipartHttpServletRequestBuilder request = multipart("/products/images?id=" + id);
         request.with(authentication(SecurityContextService.initializeAuth(buildUser(userId))));
 
         for (MultipartFile file : files) {
@@ -84,8 +84,8 @@ public class ImageControllerIntegrationTest {
         return mockMvc.perform(request);
     }
 
-    private ResultActions performDelete(String userId, String productId, String imageKey) throws Exception {
-        MockMultipartHttpServletRequestBuilder request = multipart(HttpMethod.DELETE, "/images?productId={productId}&imageKey={imageKey}", productId, imageKey);
+    private ResultActions performDelete(String userId, String id, String imageKey) throws Exception {
+        MockMultipartHttpServletRequestBuilder request = multipart(HttpMethod.DELETE, "/products/images?id={id}&imageKey={imageKey}", id, imageKey);
         request.with(authentication(SecurityContextService.initializeAuth(buildUser(userId))));
         return mockMvc.perform(request);
     }
@@ -93,7 +93,7 @@ public class ImageControllerIntegrationTest {
     private ResultActions performUploadWithoutProductId(String userId, List<MultipartFile> files) throws Exception {
         User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
 
-        MockMultipartHttpServletRequestBuilder request = multipart("/images");
+        MockMultipartHttpServletRequestBuilder request = multipart("/products/images");
         request.with(authentication(SecurityContextService.initializeAuth(user)));
 
         for (MultipartFile file : files) {
@@ -124,8 +124,8 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-            assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Required parameter 'productId' is not present.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getErrors()).containsEntry("id", "Required parameter 'id' is not present.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -142,8 +142,8 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-            assertThat(exceptionResponse.getErrors()).containsEntry("productId", "Product ID is required.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getErrors()).containsEntry("id", "Id is required.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -158,7 +158,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -173,7 +173,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("images", "Required part 'images' is not present.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -192,7 +192,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
             assertThat(exceptionResponse.getErrors()).isNotEmpty();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get("size")).isEqualTo("%s is empty.".formatted(emptyImage.getOriginalFilename()));
@@ -213,7 +213,7 @@ public class ImageControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
             assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
             assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
 
@@ -238,7 +238,7 @@ public class ImageControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("The maximum number of images is 10.");
 
@@ -262,7 +262,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(productId);
             verifyNoInteractions(imagePresignPort, productCommandPort, imageUploadPort);
@@ -283,7 +283,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(imagePresignPort, productCommandPort, imageUploadPort);
@@ -305,7 +305,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getMessage()).isEqualTo("Internal server error.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
             verify(imagePresignPort).generate(any());
@@ -353,7 +353,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getMessage()).isEqualTo("Product not found.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(productCommandPort);
@@ -375,7 +375,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("You're not product's owner.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
             verifyNoInteractions(productCommandPort);
@@ -397,7 +397,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("%s does not exist in product.".formatted(imageKey));
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
 
@@ -419,9 +419,9 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("productId")).isEqualTo("Product ID is required.");
+            assertThat(exceptionResponse.getErrors().get("id")).isEqualTo("Id is required.");
 
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verifyNoInteractions(productCommandPort, productQueryPort);
         }
@@ -440,7 +440,7 @@ public class ImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/images");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getErrors().get("imageKey")).isEqualTo("Image key is required.");
