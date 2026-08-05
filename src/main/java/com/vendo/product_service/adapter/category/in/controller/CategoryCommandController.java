@@ -4,7 +4,7 @@ import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.adapter.image.out.mapper.ImageMapper;
-import com.vendo.product_service.infrastructure.shared.validator.ImageValidator;
+import com.vendo.product_service.infrastructure.shared.annotation.ImageFile;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,9 @@ public class CategoryCommandController {
 
     @PutMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
-    void uploadImage(@RequestParam String id, @RequestParam MultipartFile image) {
-        ImageValidator.validate(image);
+    void uploadImage(
+            @RequestParam String id,
+            @Valid @ImageFile @RequestParam MultipartFile image) {
         categoryUseCase.uploadImage(id, ImageMapper.toImage(image));
     }
 

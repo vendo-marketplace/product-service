@@ -22,6 +22,8 @@ kafka:
       deleted-event:
         topic: "FILE_DELETED_TEST_TOPIC"
 
+aws:
+  base-url: base-url
 
 endpoints:
   unauthenticated:

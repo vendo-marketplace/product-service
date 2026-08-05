@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class ProductImageControllerIntegrationTest {
+public class ProductImageFileControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -108,16 +108,16 @@ public class ProductImageControllerIntegrationTest {
         return mockMvc.perform(request);
     }
 
-    private MockMultipartFile validImage(String filename) {
-        return new MockMultipartFile("images", filename, "image/png", new byte[]{1, 2, 3});
+    private MockMultipartFile validImage() {
+        return new MockMultipartFile("images", "photo.png", "image/png", new byte[]{1, 2, 3});
     }
 
     @Nested
-    class UploadImageTests {
+    class UploadImageFileTests {
 
         @Test
         void upload_shouldReturnBadRequest_whenProductIdParameterIsMissing() throws Exception {
-            String content = performUploadWithoutProductId(DEFAULT_USER_ID, List.of(validImage("photo.png")))
+            String content = performUploadWithoutProductId(DEFAULT_USER_ID, List.of(validImage()))
                     .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
@@ -132,7 +132,7 @@ public class ProductImageControllerIntegrationTest {
 
         @Test
         void upload_shouldReturnBadRequest_whenProductIdParameterIsBlank() throws Exception {
-            String content = performUpload(DEFAULT_USER_ID, "", List.of(validImage("photo.png")))
+            String content = performUpload(DEFAULT_USER_ID, "", List.of(validImage()))
                     .andExpect(status().isBadRequest())
                     .andReturn()
                     .getResponse()
@@ -191,11 +191,11 @@ public class ProductImageControllerIntegrationTest {
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
             assertThat(exceptionResponse.getErrors()).isNotEmpty();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get("size")).isEqualTo("%s is empty.".formatted(emptyImage.getOriginalFilename()));
+            assertThat(exceptionResponse.getErrors().get("images")).isEqualTo("File is not image or empty.");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -214,8 +214,8 @@ public class ProductImageControllerIntegrationTest {
             assertThat(exceptionResponse).isNotNull();
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Image validation failed.");
-            assertThat(exceptionResponse.getErrors()).containsEntry("contentType", "document.txt has invalid image content type text/plain.");
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).containsEntry("images", "File is not image or empty.");
 
             verifyNoInteractions(productQueryPort, imagePresignPort, productCommandPort, imageUploadPort);
         }
@@ -252,7 +252,7 @@ public class ProductImageControllerIntegrationTest {
             String productId = "product_id";
             when(productQueryPort.findById(productId)).thenThrow(new ProductNotFoundException("Product not found."));
 
-            String content = performUpload(DEFAULT_USER_ID, productId, List.of(validImage("photo.png")))
+            String content = performUpload(DEFAULT_USER_ID, productId, List.of(validImage()))
                     .andExpect(status().isNotFound())
                     .andReturn()
                     .getResponse()
@@ -273,7 +273,7 @@ public class ProductImageControllerIntegrationTest {
             Product product = ProductDataBuilder.withAllFields().ownerId("owner_id").build();
             when(productQueryPort.findById(product.getId())).thenReturn(product);
 
-            String content = performUpload("not_owner_id", product.getId(), List.of(validImage("photo.png")))
+            String content = performUpload("not_owner_id", product.getId(), List.of(validImage()))
                     .andExpect(status().isForbidden())
                     .andReturn()
                     .getResponse()
@@ -295,7 +295,7 @@ public class ProductImageControllerIntegrationTest {
             when(productQueryPort.findById(product.getId())).thenReturn(product);
             when(imagePresignPort.generate(any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
 
-            String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(validImage("photo.png")))
+            String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(validImage()))
                     .andExpect(status().isInternalServerError())
                     .andReturn()
                     .getResponse()
@@ -314,7 +314,7 @@ public class ProductImageControllerIntegrationTest {
     }
 
     @Nested
-    class DeleteImageTests {
+    class DeleteImageFileTests {
 
         @Test
         void delete_shouldDeleteImageFromProduct() throws Exception {
