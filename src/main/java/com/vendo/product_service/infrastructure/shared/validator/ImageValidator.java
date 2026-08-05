@@ -18,7 +18,7 @@ public final class ImageValidator {
         files.forEach(ImageValidator::validate);
     }
 
-    private static void validate(MultipartFile file) {
+    public static void validate(MultipartFile file) {
         throwIfEmpty(file);
         throwIfNotImage(file);
     }

@@ -23,6 +23,9 @@ public class MongoCategory {
 
     private String title;
     private String parentId;
+    private String iconKey;
+    private String previewKey;
+
     private List<String> attributes;
     private List<String> path;
 

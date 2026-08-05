@@ -5,6 +5,7 @@ import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.type.CategoryImageType;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,18 @@ class CategoryCommandAdapter implements CategoryCommandPort {
     public void update(String id, Category category) {
         MongoCategory entity = findOrThrow(id);
         mapper.updateEntity(entity, category);
+        repository.save(entity);
+    }
+
+    @Override
+    public void removeImage(String id, CategoryImageType type) {
+        MongoCategory entity = findOrThrow(id);
+
+        switch (type) {
+            case ICON -> entity.setIconKey(null);
+            case PREVIEW -> entity.setPreviewKey(null);
+        }
+
         repository.save(entity);
     }
 
