@@ -1,7 +1,6 @@
 package com.vendo.product_service.port.category.usecase;
 
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.type.CategoryImageType;
 import com.vendo.product_service.domain.image.model.Image;
 
 public interface CategoryCommandUseCase {
@@ -10,7 +9,7 @@ public interface CategoryCommandUseCase {
 
     void update(String id, Category category);
 
-    void uploadImage(String id, CategoryImageType type, Image image);
-    void removeImage(String id, CategoryImageType type);
+    void uploadImage(String id, Image image);
+    void removeImage(String id);
 
 }

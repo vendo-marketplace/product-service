@@ -8,6 +8,4 @@ public interface ImageUseCase {
 
     List<String> upload(List<Image> images);
 
-    String upload(Image image);
-
 }

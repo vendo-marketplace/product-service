@@ -1,6 +1,5 @@
 package com.vendo.product_service.application.image;
 
-import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
 import com.vendo.product_service.port.IdGenerationPort;
@@ -31,17 +30,6 @@ class ImageService implements ImageUseCase {
         imageUploadPort.upload(toImagesByUrl(withIds, presigns));
 
         return PresignImage.getKeys(presigns);
-    }
-
-    @Override
-    public String upload(Image image) {
-        List<String> presignImages = upload(List.of(image));
-
-        if (CollectionUtils.isEmpty(presignImages) || presignImages.size() != 1) {
-            throw new IllegalStateException("Unable to upload image.");
-        }
-
-        return presignImages.get(0);
     }
 
     private List<Image> withIds(List<Image> images) {

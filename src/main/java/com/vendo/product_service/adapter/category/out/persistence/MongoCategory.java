@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
+import com.vendo.product_service.domain.category.model.ImageBody;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
@@ -23,8 +24,7 @@ public class MongoCategory {
 
     private String title;
     private String parentId;
-    private String iconKey;
-    private String previewKey;
+    private ImageBody image;
 
     private List<String> attributes;
     private List<String> path;

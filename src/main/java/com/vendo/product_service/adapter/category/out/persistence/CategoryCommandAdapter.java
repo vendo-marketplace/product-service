@@ -1,12 +1,9 @@
 package com.vendo.product_service.adapter.category.out.persistence;
 
 import com.vendo.product_service.adapter.category.out.mapper.MongoCategoryMapper;
-import com.vendo.product_service.adapter.product.out.persistence.MongoProduct;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.type.CategoryImageType;
-import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
@@ -36,14 +33,9 @@ class CategoryCommandAdapter implements CategoryCommandPort {
     }
 
     @Override
-    public void removeImage(String id, CategoryImageType type) {
+    public void removeImage(String id) {
         MongoCategory entity = findOrThrow(id);
-
-        switch (type) {
-            case ICON -> entity.setIconKey(null);
-            case PREVIEW -> entity.setPreviewKey(null);
-        }
-
+        entity.setImage(null);
         repository.save(entity);
     }
 

@@ -1,19 +1,17 @@
 package com.vendo.product_service.application.category;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.type.CategoryImageType;
+import com.vendo.product_service.domain.category.model.ImageBody;
 import com.vendo.product_service.domain.image.model.Image;
-import com.vendo.product_service.domain.image.model.PresignImage;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import com.vendo.product_service.port.category.TypeValidationPort;
 import com.vendo.product_service.port.IdGenerationPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.image.ImageEventSenderPort;
-import com.vendo.product_service.port.image.ImagePresignPort;
-import com.vendo.product_service.port.image.ImageUploadPort;
 import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -32,6 +30,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
 
+    private final String baseUrl;
     private final ImageEventSenderPort imageEventSenderPort;
     private final ImageUseCase imageUseCase;
 
@@ -58,27 +57,37 @@ class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     @Override
-    public void uploadImage(String id, CategoryImageType type, Image image) {
+    public void uploadImage(String id, Image image) {
         Category category = categoryQueryPort.findById(id);
-        String key = imageUseCase.upload(image);
+        String key = upload(image);
 
+        Category updateCategory = Category.builder().image(new ImageBody(key, baseUrl.concat(key))).build();
+        categoryCommandPort.update(id, updateCategory);
 
+        remove(category.getImage());
     }
 
     @Override
-    public void removeImage(String id, CategoryImageType type) {
+    public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
-        sendImageDeletionEvent(type, category);
-        categoryCommandPort.removeImage(id, type);
+        imageEventSenderPort.delete(category.getImage().key());
+        categoryCommandPort.removeImage(id);
     }
 
-    private void sendImageDeletionEvent(CategoryImageType type, Category category) {
-        if (type == CategoryImageType.ICON) {
-            imageEventSenderPort.delete(category.getIcon().key());
-            return;
+    private String upload(Image image) {
+        List<String> keys = imageUseCase.upload(List.of(image));
+
+        if (CollectionUtils.isEmpty(keys)) {
+            throw new IllegalStateException("Unable to upload image.");
         }
 
-        imageEventSenderPort.delete(category.getPreview().key());
+        return keys.get(0);
+    }
+
+    private void remove(ImageBody image) {
+        if (image != null) {
+            imageEventSenderPort.delete(image.key());
+        }
     }
 
     private void updatePathIfPresent(Category category) {

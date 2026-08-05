@@ -27,13 +27,10 @@ public class Category {
     private String slug;
     private String parentId;
 
-    private ImageBody icon;
-    private ImageBody preview;
+    private ImageBody image;
 
     private List<String> attributes;
     private List<String> path;
-
-    public record ImageBody(String key, String url) { }
 
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()

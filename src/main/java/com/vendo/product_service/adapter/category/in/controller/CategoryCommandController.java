@@ -4,7 +4,6 @@ import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.adapter.image.out.mapper.ImageMapper;
-import com.vendo.product_service.domain.category.type.CategoryImageType;
 import com.vendo.product_service.infrastructure.shared.validator.ImageValidator;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import jakarta.validation.Valid;
@@ -36,18 +35,14 @@ public class CategoryCommandController {
 
     @PutMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
-    void uploadImage(
-            @RequestParam String id,
-            @RequestParam CategoryImageType type,
-            @RequestParam MultipartFile image
-    ) {
+    void uploadImage(@RequestParam String id, @RequestParam MultipartFile image) {
         ImageValidator.validate(image);
-        categoryUseCase.uploadImage(id, type, ImageMapper.toImage(image));
+        categoryUseCase.uploadImage(id, ImageMapper.toImage(image));
     }
 
     @DeleteMapping("/image")
     @PreAuthorize("hasAuthority('ADMIN')")
-    void removeImage(@RequestParam String id, @RequestParam CategoryImageType type) {
-        categoryUseCase.removeImage(id, type);
+    void removeImage(@RequestParam String id) {
+        categoryUseCase.removeImage(id);
     }
 }

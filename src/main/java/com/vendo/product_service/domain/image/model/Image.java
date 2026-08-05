@@ -34,10 +34,6 @@ public record Image(
 
     private static final String DEFAULT_FILENAME = "File";
 
-    public static String buildUrl(String key, String baseUrl) {
-        return baseUrl.concat(key);
-    }
-
     public static Image findById(String id, List<Image> images) {
         return images.stream()
                 .filter(image -> image.id().equals(id))
