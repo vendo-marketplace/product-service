@@ -6,4 +6,6 @@ public interface CategoryCommandUseCase {
 
     void save(Category category);
 
+    void update(String id, Category category);
+
 }

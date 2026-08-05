@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @RequiredArgsConstructor
-public class AwsFeignConfig {
+public class ProductFeignConfig {
 
     private final ObjectMapper objectMapper;
 

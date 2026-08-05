@@ -3,5 +3,9 @@ package com.vendo.product_service.port.category;
 import com.vendo.product_service.domain.category.model.Category;
 
 public interface CategoryCommandPort {
+
     void save(Category category);
+
+    void update(String id, Category category);
+
 }

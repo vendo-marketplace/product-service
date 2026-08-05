@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.image.out.aws;
 
-import com.vendo.product_service.adapter.image.out.aws.config.AwsFeignConfig;
+import com.vendo.product_service.adapter.image.out.aws.config.ProductFeignConfig;
 import com.vendo.product_service.adapter.image.out.aws.dto.PresignRequest;
 import com.vendo.product_service.adapter.image.out.aws.dto.PresignResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(
         name = "aws-service",
         path = "/internal",
-        configuration = AwsFeignConfig.class)
+        configuration = ProductFeignConfig.class)
 public interface AwsClient {
 
     @PostMapping("/presign")

@@ -3,6 +3,7 @@ package com.vendo.product_service.adapter.category.in.controller;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.CategoryTreeMapper;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.domain.category.model.Category;
@@ -30,6 +31,12 @@ class CategoryController {
     @PreAuthorize("hasAuthority('ADMIN')")
     void save(@Valid @RequestBody CreateCategoryRequest request) {
         categoryUseCase.save(categoryMapper.toCategory(request));
+    }
+
+    @PutMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    void update(@RequestParam String id, @Valid @RequestBody UpdateCategoryRequest request) {
+        categoryUseCase.update(id, categoryMapper.toCategory(request));
     }
 
     @GetMapping("/{id}")

@@ -2,6 +2,7 @@ package com.vendo.product_service.adapter.category.out.mapper;
 
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
@@ -10,6 +11,7 @@ import org.mapstruct.Mapper;
 public interface DtoCategoryMapper {
 
     Category toCategory(CreateCategoryRequest request);
+    Category toCategory(UpdateCategoryRequest request);
 
     CategoryResponse toResponse(Category category);
 

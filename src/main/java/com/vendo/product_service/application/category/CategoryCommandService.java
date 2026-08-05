@@ -1,6 +1,7 @@
 package com.vendo.product_service.application.category;
 
 import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import com.vendo.product_service.port.category.TypeValidationPort;
@@ -33,6 +34,25 @@ class CategoryCommandService implements CategoryCommandUseCase {
         category.setPath(category.buildPath(getParentPath(category)));
 
         categoryCommandPort.save(category);
+    }
+
+    @Override
+    @CacheEvict(value = "category-tree", allEntries = true)
+    public void update(String id, Category category) {
+        throwIfNotExistsBy(id);
+        typeValidationPort.validate(category);
+
+        if (!StringUtils.isEmpty(category.getParentId())) {
+            category.setPath(category.buildPath(getParentPath(category)));
+        }
+
+        categoryCommandPort.update(id, category);
+    }
+
+    private void throwIfNotExistsBy(String id) {
+        if (!categoryQueryPort.existsById(id)) {
+            throw new CategoryNotFoundException("Category not found.");
+        }
     }
 
     private List<String> getParentPath(Category category) {
