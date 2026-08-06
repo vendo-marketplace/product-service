@@ -1,6 +1,7 @@
 package com.vendo.product_service.infrastructure.config.kafka;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,24 +26,12 @@ public class ProducerConfig {
 
     @Bean
     public ProducerFactory<String, ?> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-
-        configProps.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
-        configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-
-        return new DefaultKafkaProducerFactory<>(configProps);
+        return buildProducerFactory(new JsonSerializer<>());
     }
 
     @Bean
     public ProducerFactory<String, String> stringProducerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-
-        configProps.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
-        configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-        return new DefaultKafkaProducerFactory<>(configProps);
+        return buildProducerFactory(new StringSerializer());
     }
 
     @Bean
@@ -53,5 +42,15 @@ public class ProducerConfig {
     @Bean
     public KafkaTemplate<String, String> stringKafkaTemplate() {
         return new KafkaTemplate<>(stringProducerFactory());
+    }
+
+    private <T> ProducerFactory<String, T> buildProducerFactory(Serializer<T> serializer) {
+        Map<String, Object> configProps = new HashMap<>();
+
+        configProps.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
+        configProps.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(VALUE_SERIALIZER_CLASS_CONFIG, serializer.getClass());
+
+        return new DefaultKafkaProducerFactory<>(configProps);
     }
 }
