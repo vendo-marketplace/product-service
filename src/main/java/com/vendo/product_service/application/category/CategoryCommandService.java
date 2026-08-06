@@ -73,10 +73,15 @@ class CategoryCommandService implements CategoryCommandUseCase {
     @CacheEvict(value = "category-tree", allEntries = true)
     public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
-        if (category.getImage() == null) return;
-
+        throwIfHasNoImage(category);
         imageEventSenderPort.delete(category.getImage().key());
         categoryCommandPort.removeImage(id);
+    }
+
+    private void throwIfHasNoImage(Category category) {
+        if (category.getImage() == null) {
+            throw new CategoryNotFoundException("Category has no image.");
+        }
     }
 
     private String upload(Image image) {
