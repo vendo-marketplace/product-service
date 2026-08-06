@@ -1,7 +1,7 @@
 package com.vendo.product_service.application.product;
 
 import com.vendo.core_lib.utils.CollectionUtils;
-import com.vendo.product_service.adapter.image.out.aws.dto.nested.PresignType;
+import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.product.model.Product;

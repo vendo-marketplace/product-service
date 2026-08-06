@@ -293,7 +293,7 @@ public class ProductImageFileControllerIntegrationTest {
         void upload_shouldReturnInternalError_whenImageNotFoundById_whileMappingByUrl() throws Exception {
             Product product = ProductDataBuilder.withAllFields().ownerId(DEFAULT_USER_ID).build();
             when(productQueryPort.findById(product.getId())).thenReturn(product);
-            when(imagePresignPort.generate(any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
+            when(imagePresignPort.generate(any(), any())).thenReturn(List.of(new PresignImage("unknown_id", "upload_url", "key")));
 
             String content = performUpload(DEFAULT_USER_ID, product.getId(), List.of(validImage()))
                     .andExpect(status().isInternalServerError())
@@ -308,7 +308,7 @@ public class ProductImageFileControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/products/images");
 
             verify(productQueryPort).findById(product.getId());
-            verify(imagePresignPort).generate(any());
+            verify(imagePresignPort).generate(any(), any());
             verifyNoInteractions(productCommandPort, imageUploadPort);
         }
     }
