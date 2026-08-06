@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.image;
 
+import com.vendo.product_service.adapter.image.out.aws.dto.nested.PresignType;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
 import com.vendo.product_service.port.IdGenerationPort;
@@ -23,10 +24,10 @@ class ImageService implements ImageUseCase {
     private final ImageUploadPort imageUploadPort;
 
     @Override
-    public List<String> upload(List<Image> images) {
+    public List<String> upload(PresignType type, List<Image> images) {
         final List<Image> withIds = withIds(images);
 
-        List<PresignImage> presigns = imagePresignPort.generate(withIds);
+        List<PresignImage> presigns = imagePresignPort.generate(type, withIds);
         imageUploadPort.upload(toImagesByUrl(withIds, presigns));
 
         return PresignImage.getKeys(presigns);

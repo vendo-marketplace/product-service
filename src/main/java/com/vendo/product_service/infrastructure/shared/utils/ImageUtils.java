@@ -1,12 +1,28 @@
 package com.vendo.product_service.infrastructure.shared.utils;
 
 import com.vendo.core_lib.utils.StringUtils;
-import com.vendo.product_service.domain.image.model.Image;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public final class ImageUtils {
+
+    private static final Set<String> IMAGE_MIME_TYPES = Set.of(
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "image/bmp",
+            "image/tiff",
+            "image/svg+xml",
+            "image/x-icon",
+            "image/heic",
+            "image/heif",
+            "image/avif",
+            "image/apng"
+    );
 
     private ImageUtils() {
     }
@@ -25,7 +41,11 @@ public final class ImageUtils {
 
     private static boolean isImage(MultipartFile file) {
         String contentType = file.getContentType();
-        return !StringUtils.isEmpty(contentType) && Image.isImage(contentType);
+        return !StringUtils.isEmpty(contentType) && isImage(contentType);
+    }
+
+    private static boolean isImage(String contentType) {
+        return contentType != null && IMAGE_MIME_TYPES.contains(contentType.toLowerCase(Locale.ROOT));
     }
 
 }

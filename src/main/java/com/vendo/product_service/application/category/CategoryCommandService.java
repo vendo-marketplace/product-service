@@ -2,6 +2,7 @@ package com.vendo.product_service.application.category;
 
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.product_service.adapter.image.out.aws.dto.nested.PresignType;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.model.ImageBody;
@@ -79,7 +80,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     private String upload(Image image) {
-        List<String> keys = imageUseCase.upload(List.of(image));
+        List<String> keys = imageUseCase.upload(PresignType.CATEGORY, List.of(image));
 
         if (CollectionUtils.isEmpty(keys)) {
             throw new IllegalStateException("Unable to upload image.");
