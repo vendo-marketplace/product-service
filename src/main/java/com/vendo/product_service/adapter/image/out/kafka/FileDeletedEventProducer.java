@@ -14,10 +14,10 @@ public class FileDeletedEventProducer {
     @Value("${kafka.events.file.deleted-event.topic}")
     private String fileDeletedEventTopic;
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> stringKafkaTemplate;
 
     public void send(String fileKey) {
-        kafkaTemplate.send(fileDeletedEventTopic, fileKey);
+        stringKafkaTemplate.send(fileDeletedEventTopic, fileKey);
         log.info("Sent event for file deleted: {}.", fileKey);
     }
 
