@@ -75,8 +75,6 @@ class CategoryCommandService implements CategoryCommandUseCase {
         Category category = categoryQueryPort.findById(id);
         if (category.getImage() == null) return;
 
-        System.out.println(category.getImage());
-        System.out.println(category.getImage().key());
         imageEventSenderPort.delete(category.getImage().key());
         categoryCommandPort.removeImage(id);
     }
