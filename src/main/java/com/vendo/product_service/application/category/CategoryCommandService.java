@@ -57,6 +57,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     @Override
+    @CacheEvict(value = "category-tree", allEntries = true)
     public void uploadImage(String id, Image image) {
         Category category = categoryQueryPort.findById(id);
         String key = upload(image);
@@ -68,8 +69,11 @@ class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     @Override
+    @CacheEvict(value = "category-tree", allEntries = true)
     public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
+        if (category.getImage() == null) return;
+
         imageEventSenderPort.delete(category.getImage().key());
         categoryCommandPort.removeImage(id);
     }
