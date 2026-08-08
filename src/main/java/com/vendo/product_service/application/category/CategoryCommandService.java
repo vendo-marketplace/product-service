@@ -46,15 +46,9 @@ class CategoryCommandService implements CategoryCommandUseCase {
         categoryCommandPort.save(category);
     }
 
-    @Override
     @CacheEvict(value = "category-tree", allEntries = true)
-    public void update(String id, Category category) {
-        throwIfNotExistsBy(id);
-
-        typeValidationPort.validate(category);
-        updatePathIfPresent(category);
-
-        categoryCommandPort.update(id, category);
+    public void update(String id, Category request) {
+        categoryCommandPort.update(id, request);
     }
 
     @Override
@@ -74,6 +68,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
         throwIfHasNoImage(category);
+
         imageEventSenderPort.delete(category.getImage().key());
         categoryCommandPort.removeImage(id);
     }
@@ -100,24 +95,11 @@ class CategoryCommandService implements CategoryCommandUseCase {
         }
     }
 
-    private void updatePathIfPresent(Category category) {
-        if (!StringUtils.isEmpty(category.getParentId())) {
-            category.setPath(category.buildPath(getParentPath(category)));
-        }
-    }
-
-    private void throwIfNotExistsBy(String id) {
-        if (!categoryQueryPort.existsById(id)) {
-            throw new CategoryNotFoundException("Category not found.");
-        }
-    }
-
     private List<String> getParentPath(Category category) {
         if (StringUtils.isEmpty(category.getParentId())) {
             return Collections.emptyList();
         }
 
-        Category parent = categoryQueryPort.findById(category.getParentId(), "Parent category not found.");
-        return parent.getPath();
+        return categoryQueryPort.findById(category.getParentId(), "Parent category not found.").getPath();
     }
 }

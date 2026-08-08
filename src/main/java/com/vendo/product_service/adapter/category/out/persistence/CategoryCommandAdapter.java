@@ -27,9 +27,13 @@ class CategoryCommandAdapter implements CategoryCommandPort {
 
     @Override
     public void update(String id, Category category) {
-        MongoCategory entity = findOrThrow(id);
-        mapper.updateEntity(entity, category);
-        repository.save(entity);
+        try {
+            MongoCategory entity = findOrThrow(id);
+            mapper.updateEntity(entity, category);
+            repository.save(entity);
+        } catch (DuplicateKeyException e) {
+            throw new CategoryAlreadyExistsException("Category already exists by slug.");
+        }
     }
 
     @Override
