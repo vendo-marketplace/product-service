@@ -14,6 +14,7 @@ import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.image.ImageEventSenderPort;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.test_utils.builder.UserDataBuilder;
@@ -29,6 +30,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,8 +45,7 @@ import static com.vendo.product_service.domain.category.model.Category.CATEGORY_
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -65,9 +66,17 @@ public class CategoryCommandControllerIntegrationTest {
     private CategoryCommandPort categoryCommandPort;
     @MockitoBean
     private AttributeQueryPort attributeQueryPort;
+    @MockitoBean
+    private ImageEventSenderPort imageEventSenderPort;
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
         return performCategoryPersist(categoryRequest, UserRole.ADMIN);
+    }
+
+    private ResultActions performCategoryImageRemove(String categoryId, UserRole role) throws Exception {
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
+        return mockMvc.perform(delete("/categories/image?id={id}", categoryId)
+                .with(authentication(SecurityContextService.initializeAuth(user))));
     }
 
     private ResultActions performCategoryUpdate(String categoryId, String ownerId, UserRole role, UpdateCategoryRequest request) throws Exception {
@@ -87,7 +96,7 @@ public class CategoryCommandControllerIntegrationTest {
     }
 
     @Nested
-    class SaveCategoryEntityTests {
+    class SaveCategoryTests {
 
         @Test
         void save_shouldReturnBadRequest_whenTitleIsNotPresent() throws Exception {
@@ -529,7 +538,7 @@ public class CategoryCommandControllerIntegrationTest {
     }
 
     @Nested
-    class UpdateCategoryEntityTests {
+    class UpdateCategoryTests {
 
         @Test
         void update_shouldUpdateCategory() throws Exception {
@@ -613,6 +622,110 @@ public class CategoryCommandControllerIntegrationTest {
 
             verify(categoryQueryPort).existsById(categoryId);
             verifyNoInteractions(categoryCommandPort);
+        }
+    }
+
+    @Nested
+    class CategoryRemoveImageTests {
+
+        @Test
+        void removeImage_shouldRemoveImageFromCategory() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
+
+            when(categoryQueryPort.findById(parent.getId())).thenReturn(parent);
+
+            performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
+                    .andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(parent.getId());
+            verify(imageEventSenderPort).delete(parent.getImage().key());
+            verify(categoryCommandPort).removeImage(parent.getId());
+        }
+
+        @Test
+        void removeImage_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
+
+            String content = performCategoryImageRemove(parent.getId(), UserRole.USER)
+                    .andExpect(status().isForbidden())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageEventSenderPort, categoryCommandPort);
+        }
+
+        @Test
+        void removeImage_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
+
+            when(categoryQueryPort.findById(parent.getId())).thenThrow(new CategoryNotFoundException("Category not found."));
+
+            String content = performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
+                    .andExpect(status().isNotFound())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verify(categoryQueryPort).findById(parent.getId());
+            verifyNoInteractions(imageEventSenderPort, categoryCommandPort);
+        }
+
+        @Test
+        void removeImage_shouldReturnNotFound_whenDeletingFromCategoryWithoutIt() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().image(null).build();
+
+            when(categoryQueryPort.findById(parent.getId())).thenReturn(parent);
+
+            String content = performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category has no image.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verify(categoryQueryPort).findById(parent.getId());
+            verifyNoInteractions(imageEventSenderPort, categoryCommandPort);
+        }
+    }
+
+    @Nested
+    class UploadImageTests {
+
+        @Test
+        void uploadImage_shouldImageForCategory() {
+
+        }
+
+        @Test
+        void uploadImage_shouldReturnForbidden_whenNotAdmin() {
+
+        }
+
+        @Test
+        void uploadImage_shouldReturnBadRequest_whenFileIsNotImage() {
+
+        }
+
+        @Test
+        void uploadImage_shouldReturnNotFound_whenCategoryNotFound() {
+
+        }
+
+        @Test
+        void uploadImage_shouldUploadNewImage_andRemoveOld() {
+
         }
     }
 }

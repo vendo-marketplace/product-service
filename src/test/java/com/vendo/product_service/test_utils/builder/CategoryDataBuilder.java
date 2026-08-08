@@ -1,6 +1,7 @@
 package com.vendo.product_service.test_utils.builder;
 
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.model.ImageBody;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class CategoryDataBuilder {
         return Category.builder()
                 .id(id)
                 .title("Category")
+                .image(new ImageBody("key", "key-url"))
                 .slug("slug")
                 .path(List.of(id));
     }

@@ -2,8 +2,8 @@ package com.vendo.product_service.application.category;
 
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.product_service.domain.category.exception.CategoryHasNoImageException;
 import com.vendo.product_service.domain.image.model.PresignType;
-import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.model.ImageBody;
 import com.vendo.product_service.domain.image.model.Image;
@@ -60,7 +60,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
         Category updateCategory = Category.builder().image(new ImageBody(key, baseUrl.concat(key))).build();
         categoryCommandPort.update(id, updateCategory);
 
-        remove(category.getImage());
+        removeOld(category.getImage());
     }
 
     @Override
@@ -75,7 +75,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
 
     private void throwIfHasNoImage(Category category) {
         if (category.getImage() == null) {
-            throw new CategoryNotFoundException("Category has no image.");
+            throw new CategoryHasNoImageException("Category has no image.");
         }
     }
 
@@ -89,7 +89,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
         return keys.get(0);
     }
 
-    private void remove(ImageBody image) {
+    private void removeOld(ImageBody image) {
         if (image != null) {
             imageEventSenderPort.delete(image.key());
         }
