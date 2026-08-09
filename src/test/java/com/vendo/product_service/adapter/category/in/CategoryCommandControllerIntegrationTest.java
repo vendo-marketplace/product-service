@@ -9,12 +9,14 @@ import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.image.ImageEventSenderPort;
+import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
 import com.vendo.product_service.test_utils.builder.UserDataBuilder;
@@ -30,11 +32,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Set;
@@ -58,6 +62,9 @@ public class CategoryCommandControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
+    private String baseUrl;
+
     @MockitoBean
     private CategoryCommandPort commandPort;
     @MockitoBean
@@ -68,9 +75,29 @@ public class CategoryCommandControllerIntegrationTest {
     private AttributeQueryPort attributeQueryPort;
     @MockitoBean
     private ImageEventSenderPort imageEventSenderPort;
+    @MockitoBean
+    private ImageUseCase imageUseCase;
+
+    private MockMultipartFile buildImage(String contentType, byte[] content) {
+        return new MockMultipartFile("images", "photo.png", contentType, content);
+    }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
         return performCategoryPersist(categoryRequest, UserRole.ADMIN);
+    }
+
+    private ResultActions performCategoryImageUpload(String categoryId, UserRole role, MultipartFile file) throws Exception {
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
+
+        MockMultipartHttpServletRequestBuilder request = multipart("/categories/image?id=" + categoryId);
+        request.with(authentication(SecurityContextService.initializeAuth(user)));
+        request.file(new MockMultipartFile(
+                "image",
+                file.getOriginalFilename(),
+                file.getContentType(),
+                file.getBytes()));
+
+        return mockMvc.perform(request);
     }
 
     private ResultActions performCategoryImageRemove(String categoryId, UserRole role) throws Exception {
@@ -373,7 +400,6 @@ public class CategoryCommandControllerIntegrationTest {
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .attributes(null)
                         .build();
-                Category category = CategoryDataBuilder.withChild().attributes(null).build();
 
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenThrow(new CategoryNotFoundException("Parent category not found."));
 
@@ -396,7 +422,6 @@ public class CategoryCommandControllerIntegrationTest {
             @Test
             void save_shouldReturnBadRequest_whenSubCategoryHasChildParent() throws Exception {
                 Category childCategory = CategoryDataBuilder.withChild().build();
-                Category subCategory = CategoryDataBuilder.withChild().parentId(childCategory.getId()).attributes(null).build();
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(childCategory.getId())
                         .attributes(null)
@@ -640,6 +665,7 @@ public class CategoryCommandControllerIntegrationTest {
             verify(categoryQueryPort).findById(parent.getId());
             verify(imageEventSenderPort).delete(parent.getImage().key());
             verify(categoryCommandPort).removeImage(parent.getId());
+            verify(imageEventSenderPort).delete(parent.getImage().key());
         }
 
         @Test
@@ -704,28 +730,104 @@ public class CategoryCommandControllerIntegrationTest {
     class UploadImageTests {
 
         @Test
-        void uploadImage_shouldImageForCategory() {
+        void uploadImage_shouldUploadImageForCategory() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            String key = "key";
+            MockMultipartFile file = buildImage("image/png", new byte[]{1, 2, 3});
+            ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
 
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(List.of(key));
+
+            performCategoryImageUpload(category.getId(), UserRole.ADMIN, file).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
+            verify(categoryCommandPort).update(eq(category.getId()), captor.capture());
+            verifyNoInteractions(imageEventSenderPort);
+
+            Category captorValue = captor.getValue();
+            assertThat(captorValue).isNotNull();
+            assertThat(captorValue.getImage()).isNotNull();
+            assertThat(captorValue.getImage().key()).isEqualTo(key);
+            assertThat(captorValue.getImage().url()).isEqualTo(baseUrl + captorValue.getImage().key());
         }
 
         @Test
-        void uploadImage_shouldReturnForbidden_whenNotAdmin() {
+        void uploadImage_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
 
+            String content = performCategoryImageUpload(category.getId(), UserRole.USER, buildImage("image/png", new byte[]{1,2,3}))
+                    .andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageUseCase, categoryCommandPort, imageEventSenderPort);
         }
 
         @Test
-        void uploadImage_shouldReturnBadRequest_whenFileIsNotImage() {
+        void uploadImage_shouldReturnBadRequest_whenFileIsNotImage() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            List<String> keys = List.of("key");
 
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(keys);
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("video/mp4", new byte[]{1,2,3}))
+                    .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).hasSize(1);
+            assertThat(exceptionResponse.getErrors().get("image")).isEqualTo("File is not image or empty.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageUseCase, categoryCommandPort, imageEventSenderPort);
         }
 
         @Test
-        void uploadImage_shouldReturnNotFound_whenCategoryNotFound() {
+        void uploadImage_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            List<String> keys = List.of("key");
 
+            when(categoryQueryPort.findById(category.getId())).thenThrow(new CategoryNotFoundException("Category not found."));
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(keys);
+
+            performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("image/png", new byte[]{1,2,3})).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
+            verify(categoryCommandPort).update(eq(category.getId()), any());
+            verifyNoInteractions(imageEventSenderPort);
         }
 
         @Test
-        void uploadImage_shouldUploadNewImage_andRemoveOld() {
+        void uploadImage_shouldReturnInternalServerError_whenKeysAreEmpty() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            MockMultipartFile file = buildImage("image/png", new byte[]{1, 2, 3});
 
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(List.of());
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, file)
+                    .andExpect(status().isInternalServerError())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Internal server error.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
+            verifyNoInteractions(categoryCommandPort, imageEventSenderPort);
         }
     }
 }

@@ -33,7 +33,7 @@ public class CategoryCommandController {
         categoryUseCase.update(id, categoryMapper.toCategory(request));
     }
 
-    @PutMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAuthority('ADMIN')")
     void uploadImage(
             @RequestParam String id,
