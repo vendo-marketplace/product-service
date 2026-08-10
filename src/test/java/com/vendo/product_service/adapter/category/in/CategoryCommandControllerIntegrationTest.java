@@ -571,11 +571,8 @@ public class CategoryCommandControllerIntegrationTest {
             String categoryId = "categoryId";
             UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
 
-            when(categoryQueryPort.existsById(categoryId)).thenReturn(true);
-
             performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request).andExpect(status().isOk());
 
-            verify(categoryQueryPort).existsById(categoryId);
             verify(categoryCommandPort).update(eq(categoryId), any(Category.class));
         }
 
@@ -596,7 +593,7 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verifyNoInteractions(categoryQueryPort, categoryCommandPort);
+            verifyNoInteractions(categoryCommandPort);
         }
 
         @Test
@@ -604,8 +601,6 @@ public class CategoryCommandControllerIntegrationTest {
             User user = UserDataBuilder.withAllFields().build();
             String categoryId = "categoryId";
             UpdateCategoryRequest request = new UpdateCategoryRequest("_invalid_title", "INVALID_SLUG");
-
-            when(categoryQueryPort.existsById(categoryId)).thenReturn(true);
 
             String content = performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request)
                     .andExpect(status().isBadRequest())
@@ -623,29 +618,6 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verifyNoInteractions(categoryQueryPort, categoryCommandPort);
-        }
-
-        @Test
-        void update_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
-            User user = UserDataBuilder.withAllFields().build();
-            String categoryId = "categoryId";
-            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
-
-            when(categoryQueryPort.existsById(categoryId)).thenReturn(false);
-
-            String content = performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request)
-                    .andExpect(status().isNotFound())
-                    .andReturn().getResponse().getContentAsString();
-
-            assertThat(content).isNotBlank();
-            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
-            assertThat(exceptionResponse.getErrors()).isNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
-
-            verify(categoryQueryPort).existsById(categoryId);
             verifyNoInteractions(categoryCommandPort);
         }
     }
@@ -799,12 +771,17 @@ public class CategoryCommandControllerIntegrationTest {
             when(categoryQueryPort.findById(category.getId())).thenThrow(new CategoryNotFoundException("Category not found."));
             when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(keys);
 
-            performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("image/png", new byte[]{1,2,3})).andExpect(status().isOk());
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("image/png", new byte[]{1,2,3}))
+                    .andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
 
             verify(categoryQueryPort).findById(category.getId());
-            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
-            verify(categoryCommandPort).update(eq(category.getId()), any());
-            verifyNoInteractions(imageEventSenderPort);
+            verifyNoInteractions(categoryCommandPort, imageUseCase, imageEventSenderPort);
         }
 
         @Test
