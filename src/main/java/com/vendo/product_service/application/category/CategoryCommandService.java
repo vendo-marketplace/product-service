@@ -36,7 +36,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     private final ImageUseCase imageUseCase;
 
     @Override
-    @CacheEvict(value = "category-tree", allEntries = true)
+    @CacheEvict(value = "category-tree")
     public void save(Category category) {
         typeValidationPort.validate(category);
 
@@ -46,13 +46,13 @@ class CategoryCommandService implements CategoryCommandUseCase {
         categoryCommandPort.save(category);
     }
 
-    @CacheEvict(value = "category-tree", allEntries = true)
+    @CacheEvict(value = "category-tree")
     public void update(String id, Category request) {
         categoryCommandPort.update(id, request);
     }
 
     @Override
-    @CacheEvict(value = "category-tree", allEntries = true)
+    @CacheEvict(value = "category-tree")
     public void uploadImage(String id, Image image) {
         Category category = categoryQueryPort.findById(id);
         String key = upload(image);
@@ -64,7 +64,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
     }
 
     @Override
-    @CacheEvict(value = "category-tree", allEntries = true)
+    @CacheEvict(value = "category-tree")
     public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
         throwIfHasNoImage(category);
