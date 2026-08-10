@@ -1,8 +1,6 @@
 package com.vendo.product_service.application.category;
 
-import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
-import com.vendo.product_service.domain.category.exception.CategoryHasNoImageException;
 import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.model.ImageBody;
@@ -55,44 +53,22 @@ class CategoryCommandService implements CategoryCommandUseCase {
     @CacheEvict(value = "category-tree")
     public void uploadImage(String id, Image image) {
         Category category = categoryQueryPort.findById(id);
-        String key = upload(image);
+        String key = imageUseCase.upload(PresignType.CATEGORY, image);
 
         Category updateCategory = Category.builder().image(new ImageBody(key, baseUrl.concat(key))).build();
         categoryCommandPort.update(id, updateCategory);
 
-        removeOld(category.getImage());
+        if (category.getImage() != null) imageEventSenderPort.delete(category.getImage().key());;
     }
 
     @Override
     @CacheEvict(value = "category-tree")
     public void removeImage(String id) {
         Category category = categoryQueryPort.findById(id);
-        throwIfHasNoImage(category);
+        category.throwIfHasNoImage();
 
         imageEventSenderPort.delete(category.getImage().key());
         categoryCommandPort.removeImage(id);
-    }
-
-    private void throwIfHasNoImage(Category category) {
-        if (category.getImage() == null) {
-            throw new CategoryHasNoImageException("Category has no image.");
-        }
-    }
-
-    private String upload(Image image) {
-        List<String> keys = imageUseCase.upload(PresignType.CATEGORY, List.of(image));
-
-        if (CollectionUtils.isEmpty(keys)) {
-            throw new IllegalStateException("Unable to upload image.");
-        }
-
-        return keys.get(0);
-    }
-
-    private void removeOld(ImageBody image) {
-        if (image != null) {
-            imageEventSenderPort.delete(image.key());
-        }
     }
 
     private List<String> getParentPath(Category category) {

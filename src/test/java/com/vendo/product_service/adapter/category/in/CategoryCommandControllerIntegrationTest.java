@@ -9,6 +9,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
@@ -709,12 +710,12 @@ public class CategoryCommandControllerIntegrationTest {
             ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(List.of(key));
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), any(Image.class))).thenReturn(key);
 
             performCategoryImageUpload(category.getId(), UserRole.ADMIN, file).andExpect(status().isOk());
 
             verify(categoryQueryPort).findById(category.getId());
-            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), any(Image.class));
             verify(categoryCommandPort).update(eq(category.getId()), captor.capture());
             verifyNoInteractions(imageEventSenderPort);
 
@@ -785,12 +786,12 @@ public class CategoryCommandControllerIntegrationTest {
         }
 
         @Test
-        void uploadImage_shouldReturnInternalServerError_whenKeysAreEmpty() throws Exception {
+        void uploadImage_shouldReturnInternalServerError_whenThrowsException() throws Exception {
             Category category = CategoryDataBuilder.withParent().image(null).build();
             MockMultipartFile file = buildImage("image/png", new byte[]{1, 2, 3});
 
             when(categoryQueryPort.findById(category.getId())).thenReturn(category);
-            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(List.of());
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), any(Image.class))).thenThrow(new IllegalStateException("Unable to upload image."));
 
             String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, file)
                     .andExpect(status().isInternalServerError())
@@ -803,7 +804,7 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
 
             verify(categoryQueryPort).findById(category.getId());
-            verify(imageUseCase).upload(eq(PresignType.CATEGORY), anyList());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), any(Image.class));
             verifyNoInteractions(categoryCommandPort, imageEventSenderPort);
         }
     }

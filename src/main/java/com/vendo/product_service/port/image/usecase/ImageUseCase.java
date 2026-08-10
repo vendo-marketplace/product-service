@@ -9,4 +9,6 @@ public interface ImageUseCase {
 
     List<String> upload(PresignType type, List<Image> images);
 
+    String upload(PresignType type, Image image);
+
 }
