@@ -1,48 +1,47 @@
 package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.utils.AssertionUtils;
-import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
-import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
+import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.domain.category.type.CategoryType;
+import com.vendo.product_service.domain.image.model.Image;
+import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryCommandPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
-import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
+import com.vendo.product_service.port.image.ImageEventSenderPort;
+import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import com.vendo.product_service.test_utils.builder.CategoryDataBuilder;
-import com.vendo.product_service.test_utils.builder.CategoryResponseDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateCategoryRequestDataBuilder;
+import com.vendo.product_service.test_utils.builder.UserDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
 import com.vendo.user_lib.type.UserStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -51,21 +50,21 @@ import static com.vendo.product_service.domain.category.model.Category.CATEGORY_
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class CategoryControllerIntegrationTest {
+public class CategoryCommandControllerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
-    private CacheManager cacheManager;
+    private String baseUrl;
 
     @MockitoBean
     private CategoryCommandPort commandPort;
@@ -75,25 +74,45 @@ public class CategoryControllerIntegrationTest {
     private CategoryCommandPort categoryCommandPort;
     @MockitoBean
     private AttributeQueryPort attributeQueryPort;
+    @MockitoBean
+    private ImageEventSenderPort imageEventSenderPort;
+    @MockitoBean
+    private ImageUseCase imageUseCase;
 
-    @BeforeEach
-    public void setUp() {
-        SecurityContextHolder.clearContext();
-        cacheManager.getCacheNames().forEach(name -> Objects.requireNonNull(cacheManager.getCache(name)).clear());
-    }
-
-    private ResultActions performCategoryGet(String categoryId) throws Exception {
-        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.ADMIN), true);
-        return mockMvc.perform(get("/categories/{id}", categoryId)
-                .with(authentication(SecurityContextService.initializeAuth(user))));
-    }
-
-    private ResultActions performCategoryGetTree() throws Exception {
-        return mockMvc.perform(get("/categories/tree"));
+    private MockMultipartFile buildImage(String contentType, byte[] content) {
+        return new MockMultipartFile("images", "photo.png", contentType, content);
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest) throws Exception {
         return performCategoryPersist(categoryRequest, UserRole.ADMIN);
+    }
+
+    private ResultActions performCategoryImageUpload(String categoryId, UserRole role, MultipartFile file) throws Exception {
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
+
+        MockMultipartHttpServletRequestBuilder request = multipart("/categories/image?id=" + categoryId);
+        request.with(authentication(SecurityContextService.initializeAuth(user)));
+        request.file(new MockMultipartFile(
+                "image",
+                file.getOriginalFilename(),
+                file.getContentType(),
+                file.getBytes()));
+
+        return mockMvc.perform(request);
+    }
+
+    private ResultActions performCategoryImageRemove(String categoryId, UserRole role) throws Exception {
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
+        return mockMvc.perform(delete("/categories/image?id={id}", categoryId)
+                .with(authentication(SecurityContextService.initializeAuth(user))));
+    }
+
+    private ResultActions performCategoryUpdate(String categoryId, String ownerId, UserRole role, UpdateCategoryRequest request) throws Exception {
+        User user = new User(ownerId, "email", UserStatus.ACTIVE, Set.of(role), true);
+        return mockMvc.perform(put("/categories?id={id}", categoryId)
+                .with(authentication(SecurityContextService.initializeAuth(user)))
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON));
     }
 
     private ResultActions performCategoryPersist(CreateCategoryRequest categoryRequest, UserRole role) throws Exception {
@@ -105,7 +124,7 @@ public class CategoryControllerIntegrationTest {
     }
 
     @Nested
-    class SaveCategoryEntityTests {
+    class SaveCategoryTests {
 
         @Test
         void save_shouldReturnBadRequest_whenTitleIsNotPresent() throws Exception {
@@ -313,13 +332,13 @@ public class CategoryControllerIntegrationTest {
                         .parentId(parentId)
                         .attributes(null)
                         .build();
-                Category parent = CategoryDataBuilder.withAllFields()
+                Category parent = CategoryDataBuilder.withChild()
                         .id(parentId)
                         .attributes(null)
                         .parentId(null)
                         .path(List.of(parentId))
                         .build();
-                Category sub = CategoryDataBuilder.withAllFields()
+                Category sub = CategoryDataBuilder.withChild()
                         .parentId(parentId)
                         .attributes(null)
                         .slug(categoryRequest.slug())
@@ -349,8 +368,8 @@ public class CategoryControllerIntegrationTest {
             void save_shouldSaveCategory_whenParentIsSub() throws Exception {
                 String parentId = String.valueOf(UUID.randomUUID());
 
-                Category parent = CategoryDataBuilder.withAllFields().id(parentId).attributes(null).path(List.of(parentId)).build();
-                Category sub = CategoryDataBuilder.withAllFields().parentId(parent.getId()).attributes(null).build();
+                Category parent = CategoryDataBuilder.withChild().id(parentId).attributes(null).path(List.of(parentId)).build();
+                Category sub = CategoryDataBuilder.withChild().parentId(parent.getId()).attributes(null).build();
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(parent.getId())
                         .slug(sub.getSlug())
@@ -382,7 +401,6 @@ public class CategoryControllerIntegrationTest {
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .attributes(null)
                         .build();
-                Category category = CategoryDataBuilder.withAllFields().attributes(null).build();
 
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenThrow(new CategoryNotFoundException("Parent category not found."));
 
@@ -404,8 +422,7 @@ public class CategoryControllerIntegrationTest {
 
             @Test
             void save_shouldReturnBadRequest_whenSubCategoryHasChildParent() throws Exception {
-                Category childCategory = CategoryDataBuilder.withAllFields().build();
-                Category subCategory = CategoryDataBuilder.withAllFields().parentId(childCategory.getId()).attributes(null).build();
+                Category childCategory = CategoryDataBuilder.withChild().build();
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(childCategory.getId())
                         .attributes(null)
@@ -439,7 +456,7 @@ public class CategoryControllerIntegrationTest {
                 List<String> parentPath = List.of(parentId);
 
                 List<String> subPath = Stream.concat(parentPath.stream(), Stream.of(subId)).toList();
-                Category sub = CategoryDataBuilder.withAllFields().id(subId).attributes(null).parentId(parentId).path(subPath).build();
+                Category sub = CategoryDataBuilder.withChild().id(subId).attributes(null).parentId(parentId).path(subPath).build();
 
                 Attribute attribute = new Attribute("id", "title", "slug", AttributeType.STRING, false, null);
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
@@ -473,7 +490,7 @@ public class CategoryControllerIntegrationTest {
 
             @Test
             void save_shouldReturnBadRequest_whenParentCategoryIsChild() throws Exception {
-                Category subCategory = CategoryDataBuilder.withAllFields().build();
+                Category subCategory = CategoryDataBuilder.withChild().build();
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(subCategory.getId())
                         .build();
@@ -520,9 +537,9 @@ public class CategoryControllerIntegrationTest {
 
             @Test
             void save_shouldReturnNotFound_whenAttributeNotFound() throws Exception {
-                Category parentCategory = CategoryDataBuilder.withAllFields().attributes(null).build();
+                Category parentCategory = CategoryDataBuilder.withChild().attributes(null).build();
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields().parentId(parentCategory.getId()).build();
-                Category childCategory = CategoryDataBuilder.withAllFields().parentId(parentCategory.getId()).build();
+                Category childCategory = CategoryDataBuilder.withChild().parentId(parentCategory.getId()).build();
 
                 when(categoryQueryPort.findById(categoryRequest.parentId(), "Parent category not found.")).thenReturn(parentCategory);
                 when(attributeQueryPort.findAllByIds(childCategory.getAttributes())).thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(childCategory.getAttributes().get(0))));
@@ -547,168 +564,248 @@ public class CategoryControllerIntegrationTest {
     }
 
     @Nested
-    class FindCategoriesTests {
+    class UpdateCategoryTests {
 
         @Test
-        void findById_shouldReturnCategory() throws Exception {
-            CategoryResponse response = CategoryResponseDataBuilder.withAllFields();
-            Category category = CategoryDataBuilder.withAllFields()
-                    .id(response.id())
-                    .attributes(response.attributes())
-                    .title(response.title())
-                    .path(response.path())
-                    .build();
+        void update_shouldUpdateCategory() throws Exception {
+            User user = UserDataBuilder.withAllFields().build();
+            String categoryId = "categoryId";
+            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
 
-            when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
+            performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request).andExpect(status().isOk());
 
-            String content = performCategoryGet(category.getId())
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            CategoryResponse categoryResponse = objectMapper.readValue(content, CategoryResponse.class);
-
-            AssertionUtils.assertFrom(category, categoryResponse, "type");
-            assertThat(categoryResponse.type()).isNotNull();
-            assertThat(categoryResponse.type()).isEqualTo(CategoryType.CHILD);
-
-            verify(categoryQueryPort).findById(category.getId(), "Category not found.");
+            verify(categoryCommandPort).update(eq(categoryId), any(Category.class));
         }
 
         @Test
-        void findById_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
-            String categoryId = String.valueOf(UUID.randomUUID());
+        void update_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            User user = UserDataBuilder.withAllFields().build();
+            String categoryId = "categoryId";
+            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
 
-            when(categoryQueryPort.findById(categoryId, "Category not found.")).thenThrow(new CategoryNotFoundException("Category not found."));
+            String content = performCategoryUpdate(categoryId, user.id(), UserRole.USER, request)
+                    .andExpect(status().isForbidden())
+                    .andReturn().getResponse().getContentAsString();
 
-            String content = performCategoryGet(categoryId).andExpect(status().isNotFound())
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
+            assertThat(exceptionResponse.getErrors()).isNull();
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+
+            verifyNoInteractions(categoryCommandPort);
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_whenTitleAndSlugAreInvalid() throws Exception {
+            User user = UserDataBuilder.withAllFields().build();
+            String categoryId = "categoryId";
+            UpdateCategoryRequest request = new UpdateCategoryRequest("_invalid_title", "INVALID_SLUG");
+
+            String content = performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request)
+                    .andExpect(status().isBadRequest())
                     .andReturn()
                     .getResponse()
                     .getContentAsString();
 
+            assertThat(content).isNotBlank();
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
-            assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/%s".formatted(categoryId));
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isNotNull();
+            assertThat(exceptionResponse.getErrors()).hasSize(2);
+            assertThat(exceptionResponse.getErrors().get("title")).isEqualTo("Title must start with a capital letter and may contain only letters, spaces, commas, slashes, hyphens, and apostrophes.");
+            assertThat(exceptionResponse.getErrors().get("slug")).isEqualTo("Slug may contain only lowercase letters, numbers, and underscores, and cannot start or end with an underscore.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verify(categoryQueryPort).findById(categoryId, "Category not found.");
+            verifyNoInteractions(categoryCommandPort);
         }
     }
 
     @Nested
-    class TreeCategoriesTests {
+    class CategoryRemoveImageTests {
 
         @Test
-        void tree_shouldCategoriesTree() throws Exception {
-            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
-            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
-            String parentId = String.valueOf(UUID.randomUUID()), childId = String.valueOf(UUID.randomUUID());
+        void removeImage_shouldRemoveImageFromCategory() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
 
-            Category parent = CategoryDataBuilder.withAllFields().parentId(null).path(List.of(parentId)).attributes(null).build();
-            Category child = CategoryDataBuilder.withAllFields()
-                    .parentId(parent.getId())
-                    .attributes(List.of(attribute1.id(), attribute2.id()))
-                    .path(List.of(parentId, childId))
-                    .build();
+            when(categoryQueryPort.findById(parent.getId())).thenReturn(parent);
 
-            when(categoryQueryPort.findAll()).thenReturn(List.of(parent, child));
-            when(attributeQueryPort.findAllByIds(child.getAttributes())).thenReturn(List.of(attribute1, attribute2));
+            performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
+                    .andExpect(status().isOk());
 
-            String response = performCategoryGetTree()
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
-
-            assertThat(response).isNotBlank();
-            CategoryTreeResponse treeResponse = objectMapper.readValue(response, CategoryTreeResponse.class);
-
-            assertThat(treeResponse).isNotNull();
-            assertThat(treeResponse.getData()).isNotNull();
-            assertThat(treeResponse.getData().size()).isEqualTo(1);
-
-            CategoryTreeResponse.CategoryTree tree = treeResponse.getData().get(0);
-            AssertionUtils.assertFrom(tree, parent, "children", "parentId", "attributes");
-
-            assertThat(tree.attributes()).isEmpty();
-            assertThat(tree.children()).isNotNull();
-            assertThat(tree.children().size()).isEqualTo(1);
-            assertThat(tree.type()).isNotNull();
-            assertThat(tree.type()).isEqualTo(CategoryType.PARENT);
-
-            CategoryTreeResponse.CategoryTree treeChild = tree.children().get(0);
-            AssertionUtils.assertFrom(treeChild, child, "children", "parentId", "attributes");
-            assertThat(treeChild.type()).isEqualTo(CategoryType.CHILD);
-
-            assertThat(treeChild.attributes().stream().map(Attribute::id).toList()).containsAll(child.getAttributes());
+            verify(categoryQueryPort).findById(parent.getId());
+            verify(imageEventSenderPort).delete(parent.getImage().key());
+            verify(categoryCommandPort).removeImage(parent.getId());
+            verify(imageEventSenderPort).delete(parent.getImage().key());
         }
 
         @Test
-        void tree_shouldReturnNotFound_whenOneAttributeIsMissing() throws Exception {
-            Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
-            Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
-            Attribute attribute5 = AttributeDataBuilder.withAllFields().id("5").build();
-            Attribute attribute8 = AttributeDataBuilder.withAllFields().id("8").build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute1.id(), attribute5.id())).build();
-            Category category1 = CategoryDataBuilder.withAllFields().attributes(List.of(attribute2.id(), attribute8.id())).build();
-            List<String> attributes = Stream.concat(category.getAttributes().stream(), category1.getAttributes().stream()).toList();
+        void removeImage_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
 
-            when(categoryQueryPort.findAll()).thenReturn(List.of(category, category1));
-            when(attributeQueryPort.findAllByIds(attributes))
-                    .thenThrow(new AttributeNotFoundException("Attribute not found by id: %s.".formatted(attribute1.id())));
+            String content = performCategoryImageRemove(parent.getId(), UserRole.USER)
+                    .andExpect(status().isForbidden())
+                    .andReturn().getResponse().getContentAsString();
 
-            String response = performCategoryGetTree()
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageEventSenderPort, categoryCommandPort);
+        }
+
+        @Test
+        void removeImage_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().build();
+
+            when(categoryQueryPort.findById(parent.getId())).thenThrow(new CategoryNotFoundException("Category not found."));
+
+            String content = performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
                     .andExpect(status().isNotFound())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+                    .andReturn().getResponse().getContentAsString();
 
-            assertThat(response).isNotBlank();
-            ExceptionResponse exceptionResponse = objectMapper.readValue(response, ExceptionResponse.class);
-            assertThat(exceptionResponse).isNotNull();
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute not found by id: %s.".formatted(attribute1.id()));
-            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/tree");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
 
-            verify(categoryQueryPort).findAll();
-            verify(attributeQueryPort).findAllByIds(attributes);
+            verify(categoryQueryPort).findById(parent.getId());
+            verifyNoInteractions(imageEventSenderPort, categoryCommandPort);
         }
 
         @Test
-        void tree_shouldReturnTree_whenCategoryHasNullAttributes() throws Exception {
-            String parentId = String.valueOf(UUID.randomUUID());
+        void removeImage_shouldReturnNotFound_whenDeletingFromCategoryWithoutIt() throws Exception {
+            Category parent = CategoryDataBuilder.withParent().image(null).build();
 
-            Category parent = CategoryDataBuilder.withAllFields().parentId(null).path(List.of(parentId)).attributes(null).build();
+            when(categoryQueryPort.findById(parent.getId())).thenReturn(parent);
 
-            when(categoryQueryPort.findAll()).thenReturn(List.of(parent));
+            String content = performCategoryImageRemove(parent.getId(), UserRole.ADMIN)
+                    .andExpect(status().isBadRequest())
+                    .andReturn().getResponse().getContentAsString();
 
-            String response = performCategoryGetTree()
-                    .andExpect(status().isOk())
-                    .andReturn()
-                    .getResponse()
-                    .getContentAsString();
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category has no image.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
 
-            assertThat(response).isNotBlank();
-            CategoryTreeResponse treeResponse = objectMapper.readValue(response, CategoryTreeResponse.class);
+            verify(categoryQueryPort).findById(parent.getId());
+            verifyNoInteractions(imageEventSenderPort, categoryCommandPort);
+        }
+    }
 
-            assertThat(treeResponse).isNotNull();
-            assertThat(treeResponse.getData()).isNotNull();
-            assertThat(treeResponse.getData().size()).isEqualTo(1);
+    @Nested
+    class UploadImageTests {
 
-            CategoryTreeResponse.CategoryTree tree = treeResponse.getData().get(0);
-            AssertionUtils.assertFrom(tree, parent, "children", "parentId", "attributes");
+        @Test
+        void uploadImage_shouldUploadImageForCategory() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            String key = "key";
+            MockMultipartFile file = buildImage("image/png", new byte[]{1, 2, 3});
+            ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
 
-            assertThat(tree.attributes()).isNotNull();
-            assertThat(tree.attributes()).isEmpty();
-            assertThat(tree.children()).isNotNull();
-            assertThat(tree.children()).isEmpty();
-            assertThat(tree.type()).isNotNull();
-            assertThat(tree.type()).isEqualTo(CategoryType.PARENT);
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), any(Image.class))).thenReturn(key);
 
-            verify(categoryQueryPort).findAll();
-            verifyNoInteractions(attributeQueryPort);
+            performCategoryImageUpload(category.getId(), UserRole.ADMIN, file).andExpect(status().isOk());
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), any(Image.class));
+            verify(categoryCommandPort).update(eq(category.getId()), captor.capture());
+            verifyNoInteractions(imageEventSenderPort);
+
+            Category captorValue = captor.getValue();
+            assertThat(captorValue).isNotNull();
+            assertThat(captorValue.getImage()).isNotNull();
+            assertThat(captorValue.getImage().key()).isEqualTo(key);
+            assertThat(captorValue.getImage().url()).isEqualTo(baseUrl + captorValue.getImage().key());
+        }
+
+        @Test
+        void uploadImage_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.USER, buildImage("image/png", new byte[]{1,2,3}))
+                    .andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Resource is unreachable.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageUseCase, categoryCommandPort, imageEventSenderPort);
+        }
+
+        @Test
+        void uploadImage_shouldReturnBadRequest_whenFileIsNotImage() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            List<String> keys = List.of("key");
+
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(keys);
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("video/mp4", new byte[]{1,2,3}))
+                    .andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).hasSize(1);
+            assertThat(exceptionResponse.getErrors().get("image")).isEqualTo("File is not image or empty.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verifyNoInteractions(categoryQueryPort, imageUseCase, categoryCommandPort, imageEventSenderPort);
+        }
+
+        @Test
+        void uploadImage_shouldReturnNotFound_whenCategoryNotFound() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            List<String> keys = List.of("key");
+
+            when(categoryQueryPort.findById(category.getId())).thenThrow(new CategoryNotFoundException("Category not found."));
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), anyList())).thenReturn(keys);
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, buildImage("image/png", new byte[]{1,2,3}))
+                    .andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verify(categoryQueryPort).findById(category.getId());
+            verifyNoInteractions(categoryCommandPort, imageUseCase, imageEventSenderPort);
+        }
+
+        @Test
+        void uploadImage_shouldReturnInternalServerError_whenThrowsException() throws Exception {
+            Category category = CategoryDataBuilder.withParent().image(null).build();
+            MockMultipartFile file = buildImage("image/png", new byte[]{1, 2, 3});
+
+            when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+            when(imageUseCase.upload(eq(PresignType.CATEGORY), any(Image.class))).thenThrow(new IllegalStateException("Unable to upload image."));
+
+            String content = performCategoryImageUpload(category.getId(), UserRole.ADMIN, file)
+                    .andExpect(status().isInternalServerError())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isNotBlank();
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Internal server error.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories/image");
+
+            verify(categoryQueryPort).findById(category.getId());
+            verify(imageUseCase).upload(eq(PresignType.CATEGORY), any(Image.class));
+            verifyNoInteractions(categoryCommandPort, imageEventSenderPort);
         }
     }
 }

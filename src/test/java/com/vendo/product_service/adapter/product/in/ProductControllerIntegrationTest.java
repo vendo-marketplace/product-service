@@ -103,7 +103,7 @@ public class ProductControllerIntegrationTest {
     private void shouldSaveProductWithAttribute(Attribute attribute, AttributeValue attributeValue) throws Exception {
         String userId = "user_id";
 
-        Category category = CategoryDataBuilder.withAllFields()
+        Category category = CategoryDataBuilder.withChild()
                 .attributes(List.of(attributeValue.id()))
                 .build();
         Product product = ProductDataBuilder.withAllFields()
@@ -136,7 +136,7 @@ public class ProductControllerIntegrationTest {
     private void shouldFailValidationOnSaveProductWithAttribute(Attribute attribute, AttributeValue attributeValue, String validationMessage) throws Exception {
         String userId = "userId";
 
-        Category category = CategoryDataBuilder.withAllFields()
+        Category category = CategoryDataBuilder.withChild()
                 .attributes(List.of(attributeValue.id()))
                 .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
@@ -179,7 +179,7 @@ public class ProductControllerIntegrationTest {
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of(attributeValue)).build();
 
             Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
 
             when(productQueryPort.findById(productId)).thenReturn(existing);
             when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
@@ -250,7 +250,7 @@ public class ProductControllerIntegrationTest {
         void update_shouldUpdateProduct_whenNoAttributes() throws Exception {
             Product product = ProductDataBuilder.withAllFields().attributes(null).build();
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().attributes(null).build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(null).build();
+            Category category = CategoryDataBuilder.withChild().attributes(null).build();
 
             when(productQueryPort.findById(product.getId())).thenReturn(product);
             when(categoryQueryPort.findById(product.getCategoryId())).thenReturn(category);
@@ -324,7 +324,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().build();
             List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("Text")));
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(attributeValues)
@@ -364,7 +364,7 @@ public class ProductControllerIntegrationTest {
             List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
             List<AttributeValue> attributeValues = List.of(new AttributeValue(notRequiredEnumAttribute.id(), List.of("TYPE1")));
 
-            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(attributeValues)
@@ -406,7 +406,7 @@ public class ProductControllerIntegrationTest {
             List<Attribute> attributes = List.of(requiredStringAttribute);
             List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
 
-            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .build();
@@ -446,7 +446,7 @@ public class ProductControllerIntegrationTest {
             List<String> attributeIds = attributes.stream().map(Attribute::id).toList();
             ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
-            Category category = CategoryDataBuilder.withAllFields().attributes(attributeIds).build();
+            Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .build();
@@ -539,7 +539,7 @@ public class ProductControllerIntegrationTest {
 
         @Test
         void save_shouldReturnBadRequest_whenCategoryIsNotChild() throws Exception {
-            Category category = CategoryDataBuilder.withAllFields().attributes(null).parentId(null).build();
+            Category category = CategoryDataBuilder.withChild().attributes(null).parentId(null).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().categoryId(category.getId()).build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
@@ -565,7 +565,7 @@ public class ProductControllerIntegrationTest {
             String userId = "user_id";
 
             Attribute attribute = AttributeDataBuilder.withAllFields().required(false).build();
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .build();
@@ -597,7 +597,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().required(false).build();
             List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("Text")));
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(attributeValues)
@@ -631,7 +631,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().required(false).type(AttributeType.NUMBER).build();
             List<AttributeValue> attributeValues = List.of(new AttributeValue(attribute.id(), List.of("not_number_value")));
-            Category category = CategoryDataBuilder.withAllFields().attributes(List.of(attribute.id())).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
                     .attributes(attributeValues)

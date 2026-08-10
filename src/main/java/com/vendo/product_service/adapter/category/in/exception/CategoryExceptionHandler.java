@@ -54,4 +54,15 @@ public class CategoryExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
+
+    @ExceptionHandler(CategoryHasNoImageException.class)
+    public ResponseEntity<ExceptionResponse> handleCategoryHasNoImageException(CategoryHasNoImageException e, HttpServletRequest request) {
+        ExceptionResponse exceptionResponse = ExceptionResponse.builder()
+                .message(e.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
+    }
 }

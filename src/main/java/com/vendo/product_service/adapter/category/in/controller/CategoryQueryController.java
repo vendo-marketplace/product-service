@@ -2,13 +2,10 @@ package com.vendo.product_service.adapter.category.in.controller;
 
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
-import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.CategoryTreeMapper;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.domain.category.model.Category;
-import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import com.vendo.product_service.port.category.usecase.CategoryQueryUseCase;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,18 +16,11 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/categories")
-class CategoryController {
+class CategoryQueryController {
 
-    private final CategoryCommandUseCase categoryUseCase;
     private final CategoryQueryUseCase categoryQueryUseCase;
     private final CategoryTreeMapper categoryTreeMapper;
     private final DtoCategoryMapper categoryMapper;
-
-    @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
-    void save(@Valid @RequestBody CreateCategoryRequest request) {
-        categoryUseCase.save(categoryMapper.toCategory(request));
-    }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")

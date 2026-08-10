@@ -22,7 +22,7 @@ public final class ImageMapper {
                 .toList();
     }
 
-    private static Image toImage(MultipartFile file) {
+    public static Image toImage(MultipartFile file) {
         try {
             return Image.builder()
                     .size(file.getSize())

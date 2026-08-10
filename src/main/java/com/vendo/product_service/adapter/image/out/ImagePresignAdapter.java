@@ -4,7 +4,7 @@ import com.vendo.product_service.adapter.image.out.aws.AwsClient;
 import com.vendo.product_service.adapter.image.out.aws.dto.PresignRequest;
 import com.vendo.product_service.adapter.image.out.aws.dto.PresignResponse;
 import com.vendo.product_service.adapter.image.out.aws.dto.nested.PresignBody;
-import com.vendo.product_service.adapter.image.out.aws.dto.nested.PresignType;
+import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.adapter.image.out.mapper.PresignMapper;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignImage;
@@ -22,9 +22,9 @@ class ImagePresignAdapter implements ImagePresignPort {
     private final AwsClient awsClient;
 
     @Override
-    public List<PresignImage> generate(List<Image> images) {
+    public List<PresignImage> generate(PresignType type, List<Image> images) {
         List<PresignBody> presignBodies = presignMapper.toPresignBodies(images);
-        PresignResponse response = awsClient.presign(new PresignRequest(PresignType.PRODUCT, presignBodies));
+        PresignResponse response = awsClient.presign(new PresignRequest(type, presignBodies));
         return response.data();
     }
 

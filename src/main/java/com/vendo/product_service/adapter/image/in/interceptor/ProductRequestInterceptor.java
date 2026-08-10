@@ -11,7 +11,7 @@ import static com.vendo.security_lib.http.HttpUtils.BEARER_PREFIX;
 
 @Configuration
 @RequiredArgsConstructor
-public class AwsRequestInterceptor {
+public class ProductRequestInterceptor {
 
     private final InternalTokenGenerationPort internalTokenGenerationPort;
 

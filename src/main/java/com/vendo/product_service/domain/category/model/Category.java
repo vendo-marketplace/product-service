@@ -2,6 +2,7 @@ package com.vendo.product_service.domain.category.model;
 
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.product_service.domain.category.exception.CategoryHasNoImageException;
 import com.vendo.product_service.domain.category.exception.CategoryTypeException;
 import com.vendo.product_service.domain.category.exception.CategoryValidationException;
 import com.vendo.product_service.domain.category.type.CategoryType;
@@ -26,6 +27,9 @@ public class Category {
     private String title;
     private String slug;
     private String parentId;
+
+    private ImageBody image;
+
     private List<String> attributes;
     private List<String> path;
 
@@ -68,6 +72,12 @@ public class Category {
     public void throwIfNotDesiredType(CategoryType desiredType, String message) {
         if (getType() != desiredType) {
             throw new CategoryTypeException(message);
+        }
+    }
+
+    public void throwIfHasNoImage() {
+        if (image == null) {
+            throw new CategoryHasNoImageException("Category has no image.");
         }
     }
 
