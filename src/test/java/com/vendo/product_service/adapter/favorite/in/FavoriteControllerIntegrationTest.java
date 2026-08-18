@@ -2,8 +2,8 @@ package com.vendo.product_service.adapter.favorite.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
-import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
-import com.vendo.product_service.adapter.favorite.in.dto.FavoritesResponse;
+import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
+import com.vendo.product_service.adapter.product.in.dto.ProductsResponse;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
@@ -208,14 +208,14 @@ public class FavoriteControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            FavoritesResponse favoritesResponse = objectMapper.readValue(content, FavoritesResponse.class);
-            assertThat(favoritesResponse).isNotNull();
-            assertThat(favoritesResponse.data()).isNotNull();
-            assertThat(favoritesResponse.data().size()).isEqualTo(1);
+            ProductsResponse productsResponse = objectMapper.readValue(content, ProductsResponse.class);
+            assertThat(productsResponse).isNotNull();
+            assertThat(productsResponse.data()).isNotNull();
+            assertThat(productsResponse.data().size()).isEqualTo(1);
 
 
-            FavoriteResponse actual = favoritesResponse.data().get(0);
-            AssertionUtils.assertFrom(actual, product, "ownerId", "attributes", "createdAt", "description", "categoryId", "imageKeys");
+            ProductResponse actual = productsResponse.data().get(0);
+            AssertionUtils.assertFrom(actual, product);
 
             verify(favoriteQueryPort).findAllBy(user.id());
             verify(productQueryPort).findAllByIds(List.of(favorite.productId()));
@@ -231,10 +231,10 @@ public class FavoriteControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            FavoritesResponse favoritesResponse = objectMapper.readValue(content, FavoritesResponse.class);
-            assertThat(favoritesResponse).isNotNull();
-            assertThat(favoritesResponse.data()).isNotNull();
-            assertThat(favoritesResponse.data().size()).isEqualTo(0);
+            ProductsResponse productsResponse = objectMapper.readValue(content, ProductsResponse.class);
+            assertThat(productsResponse).isNotNull();
+            assertThat(productsResponse.data()).isNotNull();
+            assertThat(productsResponse.data().size()).isEqualTo(0);
 
             verify(favoriteQueryPort).findAllBy(user.id());
         }
