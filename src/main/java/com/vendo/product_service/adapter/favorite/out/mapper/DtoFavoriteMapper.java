@@ -30,7 +30,6 @@ public abstract class DtoFavoriteMapper {
         }
 
         List<String> images = new ArrayList<>();
-
         for (String imageKey : imageKeys) {
             images.add(AWS_BASE_URL.concat(imageKey));
         }
