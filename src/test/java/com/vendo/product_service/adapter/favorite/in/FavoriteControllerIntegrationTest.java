@@ -3,7 +3,6 @@ package com.vendo.product_service.adapter.favorite.in;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
-import com.vendo.product_service.adapter.product.in.dto.ProductsResponse;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
