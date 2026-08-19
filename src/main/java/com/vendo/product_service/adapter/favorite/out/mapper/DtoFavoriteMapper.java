@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.favorite.out.mapper;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
@@ -24,6 +25,10 @@ public abstract class DtoFavoriteMapper {
 
     @Named("toImages")
     protected List<String> toImages(List<String> imageKeys) {
+        if (CollectionUtils.isEmpty(imageKeys)) {
+            return null;
+        }
+
         List<String> images = new ArrayList<>();
 
         for (String imageKey : imageKeys) {
