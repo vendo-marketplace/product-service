@@ -1,9 +1,10 @@
 package com.vendo.product_service.adapter.favorite.in;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.core_lib.response.DataResponse;
 import com.vendo.core_lib.utils.AssertionUtils;
-import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
-import com.vendo.product_service.adapter.product.in.dto.ProductsResponse;
+import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
 import com.vendo.product_service.domain.favorite.model.Favorite;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
@@ -208,14 +209,13 @@ public class FavoriteControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            ProductsResponse productsResponse = objectMapper.readValue(content, ProductsResponse.class);
-            assertThat(productsResponse).isNotNull();
-            assertThat(productsResponse.data()).isNotNull();
-            assertThat(productsResponse.data().size()).isEqualTo(1);
+            DataResponse<FavoriteResponse> dataResponse = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(dataResponse).isNotNull();
+            assertThat(dataResponse.data()).isNotNull();
+            assertThat(dataResponse.data().size()).isEqualTo(1);
 
-
-            ProductResponse actual = productsResponse.data().get(0);
-            AssertionUtils.assertFrom(actual, product);
+            FavoriteResponse actual = dataResponse.data().get(0);
+            AssertionUtils.assertFrom(actual, product, "imageKeys");
 
             verify(favoriteQueryPort).findAllBy(user.id());
             verify(productQueryPort).findAllByIds(List.of(favorite.productId()));
@@ -231,10 +231,10 @@ public class FavoriteControllerIntegrationTest {
                     .getResponse()
                     .getContentAsString();
 
-            ProductsResponse productsResponse = objectMapper.readValue(content, ProductsResponse.class);
-            assertThat(productsResponse).isNotNull();
-            assertThat(productsResponse.data()).isNotNull();
-            assertThat(productsResponse.data().size()).isEqualTo(0);
+            DataResponse<FavoriteResponse> dataResponse = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(dataResponse).isNotNull();
+            assertThat(dataResponse.data()).isNotNull();
+            assertThat(dataResponse.data().size()).isEqualTo(0);
 
             verify(favoriteQueryPort).findAllBy(user.id());
         }

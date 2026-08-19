@@ -1,7 +1,8 @@
 package com.vendo.product_service.adapter.favorite.in;
 
-import com.vendo.product_service.adapter.product.in.dto.ProductsResponse;
-import com.vendo.product_service.adapter.product.out.mapper.DtoProductMapper;
+import com.vendo.core_lib.response.DataResponse;
+import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
+import com.vendo.product_service.adapter.favorite.out.mapper.DtoFavoriteMapper;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.favorite.usecase.FavoriteUseCase;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.List;
 public class FavoriteController {
 
     private final FavoriteUseCase favoriteUseCase;
-    private final DtoProductMapper productMapper;
+    private final DtoFavoriteMapper mapper;
 
     @PostMapping("/{productId}")
     public void addFavorite(@PathVariable String productId) {
@@ -29,9 +30,9 @@ public class FavoriteController {
     }
 
     @GetMapping
-    public ResponseEntity<ProductsResponse> getFavorites() {
+    public ResponseEntity<DataResponse<FavoriteResponse>> getFavorites() {
         List<Product> products = favoriteUseCase.getAll();
-        return ResponseEntity.ok(ProductsResponse.of(productMapper.toResponses(products)));
+        return ResponseEntity.ok(new DataResponse<>(mapper.toResponses(products)));
     }
 
 }
