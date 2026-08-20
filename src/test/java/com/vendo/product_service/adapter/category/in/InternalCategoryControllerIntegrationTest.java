@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -71,22 +72,20 @@ public class InternalCategoryControllerIntegrationTest {
     }
 
     @Test
-    void find_shouldReturnCategory_whenNotChildType() throws Exception {
-        Category category = CategoryDataBuilder.withParent().build();
-
-        when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
-
-        String content = performGet(category.getId())
-                .andExpect(status().isOk())
+    void find_shouldReturnBadRequest_whenIdParameterIsMissing() throws Exception {
+        String content = performGet(" ")
+                .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        CategoryResponse response = objectMapper.readValue(content, CategoryResponse.class);
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse).isNotNull();
+        assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+        assertThat(exceptionResponse.getErrors()).containsEntry("id", "Id is required.");
 
-        assertThat(response.type()).isEqualTo(CategoryType.PARENT);
-
-        verify(categoryQueryPort).findById(category.getId(), "Category not found.");
+        verifyNoInteractions(categoryQueryPort);
     }
 
     @Test
