@@ -11,6 +11,7 @@ import com.vendo.product_service.port.product.usecase.ProductUseCase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,12 +26,18 @@ class ProductController {
     private final ProductUseCase productUseCase;
     private final DtoProductMapper mapper;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     void save(
-            @Valid @RequestBody CreateProductRequest request,
-            @Valid @ImageFile @NotEmpty(message = "Images are required.") @RequestParam List<MultipartFile> images
+            @Valid @RequestPart CreateProductRequest request,
+
+            @ImageFile
+            @NotEmpty(message = "Images are required.")
+            @RequestPart List<MultipartFile> images
     ) {
-        productUseCase.save(ImageMapper.toImages(images), mapper.toEntity(request));
+        productUseCase.save(
+                ImageMapper.toImages(images),
+                mapper.toEntity(request)
+        );
     }
 
     @PutMapping("/{id}")
