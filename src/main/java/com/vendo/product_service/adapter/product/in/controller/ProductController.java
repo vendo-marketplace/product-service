@@ -30,6 +30,7 @@ class ProductController {
     void save(
             @Valid @RequestPart CreateProductRequest request,
 
+            @Valid
             @ImageFile
             @NotEmpty(message = "Images are required.")
             @RequestPart List<MultipartFile> images
