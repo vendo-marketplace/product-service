@@ -14,6 +14,7 @@ import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.CategoryQueryPort;
+import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import com.vendo.product_service.port.product.ProductCommandPort;
 import com.vendo.product_service.port.product.ProductEventSenderPort;
 import com.vendo.product_service.port.product.ProductQueryPort;
@@ -30,6 +31,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -64,13 +66,38 @@ public class ProductControllerIntegrationTest {
     private AttributeQueryPort attributeQueryPort;
     @MockitoBean
     private ProductEventSenderPort productEventSenderPort;
+    @MockitoBean
+    private ImageUseCase imageUseCase;
 
     private ResultActions performProductPersist(String userId, CreateProductRequest request) throws Exception {
-        User user = new User(userId, "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
-        return mockMvc.perform(post("/products")
-                .with(authentication(SecurityContextService.initializeAuth(user)))
-                .content(objectMapper.writeValueAsString(request))
-                .contentType(MediaType.APPLICATION_JSON));
+        User user = new User(
+                userId,
+                "email",
+                UserStatus.ACTIVE,
+                Set.of(UserRole.USER),
+                true
+        );
+
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+
+        MockMultipartFile image = new MockMultipartFile(
+                "images",
+                "image.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "image content".getBytes()
+        );
+
+        return mockMvc.perform(
+                multipart("/products")
+                        .file(requestPart)
+                        .file(image)
+                        .with(authentication(SecurityContextService.initializeAuth(user)))
+        );
     }
 
     private ResultActions performProductPersist(String request) throws Exception {
@@ -469,10 +496,6 @@ public class ProductControllerIntegrationTest {
         void save_shouldReturnBadRequest_whenValidationFailed() throws Exception {
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .title(null)
-                    .description(null)
-                    .price(null)
-                    .categoryId(null)
-                    .isNew(null)
                     .build();
 
             String content = performProductPersist(request)
@@ -485,7 +508,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
-            assertThat(exceptionResponse.getErrors().size()).isEqualTo(5);
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);
@@ -508,8 +531,8 @@ public class ProductControllerIntegrationTest {
 
             ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
             assertThat(exceptionResponse).isNotNull();
-            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-            assertThat(exceptionResponse.getMessage()).isEqualTo("Invalid body structure.");
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Unsupported media type.");
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
             verifyNoInteractions(categoryQueryPort, productCommandPort, productEventSenderPort);

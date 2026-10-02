@@ -2,8 +2,12 @@ package com.vendo.product_service.application.product;
 
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
+import com.vendo.product_service.domain.image.model.Image;
+import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.domain.user.User;
+import com.vendo.product_service.port.image.usecase.ImageUseCase;
 import com.vendo.product_service.port.product.usecase.ProductUseCase;
 import com.vendo.product_service.port.category.CategoryQueryPort;
 import com.vendo.product_service.port.product.ProductCommandPort;
@@ -18,6 +22,9 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 class ProductService implements ProductUseCase {
+
+    private final int imagesMaxLimit;
+    private final ImageUseCase imageUseCase;
 
     private final AuthUserPort authUserPort;
 
@@ -34,12 +41,16 @@ class ProductService implements ProductUseCase {
     }
 
     @Override
-    public void save(Product request) {
+    public void save(List<Image> images, Product request) {
         Category category = productValidationFacade.validateCategoryOnSave(request.getCategoryId());
         List<Attribute> attributes = productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());
 
+        validateImagesLimit(images);
+        List<String> keys = imageUseCase.upload(PresignType.PRODUCT, images);
+
         request.setOwnerId(authUserPort.getAuthUser().id());
         request.setActive(true);
+        request.setImageKeys(keys);
 
         Product saved = productCommandPort.save(request);
         eventSenderPort.sendCreated(saved, attributes);
@@ -58,5 +69,11 @@ class ProductService implements ProductUseCase {
 
         productCommandPort.update(id, request);
         eventSenderPort.sendUpdated(request, attributes);
+    }
+
+    private void validateImagesLimit(List<Image> images) {
+        if (images.size() > imagesMaxLimit) {
+            throw new ImagesLimitExceededException("The maximum number of images is %d.".formatted(imagesMaxLimit));
+        }
     }
 }
