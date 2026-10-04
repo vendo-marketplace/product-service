@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CategoryTreeResponse;
@@ -83,6 +84,12 @@ public class CategoryQueryControllerIntegrationTest {
         return mockMvc.perform(get("/categories/tree"));
     }
 
+    private ResultActions performCategoryAttributesGet(String categoryId) throws Exception {
+        User user = new User("id", "email", UserStatus.ACTIVE, Set.of(UserRole.USER), true);
+        return mockMvc.perform(get("/categories/{id}/attributes", categoryId)
+                .with(authentication(SecurityContextService.initializeAuth(user))));
+    }
+
     @Nested
     class FindCategoriesTests {
 
@@ -131,6 +138,47 @@ public class CategoryQueryControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories/%s".formatted(categoryId));
 
             verify(categoryQueryPort).findById(categoryId, "Category not found.");
+        }
+    }
+
+    @Nested
+    class FindCategoryAttributesTests {
+
+        @Test
+        void findAttributesByCategoryId_shouldReturnAttributesAndCacheResult() throws Exception {
+            String categoryId = String.valueOf(UUID.randomUUID());
+            Category category = CategoryDataBuilder.withChild().id(categoryId).attributes(List.of("attribute-1")).build();
+            Attribute attribute = AttributeDataBuilder.withAllFields().id("attribute-1").build();
+            when(categoryQueryPort.findById(categoryId, "Category not found.")).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
+
+            String firstResponse = performCategoryAttributesGet(categoryId)
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+            String secondResponse = performCategoryAttributesGet(categoryId)
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<Attribute> actualAttributes = objectMapper.readValue(firstResponse, new TypeReference<>() {});
+            assertThat(actualAttributes).containsExactly(attribute);
+            assertThat(secondResponse).isEqualTo(firstResponse);
+            verify(categoryQueryPort, times(1)).findById(categoryId, "Category not found.");
+            verify(attributeQueryPort, times(1)).findAllByIds(category.getAttributes());
+        }
+
+        @Test
+        void findAttributesByCategoryId_shouldReturnEmptyList_whenCategoryHasNoAttributes() throws Exception {
+            String categoryId = String.valueOf(UUID.randomUUID());
+            Category category = CategoryDataBuilder.withSub().id(categoryId).attributes(null).build();
+            when(categoryQueryPort.findById(categoryId, "Category not found.")).thenReturn(category);
+
+            String response = performCategoryAttributesGet(categoryId)
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(objectMapper.readValue(response, new TypeReference<List<Attribute>>() {})).isEmpty();
+            verify(categoryQueryPort).findById(categoryId, "Category not found.");
+            verifyNoInteractions(attributeQueryPort);
         }
     }
 

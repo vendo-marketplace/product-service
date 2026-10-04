@@ -30,6 +30,14 @@ class CategoryQueryService implements CategoryQueryUseCase {
     }
 
     @Override
+    @Cacheable(value = "category-attributes", key = "#categoryId")
+    public List<Attribute> findAttributesByCategoryId(String categoryId) {
+        Category category = findById(categoryId);
+        if (CollectionUtils.isEmpty(category.getAttributes())) return List.of();
+        return attributeQueryPort.findAllByIds(category.getAttributes());
+    }
+
+    @Override
     @Cacheable("category-tree")
     public List<CategoryNode> getTree() {
         List<Category> categories = categoryQueryPort.findAll();
