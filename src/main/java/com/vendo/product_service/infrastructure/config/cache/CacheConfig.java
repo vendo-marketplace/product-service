@@ -19,6 +19,10 @@ public class CacheConfig {
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(1));
+        manager.registerCustomCache("category-attributes", Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .maximumSize(1_000)
+                .build());
         return manager;
     }
 }
