@@ -1,15 +1,13 @@
 package com.vendo.product_service.adapter.security.in.filter.path;
 
-import com.vendo.product_service.infrastructure.shared.props.PathProps;
+import com.vendo.security_starter.path.PathGroup;
+import com.vendo.security_starter.path.PathProps;
 import com.vendo.security_lib.resolver.AntPathResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
@@ -21,9 +19,6 @@ public class InternalAntPathResolver implements AntPathResolver {
 
     @Override
     public boolean isPermittedPath(String path) {
-        Set<String> PERMITTED_PATHS = Stream.of(pathProps.getGeneral(), pathProps.getProduct())
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-        return PERMITTED_PATHS.stream().anyMatch(pr -> antPathMatcher.match(pr, path));
+        return Arrays.stream(pathProps.paths(PathGroup.GENERAL, PathGroup.PRODUCT)).anyMatch(pr -> antPathMatcher.match(pr, path));
     }
 }

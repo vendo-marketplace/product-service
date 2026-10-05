@@ -6,3 +6,6 @@ spring:
     include: kafka,aws
   config:
     import: "optional:configserver:${CONFIG_SERVER_URL}"
+
+endpoints:
+  enabled-groups: general, internal, product

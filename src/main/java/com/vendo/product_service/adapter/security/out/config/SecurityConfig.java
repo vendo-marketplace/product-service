@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.security.out.config;
 
 import com.vendo.product_service.adapter.security.in.filter.InternalFilter;
 import com.vendo.product_service.adapter.security.in.filter.AuthFilter;
-import com.vendo.product_service.infrastructure.shared.props.PathProps;
+import com.vendo.security_starter.path.PathProps;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(pathProps.getAllPaths()).permitAll()
+                        .requestMatchers(pathProps.allPaths()).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterAfter(authFilter, ExceptionTranslationFilter.class)
