@@ -228,6 +228,35 @@ public class ProductControllerIntegrationTest {
         }
 
         @Test
+        void update_shouldUpdateProduct_whenCategoryHasRequiredAttributes_andRequestHasNoAttributesForUpdate() throws Exception {
+            String productId = "product_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(true).build();
+            AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of()).build();
+
+            Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
+
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+
+            performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+            verify(productQueryPort).findById(productId);
+            verify(categoryQueryPort).findById(existing.getCategoryId());
+            verifyNoInteractions(attributeQueryPort);
+
+            ArgumentCaptor<Product> updateProductArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productCommandPort).update(eq(productId), updateProductArgumentCaptor.capture());
+            AssertionUtils.assertFrom(updateProductArgumentCaptor.getValue(), request);
+
+            ArgumentCaptor<Product> updateProductEventArgumentCaptor = ArgumentCaptor.forClass(Product.class);
+            verify(productEventSenderPort).sendUpdated(updateProductEventArgumentCaptor.capture(), eq(List.of()));
+            AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request);
+        }
+
+        @Test
         void update_returnNotFound_whenProductNotFound() throws Exception {
             UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().build();
             Product product = ProductDataBuilder.withAllFields().build();
@@ -287,7 +316,7 @@ public class ProductControllerIntegrationTest {
 
             verify(productQueryPort).findById(product.getId());
             verify(categoryQueryPort).findById(product.getCategoryId());
-            verify(attributeQueryPort).findAllByIds(category.getAttributes());
+            verifyNoInteractions(attributeQueryPort);
 
             ArgumentCaptor<Product> updateProductArgumentCaptor = ArgumentCaptor.forClass(Product.class);
             verify(productCommandPort).update(eq(product.getId()), updateProductArgumentCaptor.capture());

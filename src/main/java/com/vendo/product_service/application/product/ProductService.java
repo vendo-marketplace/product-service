@@ -1,5 +1,6 @@
 package com.vendo.product_service.application.product;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
@@ -65,10 +66,17 @@ class ProductService implements ProductUseCase {
         authUser.throwIfNotOwner(existing.getOwnerId());
 
         Category category = categoryQueryPort.findById(existing.getCategoryId());
-        List<Attribute> attributes = productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());
 
         productCommandPort.update(id, request);
-        eventSenderPort.sendUpdated(request, attributes);
+        eventSenderPort.sendUpdated(request, validateAttributes(category, request));
+    }
+
+    private List<Attribute> validateAttributes(Category category, Product request) {
+        if (CollectionUtils.isEmpty(request.getAttributes())) {
+            return List.of();
+        }
+
+        return productValidationFacade.validateAttributes(category.getAttributes(), request.getAttributes());
     }
 
     private void validateImagesLimit(List<Image> images) {

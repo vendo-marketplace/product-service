@@ -14,7 +14,6 @@ public class CategoryDataBuilder {
                 .title("Category")
                 .parentId(String.valueOf(UUID.randomUUID()))
                 .slug("slug")
-                .path(List.of("id1", "id2", "id3"))
                 .attributes(List.of("id_1"));
     }
 
@@ -25,8 +24,7 @@ public class CategoryDataBuilder {
                 .id(id)
                 .title("Category")
                 .parentId(parentId)
-                .slug("slug")
-                .path(List.of(parentId, id));
+                .slug("slug");
     }
 
     public static Category.CategoryBuilder withParent() {
@@ -36,8 +34,7 @@ public class CategoryDataBuilder {
                 .id(id)
                 .title("Category")
                 .image(new ImageBody("key", "key-url"))
-                .slug("slug")
-                .path(List.of(id));
+                .slug("slug");
     }
 
 }

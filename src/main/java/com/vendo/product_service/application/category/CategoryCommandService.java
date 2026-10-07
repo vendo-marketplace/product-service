@@ -1,10 +1,12 @@
 package com.vendo.product_service.application.category;
 
-import com.vendo.core_lib.utils.StringUtils;
+import com.vendo.core_lib.utils.CollectionUtils;
+import com.vendo.core_lib.utils.ObjectUtils;
 import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.category.model.ImageBody;
 import com.vendo.product_service.domain.image.model.Image;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import com.vendo.product_service.port.category.TypeValidationPort;
 import com.vendo.product_service.port.IdGenerationPort;
@@ -16,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -25,6 +26,8 @@ class CategoryCommandService implements CategoryCommandUseCase {
 
     private final TypeValidationPort typeValidationPort;
     private final IdGenerationPort idGenerationPort;
+
+    private final AttributeQueryPort attributeQueryPort;
 
     private final CategoryCommandPort categoryCommandPort;
     private final CategoryQueryPort categoryQueryPort;
@@ -39,14 +42,14 @@ class CategoryCommandService implements CategoryCommandUseCase {
         typeValidationPort.validate(category);
 
         category.setId(idGenerationPort.generate());
-        category.setPath(category.buildPath(getParentPath(category)));
 
         categoryCommandPort.save(category);
     }
 
     @CacheEvict(value = "category-tree", allEntries = true)
-    public void update(String id, Category request) {
-        categoryCommandPort.update(id, request);
+    public void update(String id, Category category) {
+        validateAttributes(category.getAttributes());
+        categoryCommandPort.update(id, category);
     }
 
     @Override
@@ -58,7 +61,7 @@ class CategoryCommandService implements CategoryCommandUseCase {
         Category updateCategory = Category.builder().image(new ImageBody(key, baseUrl.concat(key))).build();
         categoryCommandPort.update(id, updateCategory);
 
-        if (category.getImage() != null) imageEventSenderPort.delete(category.getImage().key());;
+        if (ObjectUtils.isNotNull(category.getImage())) imageEventSenderPort.delete(category.getImage().key());
     }
 
     @Override
@@ -71,11 +74,8 @@ class CategoryCommandService implements CategoryCommandUseCase {
         categoryCommandPort.removeImage(id);
     }
 
-    private List<String> getParentPath(Category category) {
-        if (StringUtils.isEmpty(category.getParentId())) {
-            return Collections.emptyList();
-        }
-
-        return categoryQueryPort.findById(category.getParentId(), "Parent category not found.").getPath();
+    private void validateAttributes(List<String> attributes) {
+        if (CollectionUtils.isEmpty(attributes)) return;
+        attributeQueryPort.findAllByIds(attributes);
     }
 }

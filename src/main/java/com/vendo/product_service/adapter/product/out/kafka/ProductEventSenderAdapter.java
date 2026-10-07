@@ -1,5 +1,6 @@
 package com.vendo.product_service.adapter.product.out.kafka;
 
+import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.event_lib.product.ProductCreatedEvent;
 import com.vendo.event_lib.product.ProductUpdatedEvent;
 import com.vendo.event_lib.product.nested.AttributeEvent;
@@ -25,17 +26,23 @@ public class ProductEventSenderAdapter implements ProductEventSenderPort {
     @Override
     public void sendCreated(Product product, List<Attribute> attributes) {
         product.throwIfMissingId();
-        List<AttributeEvent> attributeEvents = attributeMapper.toEvents(product.getAttributes(), attributes);
-        ProductCreatedEvent event = productMapper.toCreatedEvent(product, attributeEvents);
+        ProductCreatedEvent event = productMapper.toCreatedEvent(product, toAttributeEvents(product, attributes));
         createdEventProducer.send(event);
     }
 
     @Override
     public void sendUpdated(Product product, List<Attribute> attributes) {
         product.throwIfMissingId();
-        List<AttributeEvent> attributeEvents = attributeMapper.toEvents(product.getAttributes(), attributes);
-        ProductUpdatedEvent event = productMapper.toUpdatedEvent(product, attributeEvents);
+        ProductUpdatedEvent event = productMapper.toUpdatedEvent(product, toAttributeEvents(product, attributes));
         updatedEventProducer.send(event);
+    }
+
+    private List<AttributeEvent> toAttributeEvents(Product product, List<Attribute> attributes) {
+        if (CollectionUtils.isEmpty(attributes)) {
+            return List.of();
+        }
+
+        return attributeMapper.toEvents(product.getAttributes(), attributes);
     }
 
     @Override

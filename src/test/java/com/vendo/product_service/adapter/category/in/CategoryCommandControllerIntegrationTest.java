@@ -44,7 +44,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static com.vendo.product_service.domain.category.model.Category.CATEGORY_TYPE_VALIDATION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -314,9 +313,6 @@ public class CategoryCommandControllerIntegrationTest {
                 assertThat(capturedCategory).isNotNull();
                 assertThat(capturedCategory.getSlug()).isEqualTo(categoryRequest.slug());
                 assertThat(capturedCategory.getParentId()).isNull();
-                assertThat(capturedCategory.getPath()).isNotNull();
-                assertThat(capturedCategory.getPath().size()).isEqualTo(1);
-                assertThat(capturedCategory.getPath().get(0)).isEqualTo(capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNull();
             }
         }
@@ -336,7 +332,6 @@ public class CategoryCommandControllerIntegrationTest {
                         .id(parentId)
                         .attributes(null)
                         .parentId(null)
-                        .path(List.of(parentId))
                         .build();
                 Category sub = CategoryDataBuilder.withChild()
                         .parentId(parentId)
@@ -355,12 +350,9 @@ public class CategoryCommandControllerIntegrationTest {
                 assertThat(capturedCategory).isNotNull();
                 assertThat(capturedCategory.getSlug()).isEqualTo(categoryRequest.slug());
                 assertThat(capturedCategory.getParentId()).isEqualTo(categoryRequest.parentId());
-                assertThat(capturedCategory.getPath()).isNotNull();
-                assertThat(capturedCategory.getPath().size()).isEqualTo(2);
-                assertThat(capturedCategory.getPath()).containsExactly(parentId, capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNull();
 
-                verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
+                verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);
             }
 
@@ -368,7 +360,7 @@ public class CategoryCommandControllerIntegrationTest {
             void save_shouldSaveCategory_whenParentIsSub() throws Exception {
                 String parentId = String.valueOf(UUID.randomUUID());
 
-                Category parent = CategoryDataBuilder.withChild().id(parentId).attributes(null).path(List.of(parentId)).build();
+                Category parent = CategoryDataBuilder.withChild().id(parentId).attributes(null).build();
                 Category sub = CategoryDataBuilder.withChild().parentId(parent.getId()).attributes(null).build();
                 CreateCategoryRequest categoryRequest = CreateCategoryRequestDataBuilder.withAllFields()
                         .parentId(parent.getId())
@@ -387,12 +379,9 @@ public class CategoryCommandControllerIntegrationTest {
                 assertThat(capturedCategory).isNotNull();
                 assertThat(capturedCategory.getSlug()).isEqualTo(categoryRequest.slug());
                 assertThat(capturedCategory.getParentId()).isEqualTo(categoryRequest.parentId());
-                assertThat(capturedCategory.getPath()).isNotNull();
-                assertThat(capturedCategory.getPath().size()).isEqualTo(2);
-                assertThat(capturedCategory.getPath()).containsExactly(parent.getId(), capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNull();
 
-                verify(categoryQueryPort, times(2)).findById(categoryRequest.parentId(), "Parent category not found.");
+                verify(categoryQueryPort).findById(categoryRequest.parentId(), "Parent category not found.");
                 verify(commandPort).save(capturedCategory);
             }
 
@@ -453,10 +442,8 @@ public class CategoryCommandControllerIntegrationTest {
             @Test
             void save_shouldSaveCategory_whenHasParentCategoryAndAttributes() throws Exception {
                 String parentId = String.valueOf(UUID.randomUUID()), subId = String.valueOf(UUID.randomUUID());
-                List<String> parentPath = List.of(parentId);
 
-                List<String> subPath = Stream.concat(parentPath.stream(), Stream.of(subId)).toList();
-                Category sub = CategoryDataBuilder.withChild().id(subId).attributes(null).parentId(parentId).path(subPath).build();
+                Category sub = CategoryDataBuilder.withChild().id(subId).attributes(null).parentId(parentId).build();
 
                 Attribute attribute = new Attribute("id", "title", "slug", AttributeType.STRING, false, null);
                 CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
@@ -476,14 +463,11 @@ public class CategoryCommandControllerIntegrationTest {
                 assertThat(capturedCategory).isNotNull();
                 assertThat(capturedCategory.getSlug()).isEqualTo(request.slug());
                 assertThat(capturedCategory.getParentId()).isEqualTo(request.parentId());
-                assertThat(capturedCategory.getPath()).isNotNull();
-                assertThat(capturedCategory.getPath().size()).isEqualTo(3);
-                assertThat(capturedCategory.getPath()).containsExactly(parentId, subId, capturedCategory.getId());
                 assertThat(capturedCategory.getAttributes()).isNotNull();
                 assertThat(capturedCategory.getAttributes().size()).isEqualTo(1);
                 assertThat(capturedCategory.getAttributes().get(0)).isEqualTo(attribute.id());
 
-                verify(categoryQueryPort, times(2)).findById(request.parentId(), "Parent category not found.");
+                verify(categoryQueryPort).findById(request.parentId(), "Parent category not found.");
                 verify(attributeQueryPort).findAllByIds(request.attributes());
                 verify(commandPort).save(capturedCategory);
             }
@@ -569,11 +553,13 @@ public class CategoryCommandControllerIntegrationTest {
         @Test
         void update_shouldUpdateCategory() throws Exception {
             User user = UserDataBuilder.withAllFields().build();
-            String categoryId = "categoryId";
-            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
+            String categoryId = "categoryId", attributeId = "attributeId";
+            List<String> attributes = List.of(attributeId);
+            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc", attributes);
 
             performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request).andExpect(status().isOk());
 
+            verify(attributeQueryPort).findAllByIds(attributes);
             verify(categoryCommandPort).update(eq(categoryId), any(Category.class));
         }
 
@@ -581,7 +567,7 @@ public class CategoryCommandControllerIntegrationTest {
         void update_shouldReturnForbidden_whenNotAdmin() throws Exception {
             User user = UserDataBuilder.withAllFields().build();
             String categoryId = "categoryId";
-            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc");
+            UpdateCategoryRequest request = new UpdateCategoryRequest("PC", "pc", List.of());
 
             String content = performCategoryUpdate(categoryId, user.id(), UserRole.USER, request)
                     .andExpect(status().isForbidden())
@@ -594,14 +580,14 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verifyNoInteractions(categoryCommandPort);
+            verifyNoInteractions(categoryCommandPort, attributeQueryPort);
         }
 
         @Test
         void update_shouldReturnBadRequest_whenTitleAndSlugAreInvalid() throws Exception {
             User user = UserDataBuilder.withAllFields().build();
             String categoryId = "categoryId";
-            UpdateCategoryRequest request = new UpdateCategoryRequest("_invalid_title", "INVALID_SLUG");
+            UpdateCategoryRequest request = new UpdateCategoryRequest("_invalid_title", "INVALID_SLUG", List.of());
 
             String content = performCategoryUpdate(categoryId, user.id(), UserRole.ADMIN, request)
                     .andExpect(status().isBadRequest())
@@ -619,7 +605,7 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
-            verifyNoInteractions(categoryCommandPort);
+            verifyNoInteractions(categoryCommandPort, attributeQueryPort);
         }
     }
 
