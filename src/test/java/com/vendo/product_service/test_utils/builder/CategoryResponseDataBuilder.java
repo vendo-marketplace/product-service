@@ -14,8 +14,7 @@ public record CategoryResponseDataBuilder() {
                 "Title",
                 "parent_id",
                 CategoryType.SUB,
-                List.of("id_1"),
-                List.of("root_id", "parent_id")
+                List.of("id_1")
         );
     }
 

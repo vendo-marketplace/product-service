@@ -9,7 +9,6 @@ import com.vendo.product_service.domain.category.type.CategoryType;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +30,6 @@ public class Category {
     private ImageBody image;
 
     private List<String> attributes;
-    private List<String> path;
 
     public static List<String> extractAttributes(List<Category> categories) {
         return categories.stream()
@@ -79,19 +77,6 @@ public class Category {
         if (image == null) {
             throw new CategoryHasNoImageException("Category has no image.");
         }
-    }
-
-    public List<String> buildPath(List<String> parentPath) {
-        if (id == null) throw new IllegalStateException("Id is empty.");
-
-        if (CollectionUtils.isEmpty(parentPath)) {
-            return List.of(id);
-        }
-
-        List<String> path = new ArrayList<>(parentPath);
-        path.add(id);
-
-        return path;
     }
 
     private boolean isParent(String parentId, List<String> attributes) {

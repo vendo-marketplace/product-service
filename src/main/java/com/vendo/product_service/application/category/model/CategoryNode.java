@@ -15,7 +15,6 @@ public record CategoryNode(
         ImageBody image,
 
         List<Attribute> attributes,
-        List<String> path,
         List<CategoryNode> children
 ) {
 
@@ -27,7 +26,6 @@ public record CategoryNode(
                 category.getType(),
                 category.getImage(),
                 attributes,
-                category.getPath(),
                 children
         );
     }

@@ -13,11 +13,9 @@ import java.util.List;
 public interface DtoProductMapper {
 
     Product toEntity(CreateProductRequest request);
-
     Product toEntity(UpdateProductRequest request);
 
     ProductResponse toResponse(Product product);
-
     List<ProductResponse> toResponses(List<Product> products);
 
 }

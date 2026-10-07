@@ -100,7 +100,6 @@ public class CategoryQueryControllerIntegrationTest {
                     .id(response.id())
                     .attributes(response.attributes())
                     .title(response.title())
-                    .path(response.path())
                     .build();
 
             when(categoryQueryPort.findById(category.getId(), "Category not found.")).thenReturn(category);
@@ -189,13 +188,11 @@ public class CategoryQueryControllerIntegrationTest {
         void tree_shouldCategoriesTree() throws Exception {
             Attribute attribute1 = AttributeDataBuilder.withAllFields().id("1").build();
             Attribute attribute2 = AttributeDataBuilder.withAllFields().id("2").build();
-            String parentId = String.valueOf(UUID.randomUUID()), childId = String.valueOf(UUID.randomUUID());
 
-            Category parent = CategoryDataBuilder.withChild().parentId(null).path(List.of(parentId)).attributes(null).build();
+            Category parent = CategoryDataBuilder.withChild().parentId(null).attributes(null).build();
             Category child = CategoryDataBuilder.withChild()
                     .parentId(parent.getId())
                     .attributes(List.of(attribute1.id(), attribute2.id()))
-                    .path(List.of(parentId, childId))
                     .build();
 
             when(categoryQueryPort.findAll()).thenReturn(List.of(parent, child));
@@ -263,9 +260,7 @@ public class CategoryQueryControllerIntegrationTest {
 
         @Test
         void tree_shouldReturnTree_whenCategoryHasNullAttributes() throws Exception {
-            String parentId = String.valueOf(UUID.randomUUID());
-
-            Category parent = CategoryDataBuilder.withChild().parentId(null).path(List.of(parentId)).attributes(null).build();
+            Category parent = CategoryDataBuilder.withChild().parentId(null).attributes(null).build();
 
             when(categoryQueryPort.findAll()).thenReturn(List.of(parent));
 
