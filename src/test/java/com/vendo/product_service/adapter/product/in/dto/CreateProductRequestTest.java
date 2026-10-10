@@ -176,81 +176,10 @@ public class CreateProductRequestTest {
                     Arguments.of(
                     null, "Address is required."),
                     Arguments.of(
-                        new AddressRequest(
-                                "",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(49.8397, 24.0297)
-                        ), "City should have from 2 to 100 characters."
+                        new AddressRequest(""), "City should have from 2 to 100 characters."
                     ),
                     Arguments.of(
-                            new AddressRequest(
-                                    "a",
-                                    "Lviv region",
-                                    new AddressRequest.LocationRequest(49.8397, 24.0297)
-                            ), "City should have from 2 to 100 characters."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Region is required.",
-                                new AddressRequest.LocationRequest(49.8397, 24.0297)
-                        ), "Region should have from 2 to 100 characters."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "ab",
-                                new AddressRequest.LocationRequest(49.8397, 24.0297)
-                        ), "Region should have from 2 to 100 characters."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                null
-                        ), "Location is required."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(null, 24.0297)
-                        ), "Latitude is required."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(-91D, 24.0297)
-                        ), "Minimal latitude should be -90."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(91D, 24.0297)
-                        ), "Maximum latitude should be 90."
-                    ),
-                    Arguments.of(
-                            new AddressRequest(
-                                    "Lviv",
-                                    "Lviv region",
-                                    new AddressRequest.LocationRequest(49.8397, null)
-                            ), "Longitude is required."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(49.8397, -181D)
-                        ), "Minimal longitude should be -180."
-                    ),
-                    Arguments.of(
-                        new AddressRequest(
-                                "Lviv",
-                                "Lviv region",
-                                new AddressRequest.LocationRequest(49.8397, 181D)
-                        ), "Maximum longitude should be 180."
+                            new AddressRequest("a"), "City should have from 2 to 100 characters."
                     )
             );
         }

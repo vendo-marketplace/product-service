@@ -15,7 +15,7 @@ public record CreateProductRequestDataBuilder() {
                 .description("description")
                 .price(BigDecimal.ONE)
                 .isNew(true)
-                .address(new AddressRequest("Lviv", "Shevchenkivskiy", new AddressRequest.LocationRequest(49.8397, 24.0297)))
+                .address(new AddressRequest("Lviv"))
                 .categoryId("category_id")
                 .quantity(1)
                 .attributes(List.of(new AttributeValue("attribute_id", List.of("attribute_value"))));
