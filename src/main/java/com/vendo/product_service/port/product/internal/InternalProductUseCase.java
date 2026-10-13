@@ -8,4 +8,6 @@ public interface InternalProductUseCase {
 
     List<Product> getAll(String cursor, int limit);
 
+    Product findById(String id);
+
 }

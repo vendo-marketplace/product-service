@@ -7,10 +7,7 @@ import com.vendo.product_service.port.product.internal.InternalProductUseCase;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,6 +30,11 @@ public class InternalProductController {
     ) {
         List<Product> products = useCase.getAll(cursor, limit);
         return mapper.toResponses(products);
+    }
+
+    @GetMapping("/{id}")
+    public ProductResponse findById(@PathVariable String id) {
+        return mapper.toResponse(useCase.findById(id));
     }
 
 }

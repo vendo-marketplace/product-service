@@ -8,4 +8,6 @@ public interface InternalProductQueryPort {
 
     List<Product> getAll(String cursor, int limit);
 
+    Product findById(String id);
+
 }

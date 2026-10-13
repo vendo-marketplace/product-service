@@ -19,4 +19,9 @@ class InternalProductService implements InternalProductUseCase {
         return internalProductQueryPort.getAll(cursor, limit);
     }
 
+    @Override
+    public Product findById(String id) {
+        return internalProductQueryPort.findById(id);
+    }
+
 }

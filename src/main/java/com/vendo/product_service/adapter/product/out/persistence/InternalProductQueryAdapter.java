@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.product.out.persistence;
 
 import com.vendo.product_service.adapter.product.out.mapper.MongoProductMapper;
+import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
 import com.vendo.product_service.port.product.internal.InternalProductQueryPort;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +28,12 @@ public class InternalProductQueryAdapter implements InternalProductQueryPort {
 
         List<MongoProduct> cursorProducts = repository.findByIdLessThanOrderByIdDesc(cursor, Limit.of(limit));
         return mapper.toProducts(cursorProducts);
+    }
+
+    @Override
+    public Product findById(String id) {
+        return repository.findById(id)
+                .map(mapper::toProduct)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found."));
     }
 }
