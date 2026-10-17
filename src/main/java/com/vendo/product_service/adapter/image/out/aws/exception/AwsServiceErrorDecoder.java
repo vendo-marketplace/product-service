@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.image.out.aws.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.type.ServiceName;
+import com.vendo.core_lib.types.ServiceName;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import feign.Response;
 import feign.codec.ErrorDecoder;

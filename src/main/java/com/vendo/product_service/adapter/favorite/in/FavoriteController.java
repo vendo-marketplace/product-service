@@ -1,6 +1,6 @@
 package com.vendo.product_service.adapter.favorite.in;
 
-import com.vendo.core_lib.response.DataResponse;
+import com.vendo.core_lib.dto.responses.DataResponse;
 import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
 import com.vendo.product_service.adapter.favorite.out.mapper.DtoFavoriteMapper;
 import com.vendo.product_service.domain.product.model.Product;

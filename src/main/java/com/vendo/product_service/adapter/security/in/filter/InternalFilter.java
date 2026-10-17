@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in.filter;
 
-import com.vendo.core_lib.type.ServiceName;
-import com.vendo.core_lib.type.ServiceRole;
+import com.vendo.core_lib.types.ServiceName;
+import com.vendo.core_lib.types.ServiceRole;
 import com.vendo.core_lib.utils.CollectionUtils;
 import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.adapter.security.in.filter.path.InternalAntPathResolver;
