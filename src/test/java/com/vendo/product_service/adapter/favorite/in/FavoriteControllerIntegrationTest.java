@@ -2,7 +2,7 @@ package com.vendo.product_service.adapter.favorite.in;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.response.DataResponse;
+import com.vendo.core_lib.dto.responses.DataResponse;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.product_service.adapter.favorite.in.dto.FavoriteResponse;
 import com.vendo.product_service.domain.favorite.model.Favorite;

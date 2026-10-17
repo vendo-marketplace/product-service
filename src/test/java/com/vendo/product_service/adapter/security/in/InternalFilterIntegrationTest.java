@@ -1,7 +1,7 @@
 package com.vendo.product_service.adapter.security.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vendo.core_lib.type.ServiceName;
+import com.vendo.core_lib.types.ServiceName;
 import com.vendo.product_service.adapter.security.out.props.JwtProperties;
 import com.vendo.product_service.test_utils.builder.TokenClaimsDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
