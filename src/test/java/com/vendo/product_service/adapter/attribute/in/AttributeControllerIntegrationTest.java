@@ -1,17 +1,25 @@
 package com.vendo.product_service.adapter.attribute.in;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.constants.Delimiters;
 import com.vendo.core_lib.utils.AssertionUtils;
 import com.vendo.core_lib.utils.ClassFields;
+import com.vendo.product_service.adapter.attribute.in.dto.AttributeResponse;
 import com.vendo.product_service.adapter.attribute.in.dto.CreateAttributeRequest;
+import com.vendo.product_service.adapter.attribute.in.dto.UpdateAttributeRequest;
 import com.vendo.product_service.domain.attribute.exception.AttributeAlreadyExistsException;
+import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
 import com.vendo.product_service.domain.attribute.model.Attribute;
+import com.vendo.product_service.domain.attribute.model.AttributeFilter;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import com.vendo.product_service.domain.user.User;
 import com.vendo.product_service.port.attribute.AttributeCommandPort;
+import com.vendo.product_service.port.attribute.AttributeQueryPort;
+import com.vendo.product_service.test_utils.builder.AttributeDataBuilder;
 import com.vendo.product_service.test_utils.builder.CreateAttributeRequestDataBuilder;
+import com.vendo.product_service.test_utils.builder.UpdateAttributeRequestDataBuilder;
 import com.vendo.product_service.test_utils.security.SecurityContextService;
 import com.vendo.security_lib.exception.ExceptionResponse;
 import com.vendo.user_lib.type.UserRole;
@@ -41,10 +49,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -59,6 +67,8 @@ public class AttributeControllerIntegrationTest {
 
     @MockitoBean
     private AttributeCommandPort attributeCommandPort;
+    @MockitoBean
+    private AttributeQueryPort attributeQueryPort;
 
     @BeforeEach
     public void setUp() {
@@ -67,6 +77,25 @@ public class AttributeControllerIntegrationTest {
 
     private User buildUser(UserRole role) {
         return new User("id", "email", UserStatus.ACTIVE, Set.of(role), true);
+    }
+
+    private ResultActions performAttributesFind(UserRole role, String search, String type) throws Exception {
+        return mockMvc.perform(get("/attributes")
+                .with(authentication(SecurityContextService.initializeAuth(buildUser(role))))
+                .param("search", search)
+                .param("type", type));
+    }
+
+    private ResultActions performAttributeUpdate(String id, UserRole role, UpdateAttributeRequest request) throws Exception {
+        return mockMvc.perform(put("/attributes/{id}", id)
+                .with(authentication(SecurityContextService.initializeAuth(buildUser(role))))
+                .content(objectMapper.writeValueAsString(request))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    private ExceptionResponse readException(ResultActions resultActions) throws Exception {
+        String content = resultActions.andReturn().getResponse().getContentAsString();
+        return objectMapper.readValue(content, ExceptionResponse.class);
     }
 
     @Nested
@@ -78,16 +107,22 @@ public class AttributeControllerIntegrationTest {
             CreateAttributeRequest request = CreateAttributeRequestDataBuilder.withAllFields().build();
             ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
 
-            doNothing().when(attributeCommandPort).save(captor.capture());
+            when(attributeCommandPort.save(captor.capture()))
+                    .thenAnswer(invocation -> invocation.<Attribute>getArgument(0).toBuilder().id("generated_id").build());
 
-            mockMvc.perform(post("/attributes")
+            String content = mockMvc.perform(post("/attributes")
                             .with(authentication(SecurityContextService.initializeAuth(user)))
                             .content(objectMapper.writeValueAsString(request))
                             .contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
 
             Attribute captorValue = captor.getValue();
             AssertionUtils.assertFrom(request, captorValue, "id");
+
+            AttributeResponse response = objectMapper.readValue(content, AttributeResponse.class);
+            assertThat(response.id()).isEqualTo("generated_id");
+            AssertionUtils.assertFrom(request, response, "id");
 
             verify(attributeCommandPort).save(captorValue);
         }
@@ -145,10 +180,6 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort);
-        }
-
-        public static void main(String[] args) {
-
         }
 
         @ParameterizedTest
@@ -337,6 +368,185 @@ public class AttributeControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
 
             verifyNoInteractions(attributeCommandPort);
+        }
+    }
+
+    @Nested
+    class FindAllAttributesTests {
+
+        @Test
+        void findAll_shouldReturnAttributes_whenNoFilters() throws Exception {
+            Attribute attribute = AttributeDataBuilder.withAllFields().build();
+            ArgumentCaptor<AttributeFilter> captor = ArgumentCaptor.forClass(AttributeFilter.class);
+
+            when(attributeQueryPort.findAll(captor.capture())).thenReturn(List.of(attribute));
+
+            String content = mockMvc.perform(get("/attributes")
+                            .with(authentication(SecurityContextService.initializeAuth(buildUser(UserRole.ADMIN)))))
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            List<AttributeResponse> responses = objectMapper.readValue(content, new TypeReference<>() {});
+            assertThat(responses).hasSize(1);
+            AssertionUtils.assertFrom(attribute, responses.get(0));
+
+            assertThat(captor.getValue().search()).isNull();
+            assertThat(captor.getValue().type()).isNull();
+        }
+
+        @Test
+        void findAll_shouldPassFiltersToPort_whenSearchAndTypePresent() throws Exception {
+            ArgumentCaptor<AttributeFilter> captor = ArgumentCaptor.forClass(AttributeFilter.class);
+
+            when(attributeQueryPort.findAll(captor.capture())).thenReturn(List.of());
+
+            String content = performAttributesFind(UserRole.ADMIN, "colo", "SELECT")
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            assertThat(content).isEqualTo("[]");
+            assertThat(captor.getValue()).isEqualTo(new AttributeFilter("colo", AttributeType.SELECT));
+        }
+
+        @Test
+        void findAll_shouldReturnBadRequest_whenTypeIsInvalid() throws Exception {
+            String enumValues = String.join(Delimiters.COMMA_DELIMITER, ClassFields.getEnumValues(AttributeType.class));
+
+            ExceptionResponse exceptionResponse = readException(performAttributesFind(UserRole.ADMIN, null, "invalid_type")
+                    .andExpect(status().isBadRequest()));
+
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("type", "Allowed values are: %s.".formatted(enumValues)));
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeQueryPort);
+        }
+
+        @Test
+        void findAll_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            ExceptionResponse exceptionResponse = readException(performAttributesFind(UserRole.USER, null, null)
+                    .andExpect(status().isForbidden()));
+
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes");
+
+            verifyNoInteractions(attributeQueryPort);
+        }
+    }
+
+    @Nested
+    class UpdateAttributeTests {
+
+        @Test
+        void update_shouldUpdateAndReturnAttribute() throws Exception {
+            Attribute existing = AttributeDataBuilder.withAllFields().type(AttributeType.SELECT).allowedValues(List.of("RED")).build();
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields()
+                    .required(true)
+                    .allowedValues(List.of("RED", "GREEN"))
+                    .build();
+            ArgumentCaptor<Attribute> captor = ArgumentCaptor.forClass(Attribute.class);
+
+            when(attributeQueryPort.findById(existing.id())).thenReturn(existing);
+            when(attributeCommandPort.update(captor.capture())).thenAnswer(invocation -> invocation.getArgument(0));
+
+            String content = performAttributeUpdate(existing.id(), UserRole.ADMIN, request)
+                    .andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsString();
+
+            Attribute updated = captor.getValue();
+            assertThat(updated.id()).isEqualTo(existing.id());
+            assertThat(updated.type()).isEqualTo(AttributeType.SELECT);
+            AssertionUtils.assertFrom(request, updated, "id", "type");
+
+            AttributeResponse response = objectMapper.readValue(content, AttributeResponse.class);
+            assertThat(response.id()).isEqualTo(existing.id());
+            assertThat(response.type()).isEqualTo(AttributeType.SELECT);
+            AssertionUtils.assertFrom(request, response, "id", "type");
+        }
+
+        @Test
+        void update_shouldReturnNotFound_whenAttributeNotFound() throws Exception {
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().build();
+            String message = "Attribute not found by id: missing.";
+
+            when(attributeQueryPort.findById("missing")).thenThrow(new AttributeNotFoundException(message));
+
+            ExceptionResponse exceptionResponse = readException(performAttributeUpdate("missing", UserRole.ADMIN, request)
+                    .andExpect(status().isNotFound()));
+
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo(message);
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes/missing");
+
+            verifyNoInteractions(attributeCommandPort);
+        }
+
+        @Test
+        void update_shouldReturnConflict_whenSlugAlreadyTaken() throws Exception {
+            Attribute existing = AttributeDataBuilder.withAllFields().build();
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().build();
+
+            when(attributeQueryPort.findById(existing.id())).thenReturn(existing);
+            when(attributeCommandPort.update(any())).thenThrow(new AttributeAlreadyExistsException("Attribute already exists by slug."));
+
+            ExceptionResponse exceptionResponse = readException(performAttributeUpdate(existing.id(), UserRole.ADMIN, request)
+                    .andExpect(status().isConflict()));
+
+            assertThat(exceptionResponse.getCode()).isEqualTo(HttpStatus.CONFLICT.value());
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute already exists by slug.");
+            assertThat(exceptionResponse.getPath()).isEqualTo("/attributes/%s".formatted(existing.id()));
+        }
+
+        @ParameterizedTest
+        @EnumSource(value = AttributeType.class, names = {"ENUM", "SELECT"})
+        void update_shouldReturnBadRequest_whenAllowedValuesRemovedForAllowedValuesType(AttributeType type) throws Exception {
+            Attribute existing = AttributeDataBuilder.withAllFields().type(type).allowedValues(List.of("RED")).build();
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().allowedValues(List.of()).build();
+
+            when(attributeQueryPort.findById(existing.id())).thenReturn(existing);
+
+            ExceptionResponse exceptionResponse = readException(performAttributeUpdate(existing.id(), UserRole.ADMIN, request)
+                    .andExpect(status().isBadRequest()));
+
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attribute validation failed.");
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("allowedValues", "Allowed values must contain at least one value."));
+
+            verifyNoInteractions(attributeCommandPort);
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_whenTitleIsNotPresent() throws Exception {
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().title(null).build();
+
+            ExceptionResponse exceptionResponse = readException(performAttributeUpdate("id", UserRole.ADMIN, request)
+                    .andExpect(status().isBadRequest()));
+
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("title", "Title is required."));
+
+            verifyNoInteractions(attributeQueryPort, attributeCommandPort);
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_whenSlugIsNotValid() throws Exception {
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().slug("Invalid-Slug").build();
+
+            ExceptionResponse exceptionResponse = readException(performAttributeUpdate("id", UserRole.ADMIN, request)
+                    .andExpect(status().isBadRequest()));
+
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("slug", ProductPatterns.SLUG_VALIDATION_MESSAGE));
+
+            verifyNoInteractions(attributeQueryPort, attributeCommandPort);
+        }
+
+        @Test
+        void update_shouldReturnForbidden_whenNotAdmin() throws Exception {
+            UpdateAttributeRequest request = UpdateAttributeRequestDataBuilder.withAllFields().build();
+
+            performAttributeUpdate("id", UserRole.USER, request).andExpect(status().isForbidden());
+
+            verifyNoInteractions(attributeQueryPort, attributeCommandPort);
         }
     }
 }

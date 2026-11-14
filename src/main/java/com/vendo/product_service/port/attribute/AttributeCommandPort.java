@@ -4,6 +4,7 @@ import com.vendo.product_service.domain.attribute.model.Attribute;
 
 public interface AttributeCommandPort {
 
-    void save(Attribute attribute);
+    Attribute save(Attribute attribute);
+    Attribute update(Attribute attribute);
 
 }

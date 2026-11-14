@@ -16,13 +16,16 @@ public class CacheConfig {
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager manager = new CaffeineCacheManager("category-tree");
+
         manager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(1));
+
         manager.registerCustomCache("category-attributes", Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
                 .maximumSize(1_000)
                 .build());
+
         return manager;
     }
 }

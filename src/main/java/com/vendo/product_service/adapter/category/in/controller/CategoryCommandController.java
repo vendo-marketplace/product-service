@@ -1,14 +1,17 @@
 package com.vendo.product_service.adapter.category.in.controller;
 
+import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.adapter.category.out.mapper.DtoCategoryMapper;
 import com.vendo.product_service.adapter.image.out.mapper.ImageMapper;
+import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.infrastructure.shared.annotation.ImageFile;
 import com.vendo.product_service.port.category.usecase.CategoryCommandUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,8 +26,9 @@ public class CategoryCommandController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    void save(@Valid @RequestBody CreateCategoryRequest request) {
-        categoryUseCase.save(categoryMapper.toCategory(request));
+    ResponseEntity<CategoryResponse> save(@Valid @RequestBody CreateCategoryRequest request) {
+        Category saved = categoryUseCase.save(categoryMapper.toCategory(request));
+        return ResponseEntity.ok(categoryMapper.toResponse(saved));
     }
 
     @PutMapping

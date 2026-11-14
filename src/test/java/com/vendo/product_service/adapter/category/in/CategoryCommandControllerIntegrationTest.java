@@ -1,6 +1,7 @@
 package com.vendo.product_service.adapter.category.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vendo.product_service.adapter.category.in.dto.CategoryResponse;
 import com.vendo.product_service.adapter.category.in.dto.CreateCategoryRequest;
 import com.vendo.product_service.adapter.category.in.dto.UpdateCategoryRequest;
 import com.vendo.product_service.domain.attribute.exception.AttributeNotFoundException;
@@ -9,6 +10,7 @@ import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.category.exception.CategoryAlreadyExistsException;
 import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
+import com.vendo.product_service.domain.category.type.CategoryType;
 import com.vendo.product_service.domain.image.model.Image;
 import com.vendo.product_service.domain.image.model.PresignType;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
@@ -350,7 +352,9 @@ public class CategoryCommandControllerIntegrationTest {
 
                 doNothing().when(commandPort).save(argumentCaptor.capture());
 
-                performCategoryPersist(categoryRequest).andExpect(status().isOk());
+                String content = performCategoryPersist(categoryRequest)
+                        .andExpect(status().isOk())
+                        .andReturn().getResponse().getContentAsString();
 
                 Category capturedCategory = argumentCaptor.getValue();
 
@@ -358,6 +362,11 @@ public class CategoryCommandControllerIntegrationTest {
                 assertThat(capturedCategory.getSlug()).isEqualTo(categoryRequest.slug());
                 assertThat(capturedCategory.getParentId()).isNull();
                 assertThat(capturedCategory.getAttributes()).isNull();
+
+                CategoryResponse response = objectMapper.readValue(content, CategoryResponse.class);
+                assertThat(response.id()).isNotBlank().isEqualTo(capturedCategory.getId());
+                assertThat(response.title()).isEqualTo(categoryRequest.title());
+                assertThat(response.type()).isEqualTo(CategoryType.PARENT);
             }
         }
 

@@ -38,12 +38,13 @@ class CategoryCommandService implements CategoryCommandUseCase {
 
     @Override
     @CacheEvict(value = "category-tree", allEntries = true)
-    public void save(Category category) {
+    public Category save(Category category) {
         typeValidationPort.validate(category);
 
         category.setId(idGenerationPort.generate());
 
         categoryCommandPort.save(category);
+        return category;
     }
 
     @CacheEvict(value = "category-tree", allEntries = true)

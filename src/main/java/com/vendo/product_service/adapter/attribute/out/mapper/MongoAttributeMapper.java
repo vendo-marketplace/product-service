@@ -4,6 +4,7 @@ import com.vendo.product_service.adapter.attribute.out.persistence.MongoAttribut
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.infrastructure.config.mapper.MapStructConfig;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
@@ -15,4 +16,6 @@ public interface MongoAttributeMapper {
     MongoAttribute toEntity(Attribute attribute);
 
     List<Attribute> toAttributes(List<MongoAttribute> entities);
+
+    void updateEntity(@MappingTarget MongoAttribute entity, Attribute attribute);
 }
