@@ -41,6 +41,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -290,6 +291,49 @@ public class CategoryCommandControllerIntegrationTest {
             assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
 
             verifyNoInteractions(commandPort, categoryQueryPort);
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenAttributesAreEmpty() throws Exception {
+            CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
+                    .attributes(List.of())
+                    .build();
+
+            shouldFailRequestValidationOnSave(request, "Attributes must not be empty.");
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenAttributeIdIsNull() throws Exception {
+            CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
+                    .attributes(Arrays.asList("id_1", null))
+                    .build();
+
+            shouldFailRequestValidationOnSave(request, "Attribute id is required.");
+        }
+
+        @Test
+        void save_shouldReturnBadRequest_whenAttributeIdIsBlank() throws Exception {
+            CreateCategoryRequest request = CreateCategoryRequestDataBuilder.withAllFields()
+                    .attributes(List.of("  "))
+                    .build();
+
+            shouldFailRequestValidationOnSave(request, "Attribute id is required.");
+        }
+
+        private void shouldFailRequestValidationOnSave(CreateCategoryRequest request, String validationMessage) throws Exception {
+            String content = performCategoryPersist(request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().values().iterator().next()).isEqualTo(validationMessage);
+            assertThat(exceptionResponse.getPath()).isEqualTo("/categories");
+
+            verifyNoInteractions(commandPort, categoryQueryPort, attributeQueryPort);
         }
 
         @Nested

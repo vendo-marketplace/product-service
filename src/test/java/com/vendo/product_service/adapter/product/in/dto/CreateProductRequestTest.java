@@ -15,6 +15,8 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -189,6 +191,49 @@ public class CreateProductRequestTest {
         void address_shouldFailValidation(AddressRequest address, String message) {
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().address(address).build();
             failValidation(request, Set.of(message));
+        }
+    }
+
+    @Nested
+    class AttributesTests {
+
+        static Stream<Arguments> validAttributes() {
+            return Stream.of(
+                    Arguments.of((Object) null),
+                    Arguments.of(List.of()),
+                    Arguments.of(List.of(new AttributeValueRequest("attribute_id", List.of()))),
+                    Arguments.of(List.of(new AttributeValueRequest("attribute_id", List.of("value_1", "value_2"))))
+            );
+        }
+
+        static Stream<Arguments> invalidAttributes() {
+            return Stream.of(
+                    Arguments.of(Arrays.asList((AttributeValueRequest) null), "Attribute must not be null."),
+                    Arguments.of(List.of(new AttributeValueRequest(null, List.of("value"))), "Attribute id is required."),
+                    Arguments.of(List.of(new AttributeValueRequest("", List.of("value"))), "Attribute id is required."),
+                    Arguments.of(List.of(new AttributeValueRequest("  ", List.of("value"))), "Attribute id is required."),
+                    Arguments.of(List.of(new AttributeValueRequest("attribute_id", null)), "Attribute values are required."),
+                    Arguments.of(List.of(new AttributeValueRequest("attribute_id", Arrays.asList("value", null))), "Attribute value must not be null.")
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("validAttributes")
+        void attributes_shouldPassValidation(List<AttributeValueRequest> attributes) {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().attributes(attributes).build();
+            passValidation(request);
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidAttributes")
+        void attributes_shouldFailValidation(List<AttributeValueRequest> attributes, String message) {
+            CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields().attributes(attributes).build();
+
+            Set<String> constraintMessages = validatorFactory.getValidator().validate(request).stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.toSet());
+
+            assertThat(constraintMessages).isEqualTo(Set.of(message));
         }
     }
 

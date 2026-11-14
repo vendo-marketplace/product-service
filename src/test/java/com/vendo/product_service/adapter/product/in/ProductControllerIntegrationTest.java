@@ -2,12 +2,14 @@ package com.vendo.product_service.adapter.product.in;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vendo.core_lib.utils.AssertionUtils;
+import com.vendo.product_service.adapter.product.in.dto.AttributeValueRequest;
 import com.vendo.product_service.adapter.product.in.dto.CreateProductRequest;
 import com.vendo.product_service.adapter.product.in.dto.ProductResponse;
 import com.vendo.product_service.adapter.product.in.dto.UpdateProductRequest;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.attribute.model.AttributeType;
 import com.vendo.product_service.domain.attribute.model.AttributeValue;
+import com.vendo.product_service.domain.category.exception.CategoryNotFoundException;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.product.exception.ProductNotFoundException;
 import com.vendo.product_service.domain.product.model.Product;
@@ -36,8 +38,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -140,7 +145,7 @@ public class ProductControllerIntegrationTest {
                 .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(List.of(attributeValue))
+                .attributes(List.of(AttributeValueRequestDataBuilder.from(attributeValue)))
                 .build();
         ArgumentCaptor<Product> argumentCaptor = ArgumentCaptor.forClass(Product.class);
 
@@ -168,7 +173,7 @@ public class ProductControllerIntegrationTest {
                 .build();
         CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                 .categoryId(category.getId())
-                .attributes(List.of(attributeValue))
+                .attributes(List.of(AttributeValueRequestDataBuilder.from(attributeValue)))
                 .build();
 
         when(categoryQueryPort.findById(category.getId())).thenReturn(category);
@@ -186,7 +191,7 @@ public class ProductControllerIntegrationTest {
         assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
         assertThat(exceptionResponse.getErrors()).isNotNull();
         assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-        assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo(validationMessage);
+        assertThat(exceptionResponse.getErrors().get(attribute.slug())).isEqualTo(validationMessage);
         assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
         verify(categoryQueryPort).findById(category.getId());
@@ -194,8 +199,74 @@ public class ProductControllerIntegrationTest {
         verifyNoInteractions(productCommandPort, productEventSenderPort);
     }
 
+    private void shouldFailAttributesValidationOnSave(List<Attribute> originAttributes, List<AttributeValue> requestAttributes, Map<String, String> expectedErrors) throws Exception {
+        List<String> originAttributeIds = originAttributes.stream().map(Attribute::id).toList();
+        Category category = CategoryDataBuilder.withChild()
+                .attributes(originAttributeIds)
+                .build();
+        CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                .categoryId(category.getId())
+                .attributes(AttributeValueRequestDataBuilder.fromAll(requestAttributes))
+                .build();
+
+        when(categoryQueryPort.findById(category.getId())).thenReturn(category);
+        when(attributeQueryPort.findAllByIds(originAttributeIds)).thenReturn(originAttributes);
+
+        String content = performProductPersist("userId", request)
+                .andExpect(status().isBadRequest())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+        assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
+        assertThat(exceptionResponse.getErrors()).isEqualTo(expectedErrors);
+
+        verifyNoInteractions(productCommandPort, productEventSenderPort);
+    }
+
     @Nested
     class UpdateProductTests {
+
+        @Test
+        void update_shouldReturnBadRequest_andNotUpdateProduct_whenAttributesAreInvalid() throws Exception {
+            String productId = "product_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().type(AttributeType.NUMBER).build();
+            AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("not_a_number"));
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of(AttributeValueRequestDataBuilder.from(attributeValue))).build();
+
+            Product existing = ProductDataBuilder.withAllFields().build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
+
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isBadRequest());
+
+            verifyNoInteractions(productCommandPort, productEventSenderPort);
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_whenAttributeIdIsBlank() throws Exception {
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                    .attributes(List.of(new AttributeValueRequest(" ", List.of("value"))))
+                    .build();
+
+            String content = performProductUpdate("user_id", "product_id", request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+            assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+            assertThat(exceptionResponse.getErrors().values().iterator().next()).isEqualTo("Attribute id is required.");
+
+            verifyNoInteractions(productQueryPort, categoryQueryPort, attributeQueryPort, productCommandPort, productEventSenderPort);
+        }
 
         @Test
         void update_shouldUpdateProduct() throws Exception {
@@ -203,7 +274,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().build();
             AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
-            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of(attributeValue)).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of(AttributeValueRequestDataBuilder.from(attributeValue))).build();
 
             Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
@@ -220,11 +291,13 @@ public class ProductControllerIntegrationTest {
 
             ArgumentCaptor<Product> updateProductArgumentCaptor = ArgumentCaptor.forClass(Product.class);
             verify(productCommandPort).update(eq(productId), updateProductArgumentCaptor.capture());
-            AssertionUtils.assertFrom(updateProductArgumentCaptor.getValue(), request);
+            AssertionUtils.assertFrom(updateProductArgumentCaptor.getValue(), request, "attributes");
+            assertThat(updateProductArgumentCaptor.getValue().getAttributes()).isEqualTo(List.of(attributeValue));
 
             ArgumentCaptor<Product> updateProductEventArgumentCaptor = ArgumentCaptor.forClass(Product.class);
             verify(productEventSenderPort).sendUpdated(updateProductEventArgumentCaptor.capture(), eq(List.of(attribute)));
-            AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request);
+            AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request, "attributes");
+            assertThat(updateProductEventArgumentCaptor.getValue().getAttributes()).isEqualTo(List.of(attributeValue));
         }
 
         @Test
@@ -233,7 +306,7 @@ public class ProductControllerIntegrationTest {
 
             Attribute attribute = AttributeDataBuilder.withAllFields().required(true).build();
             AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("string"));
-            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of()).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(null).build();
 
             Product existing = ProductDataBuilder.withAllFields().attributes(List.of(attributeValue)).build();
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
@@ -254,6 +327,236 @@ public class ProductControllerIntegrationTest {
             ArgumentCaptor<Product> updateProductEventArgumentCaptor = ArgumentCaptor.forClass(Product.class);
             verify(productEventSenderPort).sendUpdated(updateProductEventArgumentCaptor.capture(), eq(List.of()));
             AssertionUtils.assertFrom(updateProductEventArgumentCaptor.getValue(), request);
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_andNotUpdateProduct_whenAttributesAreEmpty_andCategoryHasRequiredAttribute() throws Exception {
+            String productId = "product_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(true).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of()).build();
+
+            Product existing = ProductDataBuilder.withAllFields().build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
+
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            String content = performProductUpdate(existing.getOwnerId(), productId, request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of(attribute.slug(), attribute.title() + " is required."));
+
+            verifyNoInteractions(productCommandPort, productEventSenderPort);
+        }
+
+        @Test
+        void update_shouldUpdateProduct_whenAttributesAreEmpty_andCategoryHasNoRequiredAttributes() throws Exception {
+            String productId = "product_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().required(false).build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields().isNew(false).attributes(List.of()).build();
+
+            Product existing = ProductDataBuilder.withAllFields().build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
+
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+            verify(attributeQueryPort).findAllByIds(List.of(attribute.id()));
+            verify(productCommandPort).update(eq(productId), any());
+            verify(productEventSenderPort).sendUpdated(any(), eq(List.of(attribute)));
+        }
+
+        @Test
+        void update_shouldReturnBadRequest_andNotUpdateProduct_whenAttributeIsNotInCategory() throws Exception {
+            String productId = "product_id";
+
+            Attribute attribute = AttributeDataBuilder.withAllFields().build();
+            UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                    .attributes(List.of(new AttributeValueRequest("unknown_id", List.of("value"))))
+                    .build();
+
+            Product existing = ProductDataBuilder.withAllFields().build();
+            Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
+
+            when(productQueryPort.findById(productId)).thenReturn(existing);
+            when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(category);
+            when(attributeQueryPort.findAllByIds(List.of(attribute.id()))).thenReturn(List.of(attribute));
+
+            String content = performProductUpdate(existing.getOwnerId(), productId, request)
+                    .andExpect(status().isBadRequest())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+            assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("attributes", "Attributes are not allowed for this category: unknown_id."));
+
+            verifyNoInteractions(productCommandPort, productEventSenderPort);
+        }
+
+        @Nested
+        class UpdateProductCategoryTests {
+
+            private final String productId = "product_id";
+
+            private final Attribute oldAttribute = new Attribute("old_attribute_id", "Old", "old-slug", AttributeType.STRING, false, null);
+            private final Attribute newAttribute = new Attribute("new_attribute_id", "New", "new-slug", AttributeType.STRING, false, null);
+
+            private final Product existing = ProductDataBuilder.withAllFields()
+                    .attributes(List.of(new AttributeValue(oldAttribute.id(), List.of("old_value"))))
+                    .build();
+            private final Category newCategory = CategoryDataBuilder.withChild().attributes(List.of(newAttribute.id())).build();
+
+            @Test
+            void update_shouldValidateAttributesAgainstNewCategory_whenCategoryChanged() throws Exception {
+                AttributeValueRequest newAttributeValue = new AttributeValueRequest(newAttribute.id(), List.of("new_value"));
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(newCategory.getId())
+                        .attributes(List.of(newAttributeValue))
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(newCategory.getId())).thenReturn(newCategory);
+                when(attributeQueryPort.findAllByIds(List.of(newAttribute.id()))).thenReturn(List.of(newAttribute));
+
+                performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+                verify(categoryQueryPort, never()).findById(existing.getCategoryId());
+                verify(attributeQueryPort).findAllByIds(List.of(newAttribute.id()));
+
+                ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+                verify(productCommandPort).update(eq(productId), captor.capture());
+                assertThat(captor.getValue().getCategoryId()).isEqualTo(newCategory.getId());
+                assertThat(captor.getValue().getAttributes()).isEqualTo(List.of(new AttributeValue(newAttribute.id(), List.of("new_value"))));
+
+                verify(productEventSenderPort).sendUpdated(any(), eq(List.of(newAttribute)));
+            }
+
+            @Test
+            void update_shouldReturnBadRequest_whenCategoryChanged_andAttributesBelongToOldCategory() throws Exception {
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(newCategory.getId())
+                        .attributes(List.of(new AttributeValueRequest(oldAttribute.id(), List.of("old_value"))))
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(newCategory.getId())).thenReturn(newCategory);
+                when(attributeQueryPort.findAllByIds(List.of(newAttribute.id()))).thenReturn(List.of(newAttribute));
+
+                ExceptionResponse exceptionResponse = performFailedUpdate(request, status().isBadRequest());
+                assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of("attributes", "Attributes are not allowed for this category: old_attribute_id."));
+
+                verifyNoInteractions(productCommandPort, productEventSenderPort);
+            }
+
+            @Test
+            void update_shouldClearOldAttributes_whenCategoryChanged_andAttributesNotPassed() throws Exception {
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(newCategory.getId())
+                        .attributes(null)
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(newCategory.getId())).thenReturn(newCategory);
+                when(attributeQueryPort.findAllByIds(List.of(newAttribute.id()))).thenReturn(List.of(newAttribute));
+
+                performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+                ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+                verify(productCommandPort).update(eq(productId), captor.capture());
+                assertThat(captor.getValue().getCategoryId()).isEqualTo(newCategory.getId());
+                assertThat(captor.getValue().getAttributes()).isEqualTo(List.of());
+            }
+
+            @Test
+            void update_shouldReturnBadRequest_whenCategoryChanged_attributesNotPassed_andNewCategoryHasRequiredAttribute() throws Exception {
+                Attribute requiredAttribute = new Attribute("required_id", "Required", "required-slug", AttributeType.STRING, true, null);
+                Category categoryWithRequired = CategoryDataBuilder.withChild().attributes(List.of(requiredAttribute.id())).build();
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(categoryWithRequired.getId())
+                        .attributes(null)
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(categoryWithRequired.getId())).thenReturn(categoryWithRequired);
+                when(attributeQueryPort.findAllByIds(List.of(requiredAttribute.id()))).thenReturn(List.of(requiredAttribute));
+
+                ExceptionResponse exceptionResponse = performFailedUpdate(request, status().isBadRequest());
+                assertThat(exceptionResponse.getErrors()).isEqualTo(Map.of(requiredAttribute.slug(), "Required is required."));
+
+                verifyNoInteractions(productCommandPort, productEventSenderPort);
+            }
+
+            @Test
+            void update_shouldReturnNotFound_whenNewCategoryNotFound() throws Exception {
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId("missing_category_id")
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById("missing_category_id")).thenThrow(new CategoryNotFoundException("Category not found."));
+
+                ExceptionResponse exceptionResponse = performFailedUpdate(request, status().isNotFound());
+                assertThat(exceptionResponse.getMessage()).isEqualTo("Category not found.");
+
+                verifyNoInteractions(attributeQueryPort, productCommandPort, productEventSenderPort);
+            }
+
+            @Test
+            void update_shouldReturnBadRequest_whenNewCategoryIsNotChild() throws Exception {
+                Category subCategory = CategoryDataBuilder.withSub().build();
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(subCategory.getId())
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(subCategory.getId())).thenReturn(subCategory);
+
+                ExceptionResponse exceptionResponse = performFailedUpdate(request, status().isBadRequest());
+                assertThat(exceptionResponse.getMessage()).isEqualTo("Category type should be child.");
+
+                verifyNoInteractions(attributeQueryPort, productCommandPort, productEventSenderPort);
+            }
+
+            @Test
+            void update_shouldValidateAgainstCurrentCategory_whenCategoryIdIsSameAsExisting() throws Exception {
+                Category currentCategory = CategoryDataBuilder.withChild().id(existing.getCategoryId()).attributes(List.of(oldAttribute.id())).build();
+                UpdateProductRequest request = UpdateProductRequestDataBuilder.withAllFields()
+                        .categoryId(existing.getCategoryId())
+                        .attributes(null)
+                        .build();
+
+                when(productQueryPort.findById(productId)).thenReturn(existing);
+                when(categoryQueryPort.findById(existing.getCategoryId())).thenReturn(currentCategory);
+
+                performProductUpdate(existing.getOwnerId(), productId, request).andExpect(status().isOk());
+
+                ArgumentCaptor<Product> captor = ArgumentCaptor.forClass(Product.class);
+                verify(productCommandPort).update(eq(productId), captor.capture());
+                assertThat(captor.getValue().getAttributes()).isNull();
+                verifyNoInteractions(attributeQueryPort);
+            }
+
+            private ExceptionResponse performFailedUpdate(UpdateProductRequest request, ResultMatcher expectedStatus) throws Exception {
+                String content = performProductUpdate(existing.getOwnerId(), productId, request)
+                        .andExpect(expectedStatus)
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString();
+
+                return objectMapper.readValue(content, ExceptionResponse.class);
+            }
         }
 
         @Test
@@ -383,7 +686,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(attributeValues)
+                    .attributes(AttributeValueRequestDataBuilder.fromAll(attributeValues))
                     .build();
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(category.getId())
@@ -423,7 +726,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(attributeValues)
+                    .attributes(AttributeValueRequestDataBuilder.fromAll(attributeValues))
                     .build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
@@ -465,6 +768,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
+                    .attributes(null)
                     .build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
@@ -505,6 +809,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(attributeIds).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
+                    .attributes(null)
                     .build();
 
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
@@ -620,6 +925,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
+                    .attributes(null)
                     .build();
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(category.getId())
@@ -652,7 +958,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(attributeValues)
+                    .attributes(AttributeValueRequestDataBuilder.fromAll(attributeValues))
                     .build();
             Product product = ProductDataBuilder.withAllFields()
                     .categoryId(category.getId())
@@ -686,7 +992,7 @@ public class ProductControllerIntegrationTest {
             Category category = CategoryDataBuilder.withChild().attributes(List.of(attribute.id())).build();
             CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
                     .categoryId(category.getId())
-                    .attributes(attributeValues)
+                    .attributes(AttributeValueRequestDataBuilder.fromAll(attributeValues))
                     .build();
             when(categoryQueryPort.findById(request.categoryId())).thenReturn(category);
             when(attributeQueryPort.findAllByIds(category.getAttributes())).thenReturn(List.of(attribute));
@@ -702,7 +1008,7 @@ public class ProductControllerIntegrationTest {
             assertThat(exceptionResponse.getMessage()).isEqualTo("Attributes validation failed.");
             assertThat(exceptionResponse.getErrors()).isNotNull();
             assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
-            assertThat(exceptionResponse.getErrors().get(attribute.title())).isEqualTo("Invalid number value.");
+            assertThat(exceptionResponse.getErrors().get(attribute.slug())).isEqualTo("Invalid number value.");
 
             assertThat(exceptionResponse.getPath()).isEqualTo("/products");
 
@@ -800,6 +1106,148 @@ public class ProductControllerIntegrationTest {
                     Attribute attribute = new Attribute("id", "Enum", "slug", AttributeType.ENUM, false, List.of("TYPE1", "TYPE2"));
                     AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("TYPE3"));
                     shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid value. Allowed values: " + String.join(", ", attribute.allowedValues()));
+                }
+            }
+
+            @Nested
+            class SaveProductWithInvalidRequestStructure {
+
+                private final Attribute stringAttribute = new Attribute("string_id", "Same title", "string-slug", AttributeType.STRING, false, null);
+                private final Attribute numberAttribute = new Attribute("number_id", "Same title", "number-slug", AttributeType.NUMBER, false, null);
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsNotInCategory() throws Exception {
+                    List<AttributeValue> request = List.of(
+                            new AttributeValue(stringAttribute.id(), List.of("value")),
+                            new AttributeValue("unknown_id", List.of("value"))
+                    );
+                    shouldFailAttributesValidationOnSave(List.of(stringAttribute), request, Map.of("attributes", "Attributes are not allowed for this category: unknown_id."));
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsDuplicated() throws Exception {
+                    List<AttributeValue> request = List.of(
+                            new AttributeValue(stringAttribute.id(), List.of("value")),
+                            new AttributeValue(stringAttribute.id(), List.of(" "))
+                    );
+                    shouldFailAttributesValidationOnSave(List.of(stringAttribute), request, Map.of(stringAttribute.slug(), "Attribute is duplicated."));
+                }
+
+                @Test
+                void save_shouldReturnAllNotAllowedIdsUnderOneKey_whenSeveralAttributesAreNotInCategory() throws Exception {
+                    List<AttributeValue> request = List.of(
+                            new AttributeValue("unknown_1", List.of("value")),
+                            new AttributeValue(stringAttribute.id(), List.of("value")),
+                            new AttributeValue("unknown_2", List.of("value")),
+                            new AttributeValue("unknown_1", List.of("value"))
+                    );
+                    shouldFailAttributesValidationOnSave(List.of(stringAttribute), request, Map.of("attributes", "Attributes are not allowed for this category: unknown_1, unknown_2."));
+                }
+
+                @Test
+                void save_shouldReturnNotAllowedAndDuplicatedErrorsTogether() throws Exception {
+                    List<AttributeValue> request = List.of(
+                            new AttributeValue(stringAttribute.id(), List.of("value")),
+                            new AttributeValue(stringAttribute.id(), List.of("value")),
+                            new AttributeValue("unknown_id", List.of("value"))
+                    );
+                    shouldFailAttributesValidationOnSave(List.of(stringAttribute), request, Map.of(
+                            stringAttribute.slug(), "Attribute is duplicated.",
+                            "attributes", "Attributes are not allowed for this category: unknown_id."
+                    ));
+                }
+
+                @Test
+                void save_shouldSaveProduct_whenAttributeHasIdAndEmptyValues() throws Exception {
+                    shouldSaveProductWithAttribute(stringAttribute, new AttributeValue(stringAttribute.id(), List.of()));
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIdIsNull() throws Exception {
+                    shouldFailRequestValidationOnSave(new AttributeValueRequest(null, List.of("value")), "Attribute id is required.");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIdIsBlank() throws Exception {
+                    shouldFailRequestValidationOnSave(new AttributeValueRequest("  ", List.of("value")), "Attribute id is required.");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeValuesAreNull() throws Exception {
+                    shouldFailRequestValidationOnSave(new AttributeValueRequest(stringAttribute.id(), null), "Attribute values are required.");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeValueIsNull() throws Exception {
+                    shouldFailRequestValidationOnSave(new AttributeValueRequest(stringAttribute.id(), Arrays.asList((String) null)), "Attribute value must not be null.");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenAttributeIsNull() throws Exception {
+                    shouldFailRequestValidationOnSave(null, "Attribute must not be null.");
+                }
+
+                private void shouldFailRequestValidationOnSave(AttributeValueRequest attributeValueRequest, String validationMessage) throws Exception {
+                    CreateProductRequest request = CreateProductRequestDataBuilder.withAllFields()
+                            .attributes(Arrays.asList(attributeValueRequest))
+                            .build();
+
+                    String content = performProductPersist(request)
+                            .andExpect(status().isBadRequest())
+                            .andReturn()
+                            .getResponse()
+                            .getContentAsString();
+
+                    ExceptionResponse exceptionResponse = objectMapper.readValue(content, ExceptionResponse.class);
+                    assertThat(exceptionResponse.getMessage()).isEqualTo("Validation failed.");
+                    assertThat(exceptionResponse.getErrors().size()).isEqualTo(1);
+                    assertThat(exceptionResponse.getErrors().values().iterator().next()).isEqualTo(validationMessage);
+
+                    verifyNoInteractions(categoryQueryPort, attributeQueryPort, productCommandPort, productEventSenderPort);
+                }
+
+                @Test
+                void save_shouldReturnAllErrors_whenInvalidAttributesHaveSameTitle() throws Exception {
+                    List<AttributeValue> request = List.of(
+                            new AttributeValue(stringAttribute.id(), List.of(" ")),
+                            new AttributeValue(numberAttribute.id(), List.of("not_a_number"))
+                    );
+                    shouldFailAttributesValidationOnSave(List.of(stringAttribute, numberAttribute), request, Map.of(
+                            stringAttribute.slug(), "Must not be blank.",
+                            numberAttribute.slug(), "Invalid number value."
+                    ));
+                }
+            }
+
+            @Nested
+            class SaveProductWithSelectAttribute {
+
+                @Test
+                void save_shouldSaveProductWithSelectAttribute() throws Exception {
+                    Attribute attribute = new Attribute("id", "Select", "slug", AttributeType.SELECT, false, List.of("RED", "GREEN", "BLUE"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("RED", "BLUE"));
+                    shouldSaveProductWithAttribute(attribute, attributeValue);
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenSelectAttributeValuesAreDuplicated() throws Exception {
+                    Attribute attribute = new Attribute("id", "Select", "slug", AttributeType.SELECT, false, List.of("RED", "GREEN", "BLUE"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("RED", "RED"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Values must be unique.");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenSelectAttributeValueIsNotAllowed() throws Exception {
+                    Attribute attribute = new Attribute("id", "Select", "slug", AttributeType.SELECT, false, List.of("RED", "GREEN", "BLUE"));
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("RED", "BLACK", "WHITE"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Invalid values: BLACK, WHITE. Allowed values: RED, GREEN, BLUE");
+                }
+
+                @Test
+                void save_shouldReturnBadRequest_whenSelectAttributeHasNoAllowedValues() throws Exception {
+                    Attribute attribute = new Attribute("id", "Select", "slug", AttributeType.SELECT, false, null);
+                    AttributeValue attributeValue = new AttributeValue(attribute.id(), List.of("RED"));
+                    shouldFailValidationOnSaveProductWithAttribute(attribute, attributeValue, "Attribute has no allowed values.");
                 }
             }
 

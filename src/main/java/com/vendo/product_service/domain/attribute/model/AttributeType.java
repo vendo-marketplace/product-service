@@ -6,6 +6,7 @@ public enum AttributeType {
     NUMBER,
     BOOLEAN,
     ENUM,
+    SELECT,
     RANGE
 
 }

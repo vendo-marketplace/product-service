@@ -1,9 +1,10 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
-import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
@@ -32,7 +33,7 @@ public record UpdateProductRequest(
 
         String categoryId,
 
-        List<AttributeValue> attributes,
+        List<@Valid @NotNull(message = "Attribute must not be null.") AttributeValueRequest> attributes,
 
         Boolean active
 ) {

@@ -1,6 +1,5 @@
 package com.vendo.product_service.adapter.product.in.dto;
 
-import com.vendo.product_service.domain.attribute.model.AttributeValue;
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -38,5 +37,5 @@ public record CreateProductRequest(
         @NotBlank(message = "Id is required.")
         String categoryId,
 
-        List<AttributeValue> attributes) {
+        List<@Valid @NotNull(message = "Attribute must not be null.") AttributeValueRequest> attributes) {
 }

@@ -1,6 +1,8 @@
 package com.vendo.product_service.application.product;
 
 import com.vendo.core_lib.utils.CollectionUtils;
+import com.vendo.core_lib.utils.ObjectUtils;
+import com.vendo.core_lib.utils.StringUtils;
 import com.vendo.product_service.domain.attribute.model.Attribute;
 import com.vendo.product_service.domain.category.model.Category;
 import com.vendo.product_service.domain.image.exception.ImagesLimitExceededException;
@@ -65,14 +67,32 @@ class ProductService implements ProductUseCase {
         User authUser = authUserPort.getAuthUser();
         authUser.throwIfNotOwner(existing.getOwnerId());
 
-        Category category = categoryQueryPort.findById(existing.getCategoryId());
+        Category category = resolveTargetCategory(existing, request);
+
+        List<Attribute> attributes = validateAttributes(category, request);
 
         productCommandPort.update(id, request);
-        eventSenderPort.sendUpdated(request, validateAttributes(category, request));
+        eventSenderPort.sendUpdated(request, attributes);
+    }
+
+    private Category resolveTargetCategory(Product existing, Product request) {
+        if (!isCategoryChanged(existing, request)) {
+            return categoryQueryPort.findById(existing.getCategoryId());
+        }
+
+        if (CollectionUtils.isEmpty((request.getAttributes()))) {
+            request.setAttributes(List.of());
+        }
+
+        return productValidationFacade.validateCategoryOnSave(request.getCategoryId());
+    }
+
+    private boolean isCategoryChanged(Product existing, Product request) {
+        return StringUtils.isNotEmpty(request.getCategoryId()) && !request.getCategoryId().equals(existing.getCategoryId());
     }
 
     private List<Attribute> validateAttributes(Category category, Product request) {
-        if (CollectionUtils.isEmpty(request.getAttributes())) {
+        if (ObjectUtils.isNull(request.getAttributes())) {
             return List.of();
         }
 

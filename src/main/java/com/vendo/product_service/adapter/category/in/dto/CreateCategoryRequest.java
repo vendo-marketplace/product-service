@@ -1,8 +1,10 @@
 package com.vendo.product_service.adapter.category.in.dto;
 
 import com.vendo.product_service.domain.product.pattern.ProductPatterns;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 import java.util.List;
@@ -20,5 +22,6 @@ public record CreateCategoryRequest(
 
         String parentId,
 
-        List<String> attributes) {
+        @Size(min = 1, message = "Attributes must not be empty.")
+        List<@NotBlank(message = "Attribute id is required.") String> attributes) {
 }
